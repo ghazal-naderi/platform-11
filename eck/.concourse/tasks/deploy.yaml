@@ -11,6 +11,7 @@ image_resource:
 
 inputs:
   - name: platform
+  - name: structs-k8s
 
 run:
   path: bash
