@@ -18,6 +18,7 @@ run:
     - -exc
     - |
       ./platform/scripts/fetch-credentials.sh &&
+      ls -al &&
       ./structs-k8s/eck/.concourse/scripts/install.sh &&
       ./structs-k8s/eck/.concourse/scripts/deploy.sh
 params:
