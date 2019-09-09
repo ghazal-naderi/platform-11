@@ -6,3 +6,4 @@ namespace: kube-monitoring
 
 resources:
   - namespace.yaml
+  - elasticsearch.yaml
