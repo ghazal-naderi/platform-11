@@ -12,5 +12,3 @@ spec:
     tls:
       certificate:
         secretName: kibana-tls-secret
-    service:
-      sessionAffinity: ClientIP
