@@ -1,0 +1,19 @@
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: kibana
+spec:
+  secretName: kibana-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: kibana.mino-dev.enva.gen6bk.com
+  dnsNames:
+    - kibana.mino-dev.enva.gen6bk.com
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx-external
+        domains:
+          - kibana.mino-dev.enva.gen6bk.com
