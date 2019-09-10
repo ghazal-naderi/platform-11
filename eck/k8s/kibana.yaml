@@ -8,3 +8,7 @@ spec:
   nodeCount: 2
   elasticsearchRef:
     name: elasticsearch
+  http:
+    tls:
+      certificate:
+        secretName: kibana-tls-secret
