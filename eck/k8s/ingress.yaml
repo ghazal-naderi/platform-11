@@ -11,7 +11,7 @@ spec:
         - kibana.mino-dev.enva.gen6bk.com
       secretName: kibana-tls-secret
   rules:
-    - host: foo.bar.com
+    - host: kibana.mino-dev.enva.gen6bk.com
       http:
         paths:
           - path: /
