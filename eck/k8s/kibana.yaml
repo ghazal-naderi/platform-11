@@ -12,3 +12,46 @@ spec:
     tls:
       certificate:
         secretName: kibana-tls-secret
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kibana
+  annotations:
+    kubernetes.io/ingress.class: "nginx-external"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+spec:
+  tls:
+    - hosts:
+        - kibana.mino-dev.enva.gen6bk.com
+      secretName: kibana-tls-secret
+  rules:
+    - host: kibana.mino-dev.enva.gen6bk.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: kibana-kb-http
+              servicePort: 5601
+
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: kibana
+spec:
+  secretName: kibana-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: kibana.mino-dev.enva.gen6bk.com
+  dnsNames:
+    - kibana.mino-dev.enva.gen6bk.com
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx-external
+        domains:
+          - kibana.mino-dev.enva.gen6bk.com
