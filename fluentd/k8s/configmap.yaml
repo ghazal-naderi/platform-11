@@ -472,6 +472,7 @@ data:
       host elasticsearch-es-http.elasticstack.svc.cluster.local
       port 9200
       scheme https
+      ssl_version TLSv1_2
       user "#{ENV['ELASTIC_USER']}"
       password "#{ENV['ELASTIC_PASSWORD']}"
       logstash_format true

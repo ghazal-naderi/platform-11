@@ -8,3 +8,8 @@ resources:
   - secret.yaml
   - configmap.yaml
   - fluentd.yaml
+
+secretGenerator:
+- name: fluentd
+  envs:
+  - elasticsecret.env
