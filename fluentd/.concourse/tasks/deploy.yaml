@@ -1,0 +1,23 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: gcr.io/foundry-core-development/deploy-tools
+    tag: 0.1.0
+    username: _json_key
+    password: ((gcloud.key))
+
+inputs:
+  - name: platform
+  - name: structs-k8s
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      ./platform/scripts/fetch-credentials.sh &&
+      ./structs-k8s/fluentd/.concourse/scripts/deploy.sh
+params:

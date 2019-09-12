@@ -8,4 +8,3 @@ resources:
   - namespace.yaml
   - elasticsearch.yaml
   - kibana.yaml
-  - fluentd.yaml
