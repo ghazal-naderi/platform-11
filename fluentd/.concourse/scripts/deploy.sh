@@ -2,6 +2,7 @@
 set -e
 set -o pipefail
 
+# !!!!!!!!! TODO: Just copy the secret from the eck deploy and put it into kube-system !!!!!!!!!!!!!!
 # Generate a random password and add along with fluentd user to file elasticsecret.env
 # Move/ensure file is located alongisde k8s/kustomization.yaml
 # Create new user in elasticsearch or update existing user
