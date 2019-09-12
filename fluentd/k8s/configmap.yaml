@@ -471,6 +471,7 @@ data:
       include_tag_key true
       host elasticsearch-es-http.elasticstack.svc.cluster.local
       port 9200
+      scheme https
       user "#{ENV['ELASTIC_USER']}"
       password "#{ENV['ELASTIC_PASSWORD']}"
       logstash_format true
