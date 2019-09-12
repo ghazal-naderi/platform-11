@@ -83,6 +83,9 @@ spec:
           env:
             - name: FLUENTD_ARGS
               value: --no-supervisor -q
+          envFrom:
+            - secretRef:
+                name: fluentd
           resources:
             limits:
               memory: 500Mi
