@@ -473,6 +473,7 @@ data:
       port 9200
       scheme https
       ssl_version TLSv1_2
+      ca_file /etc/fluent/elastic/tls.crt
       user "#{ENV['ELASTIC_USER']}"
       password "#{ENV['ELASTIC_PASSWORD']}"
       logstash_format true
