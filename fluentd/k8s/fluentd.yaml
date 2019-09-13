@@ -83,7 +83,7 @@ spec:
           env:
             - name: FLUENTD_ARGS
               value: --no-supervisor -q
-            - name: ELASTIC_USERNAME
+            - name: ELASTIC_USER
               value: elastic
             - name: ELASTIC_PASSWORD
               valueFrom:
