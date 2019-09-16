@@ -482,11 +482,11 @@ data:
         path /var/log/fluentd-buffers/kubernetes.system.buffer
         flush_mode interval
         retry_type exponential_backoff
-        flush_thread_count 2
-        flush_interval 4s
+        flush_thread_count 3
+        flush_interval 3s
         retry_forever
-        retry_max_interval 30
-        chunk_limit_size 2M
+        retry_max_interval 20
+        chunk_limit_size 10M
         queue_limit_length 8
         overflow_action block
       </buffer>
