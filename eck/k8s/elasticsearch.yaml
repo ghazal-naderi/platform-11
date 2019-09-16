@@ -31,6 +31,7 @@ spec:
               memory: 2Gi
             limits:
               memory: 4Gi
+              cpu: 1
   - nodeCount: 2
     config:
       node.master: false
@@ -57,4 +58,4 @@ spec:
               memory: 2Gi
             limits:
               memory: 4Gi
-              cpu: 2
+              cpu: 1
