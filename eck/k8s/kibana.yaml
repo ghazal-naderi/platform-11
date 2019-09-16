@@ -5,7 +5,7 @@ metadata:
   name: kibana
 spec:
   version: 7.3.2
-  nodeCount: 2
+  nodeCount: 1
   elasticsearchRef:
     name: elasticsearch
   http:
