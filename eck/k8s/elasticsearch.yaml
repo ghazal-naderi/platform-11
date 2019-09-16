@@ -3,7 +3,7 @@ kind: Elasticsearch
 metadata:
   name: elasticsearch
 spec:
-  version: 7.2.0
+  version: 7.3.2
   nodes:
   - nodeCount: 3
     config:
