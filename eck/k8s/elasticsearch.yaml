@@ -10,8 +10,26 @@ spec:
       node.master: true
       node.data: false
       node.ingest: true
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
   - nodeCount: 2
     config:
       node.master: false
       node.data: true
       node.ingest: true
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 70Gi
