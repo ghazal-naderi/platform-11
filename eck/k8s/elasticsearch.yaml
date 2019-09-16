@@ -19,6 +19,20 @@ spec:
         resources:
           requests:
             storage: 5Gi
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms2048M -Xmx2048M
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 1
+            limits:
+              memory: 4Gi
+              cpu: 2
   - nodeCount: 2
     config:
       node.master: false
@@ -33,3 +47,17 @@ spec:
         resources:
           requests:
             storage: 70Gi
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms2048M -Xmx2048M
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 1
+            limits:
+              memory: 4Gi
+              cpu: 2
