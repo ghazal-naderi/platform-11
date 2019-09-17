@@ -3,9 +3,54 @@ apiVersion: apm.k8s.elastic.co/v1alpha1
 kind: ApmServer
 metadata:
   name: apm
-  namespace: default
 spec:
   version: 7.3.2
   nodeCount: 2
   elasticsearchRef:
     name: elasticsearch
+  http:
+    tls:
+      certificate:
+        secretName: apm-tls-secret
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: apm
+  annotations:
+    kubernetes.io/ingress.class: "nginx-external"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+spec:
+  tls:
+    - hosts:
+        - apm.mino-dev.enva.gen6bk.com
+      secretName: apm-tls-secret
+  rules:
+    - host: apm.mino-dev.enva.gen6bk.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: apm-apm-http
+              servicePort: 8200
+
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: apm
+spec:
+  secretName: apm-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: apm.mino-dev.enva.gen6bk.com
+  dnsNames:
+    - apm.mino-dev.enva.gen6bk.com
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx-external
+        domains:
+          - apm.mino-dev.enva.gen6bk.com
