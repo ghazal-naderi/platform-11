@@ -8,3 +8,4 @@ resources:
   - namespace.yaml
   - elasticsearch.yaml
   - kibana.yaml
+  - apm.yaml
