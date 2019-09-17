@@ -88,7 +88,7 @@ spec:
             - name: ELASTIC_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: elasticsearch-es-elastic-user
+                  name: eck-es-elastic-user
                   key: elastic
           resources:
             limits:
@@ -120,4 +120,4 @@ spec:
             name: fluentd-es-config-v0.2.0
         - name: elastic-cert
           secret:
-            secretName: elasticsearch-es-http-certs-public
+            secretName: eck-es-http-certs-public

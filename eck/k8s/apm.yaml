@@ -2,12 +2,12 @@
 apiVersion: apm.k8s.elastic.co/v1alpha1
 kind: ApmServer
 metadata:
-  name: apm
+  name: eck
 spec:
   version: 7.3.2
   nodeCount: 2
   elasticsearchRef:
-    name: elasticsearch
+    name: eck
   http:
     tls:
       certificate:
@@ -17,7 +17,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: apm
+  name: eck-apm
   annotations:
     kubernetes.io/ingress.class: "nginx-external"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
@@ -32,14 +32,14 @@ spec:
         paths:
           - path: /
             backend:
-              serviceName: apm-apm-http
+              serviceName: eck-apm-http
               servicePort: 8200
 
 ---
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
-  name: apm
+  name: eck-apm
 spec:
   secretName: apm-tls-secret
   issuerRef:

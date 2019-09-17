@@ -469,7 +469,7 @@ data:
       @log_level info
       type_name _doc
       include_tag_key true
-      host elasticsearch-es-http.elasticstack.svc
+      host eck-es-http.eck.svc
       port 9200
       scheme https
       ssl_version TLSv1_2
