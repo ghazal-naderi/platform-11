@@ -7,6 +7,9 @@ spec:
   version: 7.3.2
   nodeCount: 2
   config:
+    rum:
+      enabled: true
+      allow_origins: ['*.gen6bk.com']
     setup.template.name: "apm-%{[observer.version]}"
     setup.template.pattern: "apm-%{[observer.version]}-*"
     output:
