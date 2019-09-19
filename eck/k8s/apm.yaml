@@ -6,6 +6,30 @@ metadata:
 spec:
   version: 7.3.2
   nodeCount: 2
+  config:
+    setup.template.name: "apm-%{[observer.version]}"
+    setup.template.pattern: "apm-%{[observer.version]}-*"
+    output:
+      elasticsearch:
+        indices:
+        - index: "apm-%{[observer.version]}-sourcemap"
+          when.contains:
+            processor.event: "sourcemap"
+        - index: "apm-%{[observer.version]}-error-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "error"
+        - index: "apm-%{[observer.version]}-transaction-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "transaction"
+        - index: "apm-%{[observer.version]}-span-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "span"
+        - index: "apm-%{[observer.version]}-metric-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "metric"
+        - index: "apm-%{[observer.version]}-onboarding-%{+yyyy.MM.dd}"
+          when.contains:
+            processor.event: "onboarding"
   elasticsearchRef:
     name: eck
   http:
