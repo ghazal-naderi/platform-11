@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: eck
 
 resources:
+  - custom-resources.yaml
   - namespace.yaml
   - elasticsearch.yaml
   - kibana.yaml

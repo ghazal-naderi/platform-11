@@ -9,7 +9,8 @@ spec:
   config:
     rum:
       enabled: true
-      allow_origins: ['*.gen6bk.com']
+      allow_origins:
+      - '*.example.com'
     setup.template.name: "apm-%{[observer.version]}"
     setup.template.pattern: "apm-%{[observer.version]}-*"
     output:
@@ -50,17 +51,17 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   tls:
-    - hosts:
-        - apm.mino-dev.enva.gen6bk.com
-      secretName: apm-tls-secret
+  - hosts:
+    - apm.example.com
+    secretName: apm-tls-secret
   rules:
-    - host: apm.mino-dev.enva.gen6bk.com
-      http:
-        paths:
-          - path: /
-            backend:
-              serviceName: eck-apm-http
-              servicePort: 8200
+  - host: apm.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: eck-apm-http
+          servicePort: 8200
 
 ---
 apiVersion: certmanager.k8s.io/v1alpha1
@@ -72,12 +73,12 @@ spec:
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
-  commonName: apm.mino-dev.enva.gen6bk.com
+  commonName: apm.example.com
   dnsNames:
-    - apm.mino-dev.enva.gen6bk.com
+  - apm.example.com
   acme:
     config:
-      - http01:
-          ingressClass: nginx-external
-        domains:
-          - apm.mino-dev.enva.gen6bk.com
+    - http01:
+        ingressClass: nginx-external
+      domains:
+      - apm.example.com
