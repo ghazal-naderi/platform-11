@@ -13,6 +13,9 @@ kubectl -n eck get secret eck-es-elastic-user --export -o yaml | kubectl apply -
 CERT_HASH=$(kubectl -n eck get secret "eck-es-http-certs-public" -o go-template='{{index .data "tls.crt"}}' | md5sum)
 PW_HASH=$(kubectl -n eck get secret "eck-es-elastic-user" -o go-template='{{.data.elastic}}' | md5sum)
 
+echo $PW_HASH
+echo $CERT_HASH
+
 # Restart fluentd. Ideally we only need to restart if the password has changed from the original.
 # We can do this by causing a rolling update via adding a content hash label for cert and user secrets.
 kubectl -n kube-system label daemonset fluentd esSecretHash=${PW_HASH}${CERT_HASH} --overwrite
