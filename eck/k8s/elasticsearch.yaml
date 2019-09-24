@@ -2,6 +2,7 @@ apiVersion: elasticsearch.k8s.elastic.co/v1alpha1
 kind: Elasticsearch
 metadata:
   name: eck
+  namespace: eck
 spec:
   version: 7.3.2
   nodes:
@@ -13,6 +14,7 @@ spec:
     volumeClaimTemplates:
     - metadata:
         name: elasticsearch-data
+        namespace: eck
       spec:
         accessModes:
         - ReadWriteOnce
@@ -41,6 +43,7 @@ spec:
     volumeClaimTemplates:
     - metadata:
         name: elasticsearch-data
+        namespace: eck
       spec:
         accessModes:
         - ReadWriteOnce
