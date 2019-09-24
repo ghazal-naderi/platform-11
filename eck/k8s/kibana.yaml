@@ -3,6 +3,7 @@ apiVersion: kibana.k8s.elastic.co/v1alpha1
 kind: Kibana
 metadata:
   name: eck
+  namespace: eck
 spec:
   version: 7.3.2
   nodeCount: 1
@@ -18,6 +19,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: eck-kibana
+  namespace: eck
   annotations:
     kubernetes.io/ingress.class: "nginx-external"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
