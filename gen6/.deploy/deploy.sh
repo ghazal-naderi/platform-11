@@ -10,8 +10,8 @@ kubectl apply -k "${K8S_DIR}"
 kubectl -n eck get secret eck-es-http-certs-public --export -o yaml | kubectl apply -n=kube-system -f -
 kubectl -n eck get secret eck-es-elastic-user --export -o yaml | kubectl apply -n=kube-system -f -
 
-CERT_HASH=$(kubectl get secret "eck-es-http-certs-public" -o go-template='{{index .data "tls.crt"}}' | md5sum)
-PW_HASH=$(kubectl get secret "eck-es-elastic-user" -o go-template='{{.data.elastic}}' | md5sum)
+CERT_HASH=$(kubectl -n eck get secret "eck-es-http-certs-public" -o go-template='{{index .data "tls.crt"}}' | md5sum)
+PW_HASH=$(kubectl -n eck get secret "eck-es-elastic-user" -o go-template='{{.data.elastic}}' | md5sum)
 
 # Restart fluentd. Ideally we only need to restart if the password has changed from the original.
 # We can do this by causing a rolling update via adding a content hash label for cert and user secrets.
