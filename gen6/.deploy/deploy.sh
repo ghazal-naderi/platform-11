@@ -10,8 +10,8 @@ kubectl apply -k "${K8S_DIR}"
 kubectl -n eck get secret eck-es-http-certs-public --export -o yaml | kubectl apply -n=kube-system -f -
 kubectl -n eck get secret eck-es-elastic-user --export -o yaml | kubectl apply -n=kube-system -f -
 
-CERT_HASH=($(kubectl -n eck get secret "eck-es-http-certs-public" -o go-template='{{index .data "tls.crt"}}' | md5sum))
-PW_HASH=($(kubectl -n eck get secret "eck-es-elastic-user" -o go-template='{{.data.elastic}}' | md5sum))
+CERT_HASH=$(kubectl -n eck get secret "eck-es-http-certs-public" -o go-template='{{index .data "tls.crt"}}' | md5sum | cut -d ' ' -f 1)
+PW_HASH=$(kubectl -n eck get secret "eck-es-elastic-user" -o go-template='{{.data.elastic}}' | md5sum | cut -d ' ' -f 1)
 
 echo $PW_HASH
 echo $CERT_HASH
