@@ -4,6 +4,8 @@ kind: Kustomization
 bases:
 - ../../eck/k8s
 - ../../fluentd/k8s
+- ../../metrics-server/k8s
+- ../../k8s-dashboard/k8s
 
 patchesStrategicMerge:
 - kibana.yaml
