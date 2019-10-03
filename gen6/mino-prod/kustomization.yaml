@@ -6,7 +6,9 @@ bases:
 - ../../fluentd/k8s
 - ../../metrics-server/k8s
 - ../../k8s-dashboard/k8s
+- ../../nexus/k8s
 
 patchesStrategicMerge:
 - kibana.yaml
 - apm.yaml
+- nexus.yaml
