@@ -24,7 +24,7 @@ spec:
         fsGroup: 2000
       containers:
       - name: nexus
-        image: 'sonatype/nexus3:3.15.2'
+        image: 'sonatype/nexus3:3.19.0'
         ports:
         - containerPort: 8081
           protocol: TCP
