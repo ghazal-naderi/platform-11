@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: nexus
 
 resources:
+  - namespace.yaml
   - nexus.yaml
   - services.yaml
   - expose.yaml
