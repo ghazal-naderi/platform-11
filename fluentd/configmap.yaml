@@ -474,6 +474,7 @@ data:
       scheme https
       ssl_version TLSv1_2
       ca_file /etc/fluent/elastic/tls.crt
+      request_timeout 30s
       user "#{ENV['ELASTIC_USER']}"
       password "#{ENV['ELASTIC_PASSWORD']}"
       logstash_format true
@@ -482,7 +483,7 @@ data:
         path /var/log/fluentd-buffers/kubernetes.system.buffer
         flush_mode interval
         retry_type exponential_backoff
-        flush_thread_count 3
+        flush_thread_count 2
         flush_interval 3s
         retry_forever
         retry_max_interval 20
