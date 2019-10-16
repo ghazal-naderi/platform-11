@@ -7,7 +7,7 @@ spec:
   tls:
   - hosts:
     - nexus.mino-dev.enva.gen6bk.com
-    secretName: kibana-tls-secret
+    secretName: nexus-tls-secret
   rules:
   - host: nexus.mino-dev.enva.gen6bk.com
     http:
