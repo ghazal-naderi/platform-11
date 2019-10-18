@@ -474,10 +474,13 @@ data:
       scheme https
       ssl_version TLSv1_2
       ca_file /etc/fluent/elastic/tls.crt
-      request_timeout 30s
       user "#{ENV['ELASTIC_USER']}"
       password "#{ENV['ELASTIC_PASSWORD']}"
       logstash_format true
+      request_timeout 30s
+      reconnect_on_error true
+      reload_on_failure true
+      reload_connections false
       <buffer>
         @type file
         path /var/log/fluentd-buffers/kubernetes.system.buffer
