@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: redis
 
 resources:
-  - redis-namespace.yaml
-  - redis-statefulset.yaml
-  - redis-service.yaml
+  - namespace.yaml
+  - statefulset.yaml
+  - service.yaml
