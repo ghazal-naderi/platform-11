@@ -1,0 +1,41 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: concourse
+spec:
+  tls:
+  - hosts:
+    - concourse.mino-dev.enva.gen6bk.com
+    secretName: concourse-tls-secret
+  rules:
+  - host: concourse.mino-dev.enva.gen6bk.com
+    http:
+      paths:
+      - path: /github
+        backend:
+          serviceName: concourse-webhook
+          servicePort: 8080
+      - path: /
+        backend:
+          serviceName: concourse-web
+          servicePort: 8080
+
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: concourse
+spec:
+  commonName: concourse.mino-dev.enva.gen6bk.com
+  dnsNames:
+  - concourse.mino-dev.enva.gen6bk.com
+  acme:
+    config:
+    - http01:
+        ingressClass: nginx-external
+      domains:
+      - concourse.mino-dev.enva.gen6bk.com
+
+---
+# Add patches for generated concourse file resources

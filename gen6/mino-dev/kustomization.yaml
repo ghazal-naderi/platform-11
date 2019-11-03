@@ -8,8 +8,12 @@ bases:
 - ../../k8s-dashboard
 - ../../nexus
 - ../../redis
+- ../../concourse
+# We probably need to alter how bases are loaded in.
+# This would allow pre-kustomize steps such as helm template and (possibly) make these configs independent of repo structure.
 
 patchesStrategicMerge:
 - kibana.yaml
 - apm.yaml
 - nexus.yaml
+- concourse.yaml
