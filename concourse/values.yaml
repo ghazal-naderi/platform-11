@@ -15,8 +15,6 @@ concourse:
     baggageclaim:
       driver: overlay
 web:
-  service:
-    type: NodePort
   resources:
     requests:
       cpu: "500m"
