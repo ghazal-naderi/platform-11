@@ -19,6 +19,7 @@ run:
     - -exc
     - |
       ./platform/scripts/fetch-credentials.sh &&
+      ./structs-k8s/gen6/.deploy/helm-template.sh &&
       ./structs-k8s/gen6/.deploy/deploy.sh
 
 params:
