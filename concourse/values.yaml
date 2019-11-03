@@ -7,8 +7,7 @@ concourse:
         enabled: true
       mainTeam:
         github:
-          org: 
-          - 11FSConsulting
+          org: "11FSConsulting"
     kubernetes:
       enabled: true
   worker:

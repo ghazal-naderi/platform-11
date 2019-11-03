@@ -7,8 +7,7 @@ concourse:
         enabled: true
       mainTeam:
         github:
-          org: 
-          - gen6-ventures
+          org: "gen6-ventures"
 secrets:
   githubClientId: 7adf43f8912d920a9fdc
   githubClientSecret: 4935dcc1001303d2b5a9c0d234ff5046c6901be2
