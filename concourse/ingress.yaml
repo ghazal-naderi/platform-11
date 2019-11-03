@@ -1,0 +1,25 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: concourse
+  namespace: concourse
+  annotations:
+    kubernetes.io/ingress.class: "nginx-external"
+spec:
+  tls:
+    - hosts:
+        - concourse.example.com
+      secretName: concourse-tls-secret
+  rules:
+    - host: concourse.example.com
+      http:
+        paths:
+          - path: /github
+            backend:
+              serviceName: concourse-webhook
+              servicePort: 8080
+          - path: /
+            backend:
+              serviceName: concourse-web
+              servicePort: 8080

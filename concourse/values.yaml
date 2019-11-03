@@ -1,0 +1,33 @@
+---
+concourse:
+  web:
+    externalUrl: https://concourse.example.com/
+    auth:
+      github:
+        enabled: true
+      mainTeam:
+        github:
+          org: 
+          - 11FSConsulting
+    kubernetes:
+      enabled: true
+  worker:
+    baggageclaim:
+      driver: overlay
+web:
+  service:
+    type: NodePort
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "256Mi"
+secrets:
+  githubClientId: exampleClientID
+  githubClientSecret: exampleClientSecret
+persistence:
+  worker:
+    size: 50Gi
+worker:
+  resources:
+    requests:
+      memory: "2G"
