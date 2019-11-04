@@ -18,4 +18,4 @@ patchesStrategicMerge:
 - concourse.yaml
 
 resources:
-- git-ext-secret.yaml
+- git-exsecret.yaml
