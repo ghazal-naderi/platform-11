@@ -19,3 +19,4 @@ patchesStrategicMerge:
 
 resources:
 - git-exsecret.yaml
+- nexus-exsecret.yaml
