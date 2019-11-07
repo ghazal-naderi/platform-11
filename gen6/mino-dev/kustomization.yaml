@@ -18,5 +18,4 @@ patchesStrategicMerge:
 - concourse.yaml
 
 resources:
-- git-exsecret.yaml
-- nexus-exsecret.yaml
+- external-secrets.yaml
