@@ -10,6 +10,7 @@ bases:
 - ../../redis
 - ../../concourse
 - ../../external-secrets
+- ../../reloader
 
 patchesStrategicMerge:
 - kibana.yaml
