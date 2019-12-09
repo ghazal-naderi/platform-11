@@ -57,6 +57,8 @@ metadata:
     k8s-app: fluentd-es
     version: v2.6.0
     addonmanager.kubernetes.io/mode: Reconcile
+  annotations:
+    reloader.stakater.com/auto: "true"
 spec:
   selector:
     matchLabels:
