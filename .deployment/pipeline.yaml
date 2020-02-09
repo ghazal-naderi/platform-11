@@ -14,41 +14,6 @@ spec:
 
 ---
 apiVersion: tekton.dev/v1alpha1
-kind: Task
-metadata:
-  name: k8s-kustomize
-  namespace: tekton-pipelines
-spec:
-  inputs:
-    resources:
-      - name: source
-        type: git
-    params:
-      - name: pathToK8sDir
-        type: string
-        description: The path to base kustomize directory in repo
-        default: k8s
-  steps:
-    - name: k8s-dry-run
-      image: lachlanevenson/k8s-kubectl:v1.17.2
-      workingDir: /workspace/source
-      command: ["kubectl"]
-      args:
-        - "apply"
-        - "-k"
-        - $(inputs.params.pathToK8sDir)
-        - "--dry-run"
-    - name: k8s-apply
-      image: lachlanevenson/k8s-kubectl:v1.17.2
-      workingDir: /workspace/source
-      command: ["kubectl"]
-      args:
-        - "apply"
-        - "-k"
-        - $(inputs.params.pathToK8sDir)
-
----
-apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
   name: apply-kustomize-manifests
