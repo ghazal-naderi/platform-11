@@ -1,0 +1,6 @@
+---
+resources:
+- namespace.yaml
+- oauth2-proxy.yaml
+
+namespace: auth

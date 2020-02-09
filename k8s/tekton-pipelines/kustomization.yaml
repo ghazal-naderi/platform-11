@@ -1,0 +1,7 @@
+---
+resources:
+- pipelines.yaml
+- dashboard.yaml
+- ingress.yaml
+- secrets.yaml
+- rbac.yaml

@@ -1,0 +1,5 @@
+---
+resources:
+- metrics-server.yaml
+
+namespace: kube-system

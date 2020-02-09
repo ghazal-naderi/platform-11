@@ -1,0 +1,25 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: tekton-dashboard
+  namespace: tekton-pipelines
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx-external
+    nginx.ingress.kubernetes.io/auth-url: "https://auth.11fs-structs.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.11fs-structs.com/oauth2/start?rd=https%3A%2F%2F$host$request_uri"
+spec:
+  tls:
+  - hosts:
+    - tekton.11fs-structs.com
+    secretName: tekton-11fs-structs-tls
+  rules:
+  - host: tekton.11fs-structs.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: tekton-dashboard
+          servicePort: 9097

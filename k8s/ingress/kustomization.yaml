@@ -1,0 +1,10 @@
+---
+resources:
+- crds.yaml
+- namespace.yaml
+- nginx-ingress.yaml
+- external-dns.yaml
+- cert-manager.yaml
+- issuer.yaml
+
+namespace: ingress

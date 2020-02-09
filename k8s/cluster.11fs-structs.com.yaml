@@ -1,0 +1,131 @@
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: "2020-01-30T17:12:18Z"
+  name: cluster.11fs-structs.com
+spec:
+  additionalPolicies:
+    node: |
+      [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "route53:ChangeResourceRecordSets"
+          ],
+          "Resource": [
+            "arn:aws:route53:::hostedzone/*"
+          ]
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "route53:ListHostedZones",
+            "route53:ListResourceRecordSets"
+          ],
+          "Resource": [
+            "*"
+          ]
+        }
+      ]
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://cluster-11fs-structs-com-state/cluster.11fs-structs.com
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - instanceGroup: master-eu-west-2a
+      name: a
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - instanceGroup: master-eu-west-2a
+      name: a
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubeDNS:
+    provider: CoreDNS
+  kubelet:
+    anonymousAuth: false
+    authenticationTokenWebhook: true
+    authorizationMode: Webhook
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.15.7
+  masterPublicName: api.cluster.11fs-structs.com
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: eu-west-2a
+    type: Public
+    zone: eu-west-2a
+  - cidr: 172.20.64.0/19
+    name: eu-west-2b
+    type: Public
+    zone: eu-west-2b
+  - cidr: 172.20.96.0/19
+    name: eu-west-2c
+    type: Public
+    zone: eu-west-2c
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2020-01-30T17:12:19Z"
+  labels:
+    kops.k8s.io/cluster: cluster.11fs-structs.com
+  name: master-eu-west-2a
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: t3.medium
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-eu-west-2a
+  role: Master
+  rootVolumeSize: 50
+  subnets:
+  - eu-west-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: "2020-01-30T17:12:19Z"
+  labels:
+    kops.k8s.io/cluster: cluster.11fs-structs.com
+  name: nodes
+spec:
+  image: kope.io/k8s-1.15-debian-stretch-amd64-hvm-ebs-2019-09-26
+  machineType: t3.medium
+  maxSize: 3
+  minSize: 3
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
+  role: Node
+  rootVolumeSize: 50
+  subnets:
+  - eu-west-2a
+  - eu-west-2b
+  - eu-west-2c
