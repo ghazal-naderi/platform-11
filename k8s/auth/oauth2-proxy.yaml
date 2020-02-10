@@ -26,7 +26,7 @@ metadata:
     release: o2p
   name: o2p-oauth2-proxy
 data:
-  oauth2_proxy.cfg: "email_domains = [ \"*\" ]\ngithub_org = \"11FSConsulting\"\nprovider = \"github\"\ncookie_domain = \".11fs-structs.com\"\ncookie_expire = \"1h0m0s\""
+  oauth2_proxy.cfg: "email_domains = [ \"*\" ]\ngithub_org = \"11FSConsulting\"\nprovider = \"github\"\ncookie_domain = \".11fs-structs.com\"\ncookie_expire = \"1h0m0s\"\nwhitelist_domains = [\".11fs-structs.com\"]"
 ---
 # Source: oauth2-proxy/templates/service.yaml
 apiVersion: v1
