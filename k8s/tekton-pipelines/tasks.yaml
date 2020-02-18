@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: k8s-kustomize
+  name: kustomize-apply
   namespace: tekton-pipelines
 spec:
   inputs:
@@ -12,7 +12,7 @@ spec:
     params:
       - name: pathToK8sDir
         type: string
-        description: The path to base kustomize directory in repo
+        description: Path to the base kustomize directory within the repo
         default: .deployment/k8s
   steps:
     - name: k8s-dry-run
@@ -32,3 +32,36 @@ spec:
         - "apply"
         - "-k"
         - $(inputs.params.pathToK8sDir)
+
+---
+apiVersion: tekton.dev/v1alpha1
+kind: ClusterTask
+metadata:
+  name: source-to-image
+  namespace: tekton-pipelines
+spec:
+  inputs:
+    resources:
+      - name: source
+        type: git
+    params:
+      - name: pathToContext
+        description: The path to the build context within the repo
+        default: .
+      - name: pathToDockerFile
+        description: The path to the dockerfile to build within the repo
+        default: Dockerfile
+      - name: imageUrl
+        description: URL of docker repository to push the built image to
+      - name: imageTag
+        description: Tag to apply to the built image
+        default: "latest"
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=$(inputs.params.pathToDockerFile)
+        - --destination=$(inputs.params.imageUrl):$(inputs.params.imageTag)
+        - --context=/workspace/source/$(inputs.params.pathToContext)

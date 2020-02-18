@@ -1,0 +1,39 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: maven-package
+  namespace: tekton-pipelines
+spec:
+  inputs:
+    resources:
+      - name: source
+        type: git
+    params:
+      - name: nexus-credentials-secret
+        type: string
+        description: Name of secret containing nexus credentials
+        default: nexus-credentials
+  steps:
+    - name: package
+      image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/tekton-maven:v1.0.0
+      workingDir: /workspace/source
+      env:
+        - name: NEXUS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: $(inputs.params.nexus-credentials-secret)
+              key: username
+        - name: NEXUS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: $(inputs.params.nexus-credentials-secret)
+              key: password
+    command: ["mvn"]
+    args:
+      - "-f"
+      - "pom.xml"
+      - "-s"
+      - "settings.xml"
+      - "package"
+      - "-Dci=true"
