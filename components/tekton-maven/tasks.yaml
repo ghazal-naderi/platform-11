@@ -29,11 +29,11 @@ spec:
             secretKeyRef:
               name: $(inputs.params.nexus-credentials-secret)
               key: password
-    command: ["mvn"]
-    args:
-      - "-f"
-      - "pom.xml"
-      - "-s"
-      - "settings.xml"
-      - "package"
-      - "-Dci=true"
+      command: ["mvn"]
+      args:
+        - "-f"
+        - "pom.xml"
+        - "-s"
+        - "settings.xml"
+        - "package"
+        - "-Dci=true"
