@@ -1,19 +1,18 @@
 ---
 apiVersion: tekton.dev/v1alpha1
-kind: Task
+kind: ClusterTask
 metadata:
   name: kustomize-apply
-  namespace: tekton-pipelines
 spec:
   inputs:
     resources:
       - name: source
         type: git
     params:
-      - name: pathToK8sDir
+      - name: kustomizeDir
         type: string
-        description: Path to the base kustomize directory within the repo
-        default: .deployment/k8s
+        description: Path to the kustomize dir to apply relative to repo root
+        default: k8s/production
   steps:
     - name: k8s-dry-run
       image: lachlanevenson/k8s-kubectl:v1.17.2
@@ -22,7 +21,7 @@ spec:
       args:
         - "apply"
         - "-k"
-        - $(inputs.params.pathToK8sDir)
+        - $(inputs.params.kustomizeDir)
         - "--dry-run"
     - name: k8s-apply
       image: lachlanevenson/k8s-kubectl:v1.17.2
@@ -31,13 +30,13 @@ spec:
       args:
         - "apply"
         - "-k"
-        - $(inputs.params.pathToK8sDir)
+        - $(inputs.params.kustomizeDir)
 
 ---
 apiVersion: tekton.dev/v1alpha1
-kind: ClusterTask
+kind: Task
 metadata:
-  name: source-to-image
+  name: build-image
   namespace: tekton-pipelines
 spec:
   inputs:
@@ -50,18 +49,67 @@ spec:
         default: .
       - name: pathToDockerFile
         description: The path to the dockerfile to build within the repo
-        default: Dockerfile
+        default: .deployment/Dockerfile
       - name: imageUrl
         description: URL of docker repository to push the built image to
-      - name: imageTag
-        description: Tag to apply to the built image
-        default: "latest"
   steps:
     - name: build-and-push
-      image: gcr.io/kaniko-project/executor
-      command:
-        - /kaniko/executor
-      args:
-        - --dockerfile=$(inputs.params.pathToDockerFile)
-        - --destination=$(inputs.params.imageUrl):$(inputs.params.imageTag)
-        - --context=/workspace/source/$(inputs.params.pathToContext)
+      image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/tekton-kaniko:v1.0.0
+      script: |
+        #!/busybox/sh
+        ls -al /workspace/source/.deployment/ \
+        IMAGE_TAG=$(cat /workspace/source/.deployment/version)
+        /kaniko/executor \
+        --dockerfile=/workspace/source/$(inputs.params.pathToDockerFile) \
+        --destination=$(inputs.params.imageUrl):$IMAGE_TAG \
+        --context=/workspace/source/$(inputs.params.pathToContext)
+
+---
+# This task is not intended for use in pipelines themselves.
+# It's a helper used to create GH webhooks for pipeline triggering.
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: create-webhook
+  namespace: tekton-pipelines
+spec:
+  volumes:
+  - name: github-secret
+    secret:
+      secretName: $(inputs.params.GitHubSecretName)
+  inputs:
+    params:
+    - name: ExternalDomain
+      description: "The external domain for the EventListener e.g. `$(inputs.params.EventListenerName).<PROXYIP>.nip.io`"
+    - name: GitHubUser
+      description: "The GitHub user"
+    - name: GitHubRepo
+      description: "The GitHub repo where the webhook will be created"
+    - name: GitHubOrg
+      description: "The GitHub organization where the webhook will be created"
+    - name: GitHubSecretName
+      description: "The Secret name for GitHub access token and string. Must contain keys 'access-token' and  'secret-string'"
+    - name: GitHubDomain
+      description: "The GitHub domain. Override for GitHub Enterprise"
+      default: "github.com"
+    - name: WebhookEvents
+      description: "List of events the webhook will send notifications for"
+      default: '[\"push\"]'
+  steps:
+  - name: create-webhook
+    image: pstauffer/curl:latest
+    volumeMounts:
+    - name: github-secret
+      mountPath: /var/secret
+    command:
+    - sh
+    args:
+    - -ce
+    - |
+      set -e
+      echo "Create Webhook"
+      if [ $(inputs.params.GitHubDomain) = "github.com" ];then
+        curl -v -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)\",\"content_type\": \"json\",\"insecure_ssl\": \"1\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://api.github.com/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+      else
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"1\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://$(inputs.params.GitHubDomain)/api/v3/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+      fi

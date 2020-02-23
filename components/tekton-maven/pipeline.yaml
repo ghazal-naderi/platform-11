@@ -1,4 +1,0 @@
-
-# TODO:
-  # Create ECR registry with terraform (already made but needs to be coded up)
-  # Build docker image

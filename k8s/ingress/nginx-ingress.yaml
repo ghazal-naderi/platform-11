@@ -159,7 +159,7 @@ rules:
     resources:
       - configmaps
     resourceNames:
-      - ingress-controller-leader-nginx
+      - ingress-controller-leader-nginx-external
     verbs:
       - get
       - update
