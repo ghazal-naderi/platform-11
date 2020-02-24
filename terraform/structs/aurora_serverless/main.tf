@@ -15,10 +15,21 @@ resource "aws_security_group" "db" {
   }
 }
 
+resource "aws_subnet" "db_subnets" {
+    for_each          = var.db_subnet_confs 
+    vpc_id            = var.vpc_id
+    cidr_block        = each.value.cidr
+    availability_zone = each.value.az
+
+    tags = {
+      Name = "db-${each.value.az}-subnet"
+    }
+}
+
 resource "aws_db_subnet_group" "default" {
   name        = var.name
   description = format("DB subnet group for %s RDS instance", var.name)
-  subnet_ids  = [for s in var.db_subnets : s.id]
+  subnet_ids  = [for s in aws_subnet.db_subnets : s.id]
 
   tags = {
     Name = var.name

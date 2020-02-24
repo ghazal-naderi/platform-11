@@ -12,14 +12,14 @@ variable "vpc_id" {
     description = "ID of the VPC within which the DB will be created"
 }
 
-variable "ingress_cidr_blotcks" {
-    description = "CIDR blocks that should be allowed to access the DB subnets"
-    type = list
+variable "db_subnet_confs" {
+  description = "Config objects to use for db subnets"
+  type = map
 }
 
-variable "db_subnets" {
-    description = "Subnets which the DB will be created within. Ideally these should be private"
-    type = map
+variable "ingress_cidr_blocks" {
+    description = "CIDR blocks that should be allowed to access the DB subnets"
+    type = list
 }
 
 variable "auto_pause" {
