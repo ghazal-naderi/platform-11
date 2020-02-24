@@ -30,6 +30,8 @@ spec:
       ]
   api:
     dns: {}
+    # loadBalancer:
+    #   type: Internal|Public
   authorization:
     rbac: {}
   channel: stable

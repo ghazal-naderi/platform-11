@@ -109,7 +109,7 @@ spec:
       set -e
       echo "Create Webhook"
       if [ $(inputs.params.GitHubDomain) = "github.com" ];then
-        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)\",\"content_type\": \"json\",\"insecure_ssl\": \"1\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://api.github.com/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://api.github.com/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
       else
-        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"1\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://$(inputs.params.GitHubDomain)/api/v3/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://$(inputs.params.GitHubDomain)/api/v3/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
       fi
