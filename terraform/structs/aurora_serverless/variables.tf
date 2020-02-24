@@ -24,16 +24,20 @@ variable "ingress_cidr_blocks" {
 
 variable "auto_pause" {
     description = "Whether or not the DB should pause on idle"
+    default = false
 }
 
 variable "max_capacity" {
     description = "Maximum ACU capacity. Must be a power of two up to max 256"
+    default = 16
 }
 
 variable "min_capacity" {
     description = "Minimum ACU capacity. Must be a power of two up to max 256"
+    default = 2
 }
 
 variable "seconds_until_auto_pause" {
     description = "Number of seconds with of idle connection acitivity before the DB will pause"
+    default = 300
 }
