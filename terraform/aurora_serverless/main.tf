@@ -37,17 +37,18 @@ resource "aws_db_subnet_group" "default" {
 }
 
 resource "aws_rds_cluster" "postgresql" {
-  cluster_identifier      = "aurora-cluster-demo"
-  engine                  = "aurora-postgresql"
-  engine_mode             = "serverless"
-  master_username         = var.master_username
-  master_password         = random_password.temp.result
-  backup_retention_period = 7
-  preferred_backup_window = "02:00-03:00"
-  deletion_protection     = true
-  skip_final_snapshot     = false
-  vpc_security_group_ids  = [aws_security_group.db.id]
-  db_subnet_group_name    = aws_db_subnet_group.default.name
+  cluster_identifier        = var.name
+  engine                    = "aurora-postgresql"
+  engine_mode               = "serverless"
+  master_username           = var.master_username
+  master_password           = random_password.temp.result
+  backup_retention_period   = 7
+  preferred_backup_window   = "02:00-03:00"
+  deletion_protection       = true
+  skip_final_snapshot       = false
+  final_snapshot_identifier = format("%s-final-snapshot", var.name)
+  vpc_security_group_ids    = [aws_security_group.db.id]
+  db_subnet_group_name      = aws_db_subnet_group.default.name
 
   scaling_configuration {
     auto_pause               = var.auto_pause
