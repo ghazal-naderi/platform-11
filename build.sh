@@ -10,6 +10,10 @@ tfsec_version="v0.19.0"
 kubeval_version="0.14.0"
 kubescore_version="1.5.1"
 
+# purely for testing
+export AWS_DEFAULT_REGION=eu-west-1
+export AWS_REGION=eu-west-1
+
 # Obtain dependencies
 echo "-- Obtaining dependencies"
 os=$(uname | tr '[:upper:]' '[:lower:]')
@@ -71,8 +75,11 @@ for folder in terraform/*/; do
     (cd "${folder}" && terraform init -backend=false && terraform validate) && echo "✅ terraform validate ${folder} passes"
     bin/tflint "${folder}" && echo "✅ terraform tflint ${folder} passes"
     bin/tfsec "${folder}" && echo "✅ terraform tfsec ${folder} passes"
-    cp -r "${folder}" "pkg/${folder}"
+    mkdir -p "pkg/${folder}"
+    cp -r "${folder}/*" "pkg/${folder}/"
 done
 
 echo "✅ pkg/ wrapped and verified"
+unset AWS_DEFAULT_REGION
+unset AWS_REGION
 # -- finished checks
