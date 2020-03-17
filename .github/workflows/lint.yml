@@ -1,0 +1,12 @@
+name: Lint & verify 
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  gather:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Lint and verify code
+        run: ./build.sh 
