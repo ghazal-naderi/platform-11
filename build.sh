@@ -32,7 +32,7 @@ curl -sL "https://github.com/liamg/tfsec/releases/download/${tfsec_version}/tfse
 # helm
 curl -sL "https://get.helm.sh/helm-${helm_version}-${os}-${arch}.tar.gz" -o temp/helm.tgz
 tar -C temp/ -xf temp/helm.tgz
-mv "temp/darwin-${arch}/helm" bin/helm
+mv "temp/${os}-${arch}/helm" bin/helm
 # kubeval
 curl -sL "https://github.com/instrumenta/kubeval/releases/download/${kubeval_version}/kubeval-${os}-${arch}.tar.gz" -o temp/kubeval.tgz
 tar -C temp/ -xf temp/kubeval.tgz
