@@ -6,4 +6,3 @@ bases:
 - ./ingress
 - ./auth
 - ./tekton-pipelines
-- ./kafka
