@@ -68,11 +68,12 @@ bin/kubectl kustomize k8s > pkg/k8s.yaml && echo "✅ k8s Kustomize passes"
 bin/kubeval -v "${kubernetes_version#?}" --ignore-missing-schemas -s https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/ pkg/k8s.yaml && echo "✅ k8s kubeval passes"
 
 # Kube-score checks - we need to ignore the securityContext test as we're not using SELinux. We may add more to this.s
-kube-score score --ignore-test container-security-context pkg/k8s.yaml && echo "✅ k8s kube-score passes"
+bin/kube-score score --ignore-test container-security-context pkg/k8s.yaml && echo "✅ k8s kube-score passes"
 
 # tflint and terraform checks
 for folder in terraform/*/; do
-    (cd "${folder}" && terraform init -backend=false && terraform validate) && echo "✅ terraform validate ${folder} passes"
+    cwd="$(pwd)"
+    (cd "${folder}" && "${cwd}/bin/terraform" init -backend=false && terraform validate) && echo "✅ terraform validate ${folder} passes"
     bin/tflint "${folder}" && echo "✅ terraform tflint ${folder} passes"
     bin/tfsec "${folder}" && echo "✅ terraform tfsec ${folder} passes"
     mkdir -p "pkg/${folder}"
