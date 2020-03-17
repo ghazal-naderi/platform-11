@@ -77,7 +77,7 @@ for folder in terraform/*/; do
     bin/tflint "${folder}" && echo "✅ terraform tflint ${folder} passes"
     bin/tfsec "${folder}" && echo "✅ terraform tfsec ${folder} passes"
     mkdir -p "pkg/${folder}"
-    cp -r "${cwd}/${folder}*" "pkg/${folder}"
+    cp -r "${cwd}/${folder}"* "pkg/${folder}"
 done
 
 echo "✅ pkg/ wrapped and verified"
