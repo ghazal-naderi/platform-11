@@ -9,4 +9,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Lint and verify code
-        run: docker build components/infra-tester -t test-infra && docker run -v `pwd`:/workspace -it test-infra
+        run: docker build components/infra-tester -t test-infra && docker run -v `pwd`:/workspace -t test-infra
