@@ -5,28 +5,26 @@ set -eu -o pipefail
 # Start checks
 echo "-- Beginning checks"
 [ -d pkg ] && rm -r pkg/
-mkdir -p pkg/
+mkdir -p pkg/k8s/
 find . -iname build.sh -exec ash -c "shellcheck -C -a {} && echo \"✅ {}: Build script passes\"" \; -exec ash -c "[[ \"$0\" != \"{}\" ]] && \"{}\"" \;
 
 for folder in k8s/*/; do
     cwd="$(pwd)"
-    file_name="${folder//\//_}"
-    file_name_clean="${file_name%?}"
+    file_name="$(echo "${folder}" | cut -d'/' -f2)"
     if [ -d "${folder}/chart" ]; then
-        echo "INFO: Detected ${file_name_clean} as containing a Helm chart"
-        helm template "${folder}/chart" >> "pkg/${file_name_clean}.yaml" && echo "✅ ${file_name_clean}: k8s Helm passes"
-        echo "---" >> "pkg/${file_name_clean}.yaml"
+        echo "INFO: Detected ${file_name} as containing a Helm chart, rendering..."
+        helm template "${folder}/chart" > "k8s/${file_name}/${file_name}.yaml" && echo "✅ ${file_name}: k8s Helm passes"
     fi
     if [ -f "${folder}/kustomization.yaml" ]; then
-        echo "INFO: Detected ${file_name_clean} as containing Kustomize"
+        echo "INFO: Detected ${file_name} as containing Kustomize, templating..."
         # Generate k8s YAML for future parsing
-        kubectl kustomize "${folder}" >> "pkg/${file_name_clean}.yaml" && echo "✅ ${file_name_clean}: k8s Kustomize passes"
+        kubectl kustomize "${folder}" > "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s Kustomize passes"
     fi
     if [[ "${LINT}" == 'yes' ]]; then
       # KubEval check - we need to use git directly as @garethr hasn't updated the site yet
-      kubeval -v "${KUBERNETES_VERSION#?}" --ignore-missing-schemas -s "https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/" "pkg/${file_name_clean}.yaml" && echo "✅ ${file_name_clean}: k8s kubeval passes"
+      kubeval -v "${KUBERNETES_VERSION#?}" --ignore-missing-schemas -s "https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/" "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s kubeval passes"
       # Kube-score checks - we need to ignore the securityContext test as we're not using SELinux. We may add more to this.s
-      kube-score score --ignore-test container-security-context "pkg/${file_name_clean}.yaml" && echo "✅ ${file_name_clean}: k8s kube-score passes"
+      kube-score score --ignore-test container-security-context "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s kube-score passes"
     fi
 done
 
