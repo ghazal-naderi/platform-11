@@ -1,0 +1,11 @@
+repos:
+   - name: platform
+     github: 11FSConsulting/platform
+     ref: tidy_up_and_build_sh
+     packages:
+       - type: k8s
+         name: redis
+       - type: k8s
+         name: kafka
+       - type: terraform
+         name: aws-ecs

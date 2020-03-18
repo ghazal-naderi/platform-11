@@ -1,0 +1,25 @@
+name: Gather dependencies
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  gather:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Pull infra-tester from ECR
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
+          region: eu-west-2
+          image: platform/infra-tester:latest
+          local-image: platform/infra-tester
+          direction: pull
+      - name: Install dependencies
+        run: curl -Lo yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x yq 
+      - name: Gather dependencies from manifest.yaml and commit them to the repo 
+        env:
+          GITHUB_SECRET_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+        run: .github/workflows/gather.sh
