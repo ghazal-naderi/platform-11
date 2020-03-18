@@ -3,8 +3,6 @@ on:
   push:
     paths:
       - components/infra-tester/Dockerfile
-    branches:
-      - master
 jobs:
   - name: Login to ECR
     uses: jwalton/gh-ecr-login@v1
