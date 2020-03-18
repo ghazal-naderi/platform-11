@@ -18,4 +18,4 @@ jobs:
           local-image: platform/infra-tester
           direction: pull
       - name: Lint and verify code
-        run: docker run -v `pwd`:/workspace -t test-infra
+        run: docker run -v `pwd`:/workspace -t platform/infra-tester 
