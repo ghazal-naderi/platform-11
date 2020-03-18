@@ -37,6 +37,7 @@ resource "aws_ecr_repository_policy" "platform_infra_tester_rw_policy" {
 }
 EOF
 }
+
 resource "aws_ecr_repository_policy" "platform_infra_tester_ro_policy" {
   repository = aws_ecr_repository.platform_infra_tester.name
 
@@ -78,6 +79,7 @@ resource "aws_iam_user_policy" "platform_ecr_authorization_push" {
 }
 EOF
 }
+
 resource "aws_iam_user_policy" "platform_ecr_authorization_pull" {
   name = "platform_ecr_authorization_pull"
   user = aws_iam_user.platform_docker_user_pull.name
@@ -134,4 +136,3 @@ output "aws_iam_ro_secretaccesskey" {
   sensitive = true
   value = aws_iam_access_key.platform_docker_user_pull_key.secret
 }
-
