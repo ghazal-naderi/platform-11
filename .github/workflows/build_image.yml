@@ -15,6 +15,7 @@ jobs:
           access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
           secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
           region: eu-west-2
+      - uses: actions/checkout@v1
       - run: docker build --tag infra-tester components/infra-tester
       - name: Push to ECR
         uses: jwalton/gh-ecr-push@v1
