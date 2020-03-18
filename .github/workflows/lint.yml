@@ -9,7 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Pull infra-tester from ECR
-        id: ecr
         uses: jwalton/gh-ecr-push@v1
         with:
           access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
