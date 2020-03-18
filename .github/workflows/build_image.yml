@@ -1,6 +1,6 @@
 name: Build & Push 
 on:
-  pull_request:
+  push:
     paths:
       - 'components/infra-tester/Dockerfile'
     branches:
