@@ -6,20 +6,20 @@ on:
     branches:
       - master
 jobs:
-- name: Login to ECR
-  id: ecr
-  uses: jwalton/gh-ecr-login@v1
-  with:
-    access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
-    secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
-    region: eu-west-2
-- run: docker build --tag infra-tester components/infra-tester
-- name: Push to ECR
-  id: ecr
-  uses: jwalton/gh-ecr-push@v1
-  with:
-    access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
-    secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
-    region: eu-west-2
-    local-image: infra-tester
-    image: platform/infra-tester:${{ github.sha }}
+  - name: Login to ECR
+    id: ecr
+    uses: jwalton/gh-ecr-login@v1
+    with:
+      access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
+      secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
+      region: eu-west-2
+  - run: docker build --tag infra-tester components/infra-tester
+  - name: Push to ECR
+    id: ecr
+    uses: jwalton/gh-ecr-push@v1
+    with:
+      access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
+      secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
+      region: eu-west-2
+      local-image: infra-tester
+      image: platform/infra-tester:${{ github.sha }}
