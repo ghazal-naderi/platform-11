@@ -1,6 +1,6 @@
 name: Build & Push 
 on:
-  pull_request:
+  push:
     paths:
       - 'components/infra-tester/Dockerfile'
     branches:
@@ -24,4 +24,4 @@ jobs:
           secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
           region: eu-west-2
           local-image: infra-tester
-          image: platform/infra-tester:${{ github.sha }}
+          image: platform/infra-tester:latest

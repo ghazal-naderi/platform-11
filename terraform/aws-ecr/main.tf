@@ -3,8 +3,8 @@ provider "aws" {
   region  = "eu-west-2"
 }
 
-resource "aws_ecr_repository" "platform" {
-  name                 = "platform"
+resource "aws_ecr_repository" "platform_infra_tester" {
+  name                 = "platform/infra-tester"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -12,8 +12,8 @@ resource "aws_ecr_repository" "platform" {
   }
 }
 
-resource "aws_ecr_repository_policy" "platform_policy" {
-  repository = aws_ecr_repository.platform.name
+resource "aws_ecr_repository_policy" "platform_infra_tester_policy" {
+  repository = aws_ecr_repository.platform_infra_tester.name
 
   policy = <<EOF
 {
@@ -38,8 +38,8 @@ resource "aws_ecr_repository_policy" "platform_policy" {
 EOF
 }
 
-resource "aws_iam_user_policy" "platform_ecr_rw" {
-  name = "platform_ecr_rw"
+resource "aws_iam_user_policy" "platform_ecr_authorization" {
+  name = "platform_ecr_authorization"
   user = aws_iam_user.platform_docker_user.name
 
   policy = <<EOF
@@ -51,7 +51,7 @@ resource "aws_iam_user_policy" "platform_ecr_rw" {
         "ecr:GetAuthorizationToken"
       ],
       "Effect": "Allow",
-      "Resource": [ "${aws_ecr_repository.platform.arn}" ]
+      "Resource": [ "*" ]
     }
   ]
 }
@@ -68,7 +68,7 @@ resource "aws_iam_access_key" "platform_docker_user_key" {
 }
 
 output "aws_ecr_url" {
-  value = aws_ecr_repository.platform.repository_url
+  value = aws_ecr_repository.platform_infra_tester.repository_url
 }
 
 output "aws_iam_accesskeyid" {
