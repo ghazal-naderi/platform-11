@@ -1,11 +1,6 @@
-repos:
-   - name: platform
-     github: 11FSConsulting/platform
+packages:
+   - name: k8s/kafka
+     ref: af7c8cd609a23db2cf941f08fec8cb35426e0b5c
+     path: structs/k8s/kafka
+   - name: terraform/aws-ecr
      ref: tidy_up_and_build_sh
-     packages:
-       - type: k8s
-         name: redis
-       - type: k8s
-         name: kafka
-       - type: terraform
-         name: aws-ecs
