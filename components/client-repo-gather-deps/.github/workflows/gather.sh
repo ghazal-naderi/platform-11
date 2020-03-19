@@ -13,7 +13,7 @@ render_package() {
             git clone -c advice.detachedHead=false --quiet --progress "https://${GITHUB_SECRET_TOKEN}@github.com/11FSConsulting/platform.git" "temp/${pname}"
             (cd "temp/${pname}" && git checkout "${pref}")
             rm -rf "temp/${pname}/.git"
-            (cd "temp/${pname}" && LINT=no ./build.sh) #docker run -e LINT=no -v "$(pwd):/workspace" -t platform/infra-tester)
+            (cd "temp/${pname}" && docker run -e LINT=no -v "$(pwd):/workspace" -t platform/infra-tester)
             if [[ "${path}" =~ k8s/.* ]]; then
                 git rm --cached "${path}.yaml" || mkdir -p "$(echo "${path}" | cut -d'/' -f1)" 
                 cp -r "temp/${pname}/pkg/${pname}"* "${path}.yaml"
