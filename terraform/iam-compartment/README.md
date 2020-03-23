@@ -1,6 +1,6 @@
 # Oracle Cloud Infrastructure Compartment Terraform Module
 
-This [Terraform module](https://www.terraform.io/docs/modules/index.html) allows an [Oracle Cloud Infrastructure  compartment](https://docs.cloud.oracle.com/iaas/Content/Identity/Tasks/managingcompartments.htm) to be used in either read-only mode or read/write mode. You can switch between the two modes by setting `compartment_create` to either true (read/write) or false (read-only).
+This [Terraform module](https://www.terraform.io/docs/modules/index.html) allows an [Oracle Cloud Infrastructure  compartment](https://docs.cloud.oracle.com/iaas/Content/Identity/Tasks/managingcompartments.htm) to be used in either read-only mode or read/write mode.
 
 ```hcl
 module "iam_compartment" {
@@ -8,7 +8,6 @@ module "iam_compartment" {
   tenancy_ocid            = "${var.tenancy_ocid}"
   compartment_name        = "tf_example_compartment"
   compartment_description = "compartment created by terraform"
-  compartment_create      = false
 }
 ```
 
