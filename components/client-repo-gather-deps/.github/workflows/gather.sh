@@ -1,7 +1,7 @@
 #!/bin/bash -x 
 set -eu -o pipefail
 COUNT=$(( $(./yq r manifest.yaml --length packages) - 1 ))
-rm -rf temp/ || mkdir temp/
+sudo rm -rf temp/ || mkdir temp/
 git config user.email "bot@11fs.com"
 git config user.name "11:FS Bot"
 render_package() {
@@ -9,10 +9,10 @@ render_package() {
             local pref=${2}
             local path=${3}
             mkdir -p "temp/${pname}"
-            rm -rf "${path}"
+            sudo rm -rf "${path}"
             git clone -c advice.detachedHead=false --quiet --progress "https://${GITHUB_SECRET_TOKEN}@github.com/11FSConsulting/platform.git" "temp/${pname}"
             (cd "temp/${pname}" && git checkout "${pref}")
-            rm -rf "temp/${pname}/.git"
+            sudo rm -rf "temp/${pname}/.git"
             (cd "temp/${pname}" && docker run -e LINT=no -v "$(pwd):/workspace" -t platform/infra-tester)
             if [[ "${path}" =~ k8s/.* ]]; then
                 git rm -f "${path}.yaml" || mkdir -p "$(echo "${path}" | rev | cut -d'/' -f2- | rev)" 
@@ -23,7 +23,7 @@ render_package() {
               cp -r "temp/${pname}/pkg/${pname}/" "${path}"
               git add "${path}"
             fi
-            rm -rf "temp/${pname}"
+            sudo rm -rf "temp/${pname}"
 }
 
 for package in $(seq 0 "${COUNT}"); do 
