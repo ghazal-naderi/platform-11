@@ -15,7 +15,7 @@ render_package() {
             rm -rf "temp/${pname}/.git"
             (cd "temp/${pname}" && docker run -e LINT=no -v "$(pwd):/workspace" -t platform/infra-tester)
             if [[ "${path}" =~ k8s/.* ]]; then
-                git rm --cached "${path}.yaml" || mkdir -p "$(echo "${path}" | cut -d'/' -f1)" 
+                git rm --cached "${path}.yaml" || mkdir -p "$(echo "${path}" | rev | cut -d'/' -f2- | rev)" 
                 cp -r "temp/${pname}/pkg/${pname}"* "${path}.yaml"
                 git add "${path}.yaml"
             else
