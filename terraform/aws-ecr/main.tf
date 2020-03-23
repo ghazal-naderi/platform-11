@@ -12,7 +12,7 @@ resource "aws_ecr_repository" "platform_infra_tester" {
   }
 }
 
-resource "aws_ecr_repository_policy" "platform_infra_tester_rw_policy" {
+resource "aws_ecr_repository_policy" "platform_infra_tester_policy" {
   repository = aws_ecr_repository.platform_infra_tester.name
 
   policy = <<EOF
@@ -20,7 +20,17 @@ resource "aws_ecr_repository_policy" "platform_infra_tester_rw_policy" {
     "Version": "2008-10-17",
     "Statement": [
         {
-            "Sid": "Allow IAM access for ECR user",
+            "Sid": "Allow IAM access for ECR RO",
+            "Effect": "Allow",
+            "Principal": { "AWS": "${aws_iam_user.platform_docker_user_pull.arn}" },
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability"
+            ]
+        },
+        {
+            "Sid": "Allow IAM access for ECR RW",
             "Effect": "Allow",
             "Principal": { "AWS": "${aws_iam_user.platform_docker_user_push.arn}" },
             "Action": [
@@ -31,28 +41,6 @@ resource "aws_ecr_repository_policy" "platform_infra_tester_rw_policy" {
                 "ecr:InitiateLayerUpload",
                 "ecr:UploadLayerPart",
                 "ecr:CompleteLayerUpload"
-            ]
-        }
-    ]
-}
-EOF
-}
-
-resource "aws_ecr_repository_policy" "platform_infra_tester_ro_policy" {
-  repository = aws_ecr_repository.platform_infra_tester.name
-
-  policy = <<EOF
-{
-    "Version": "2008-10-17",
-    "Statement": [
-        {
-            "Sid": "Allow IAM access for ECR user",
-            "Effect": "Allow",
-            "Principal": { "AWS": "${aws_iam_user.platform_docker_user_pull.arn}" },
-            "Action": [
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:BatchGetImage",
-                "ecr:BatchCheckLayerAvailability"
             ]
         }
     ]
