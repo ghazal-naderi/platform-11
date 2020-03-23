@@ -8,6 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: Login to ECR
+        uses: jwalton/gh-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
+          region: eu-west-2
       - name: Pull infra-tester from ECR
         uses: jwalton/gh-ecr-push@v1
         with:
