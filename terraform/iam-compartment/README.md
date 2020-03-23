@@ -18,8 +18,7 @@ Argument | Description
 --- | ---
 tenancy_ocid | (Required) Unique identifier (OCID) of the tenancy.
 compartment_name | (Required) The name you assign to the compartment. The name must be unique across all compartments in a given tenancy.
-compartment_description | (Required if compartment_create is true.) Description of the compartment. You can edit the description.
-compartment_create | (Optional)  Specifies whether the module should create a compartment. If true, the compartment will be managed by the module. In this case, the user must have permission to create the compartment. If false, compartment data will be returned about any existing compartments. If no compartment is found, an empty string is returned for the compartment ID. Default value is true.
+compartment_description | (Required) Description of the compartment. You can edit the description.
 
 You can find the other parameters in [variables.tf](https://github.com/oracle-terraform-modules/terraform-oci-iam/blob/master/modules/iam-compartment/variables.tf).
 
