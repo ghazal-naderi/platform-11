@@ -15,7 +15,8 @@ render_package() {
             sudo rm -rf "temp/${pname}/.git"
             (cd "temp/${pname}" && docker run -e LINT=no -v "$(pwd):/workspace" -t platform/infra-tester)
             if [[ "${path}" =~ k8s/.* ]]; then
-                git rm -f "${path}.yaml" || mkdir -p "$(echo "${path}" | rev | cut -d'/' -f2- | rev)" 
+                git rm -f "${path}.yaml" || echo "path not found" 
+                mkdir -p "$(echo "${path}" | rev | cut -d'/' -f2- | rev)" || echo "mkdir didn't work" 
                 cp -r "temp/${pname}/pkg/${pname}"* "${path}.yaml"
                 git add "${path}.yaml"
             else
