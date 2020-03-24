@@ -1,7 +1,7 @@
 // Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
 
 output "user_id" {
-  value = "${var.user_create ? element(concat(oci_identity_user.this.*.id, list("")), 0) : lookup(local.user_ids[0], "id") }"
+  value = element(concat(oci_identity_user.this.*.id, list("")), 0)
 }
 
 output "user_name" {
