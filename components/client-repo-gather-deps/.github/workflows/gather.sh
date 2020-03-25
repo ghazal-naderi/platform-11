@@ -9,7 +9,6 @@ render_package() {
             local pref=${2}
             local path=${3}
             mkdir -p "temp/${pname}"
-            sudo rm -rf "${path}"
             git clone -c advice.detachedHead=false --quiet --progress "https://${GITHUB_SECRET_TOKEN}@github.com/11FSConsulting/platform.git" "temp/${pname}"
             (cd "temp/${pname}" && git checkout "${pref}")
             sudo rm -rf "temp/${pname}/.git"
@@ -20,6 +19,7 @@ render_package() {
                 cp -r "temp/${pname}/pkg/${pname}"* "${path}.yaml"
                 git add "${path}.yaml"
             else
+              path="${path}/$(echo "${pname}" | rev | cut -d'/' -f1 | rev)"
               git rm -r -f "${path}" || mkdir -p "${path}"
               cp -r "temp/${pname}/pkg/${pname}/" "${path}"
               git add "${path}"
