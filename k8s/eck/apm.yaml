@@ -1,52 +1,22 @@
----
-apiVersion: apm.k8s.elastic.co/v1alpha1
+apiVersion: apm.k8s.elastic.co/v1
 kind: ApmServer
 metadata:
-  name: eck
+  name: apm
   namespace: eck
 spec:
-  version: 7.3.2
-  nodeCount: 2
-  config:
-    rum:
-      enabled: true
-      allow_origins:
-      - '*.example.com'
-    setup.template.name: "apm-%{[observer.version]}"
-    setup.template.pattern: "apm-%{[observer.version]}-*"
-    output:
-      elasticsearch:
-        indices:
-        - index: "apm-%{[observer.version]}-sourcemap"
-          when.contains:
-            processor.event: "sourcemap"
-        - index: "apm-%{[observer.version]}-error-%{+yyyy.MM.dd}"
-          when.contains:
-            processor.event: "error"
-        - index: "apm-%{[observer.version]}-transaction-%{+yyyy.MM.dd}"
-          when.contains:
-            processor.event: "transaction"
-        - index: "apm-%{[observer.version]}-span-%{+yyyy.MM.dd}"
-          when.contains:
-            processor.event: "span"
-        - index: "apm-%{[observer.version]}-metric-%{+yyyy.MM.dd}"
-          when.contains:
-            processor.event: "metric"
-        - index: "apm-%{[observer.version]}-onboarding-%{+yyyy.MM.dd}"
-          when.contains:
-            processor.event: "onboarding"
+  version: 7.6.2
+  count: 1
   elasticsearchRef:
-    name: eck
+    name: elasticsearch
   http:
     tls:
       certificate:
         secretName: apm-tls-secret
-
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: eck-apm
+  name: apm
   namespace: eck
   annotations:
     kubernetes.io/ingress.class: "nginx-external"
@@ -62,14 +32,13 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: eck-apm-http
+          serviceName: apm-http
           servicePort: 8200
-
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: eck-apm
+  name: apm
   namespace: eck
 spec:
   secretName: apm-tls-secret
@@ -79,9 +48,3 @@ spec:
   commonName: apm.example.com
   dnsNames:
   - apm.example.com
-  acme:
-    config:
-    - http01:
-        ingressClass: nginx-external
-      domains:
-      - apm.example.com

@@ -1,24 +1,22 @@
----
-apiVersion: kibana.k8s.elastic.co/v1alpha1
+apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
-  name: eck
+  name: kibana
   namespace: eck
 spec:
-  version: 7.3.2
-  nodeCount: 1
+  version: 7.6.2
+  count: 1
   elasticsearchRef:
-    name: eck
+    name: elasticsearch
   http:
     tls:
       certificate:
         secretName: kibana-tls-secret
-
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: eck-kibana
+  name: kibana
   namespace: eck
   annotations:
     kubernetes.io/ingress.class: "nginx-external"
@@ -35,14 +33,14 @@ spec:
         paths:
           - path: /
             backend:
-              serviceName: eck-kb-http
+              serviceName: kb-http
               servicePort: 5601
 
 ---
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: eck-kibana
+  name: kibana
   namespace: eck
 spec:
   secretName: kibana-tls-secret
@@ -52,9 +50,3 @@ spec:
   commonName: kibana.example.com
   dnsNames:
     - kibana.example.com
-  acme:
-    config:
-      - http01:
-          ingressClass: nginx-external
-        domains:
-          - kibana.example.com
