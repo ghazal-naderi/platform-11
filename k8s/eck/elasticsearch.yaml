@@ -43,7 +43,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: elasticsearch-http
+          serviceName: elasticsearch-es-http
           servicePort: 9200
 ---
 apiVersion: cert-manager.io/v1alpha2

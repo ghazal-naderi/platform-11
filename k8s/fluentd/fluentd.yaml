@@ -1,52 +1,40 @@
-# source: https://raw.githubusercontent.com/kubernetes/kubernetes/
-# 376a2cb3449fe7d8c452f917630376e1eef2700a/cluster/addons/fluentd-elasticsearch/fluentd-es-ds.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: fluentd-es
+  name: fluentd
   namespace: kube-system
-  labels:
-    k8s-app: fluentd-es
-    addonmanager.kubernetes.io/mode: Reconcile
 
 ---
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: fluentd-es
-  labels:
-    k8s-app: fluentd-es
-    addonmanager.kubernetes.io/mode: Reconcile
+  name: fluentd
+  namespace: kube-system
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - "namespaces"
-      - "pods"
-    verbs:
-      - "get"
-      - "watch"
-      - "list"
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
 
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: fluentd-es
-  labels:
-    k8s-app: fluentd-es
-    addonmanager.kubernetes.io/mode: Reconcile
-subjects:
-  - kind: ServiceAccount
-    name: fluentd-es
-    namespace: kube-system
-    apiGroup: ""
+  name: fluentd
 roleRef:
   kind: ClusterRole
-  name: fluentd-es
-  apiGroup: ""
-
+  name: fluentd
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: fluentd
+  namespace: kube-system
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -54,74 +42,90 @@ metadata:
   name: fluentd
   namespace: kube-system
   labels:
-    k8s-app: fluentd-es
-    version: v2.6.0
-    addonmanager.kubernetes.io/mode: Reconcile
-  annotations:
-    reloader.stakater.com/auto: "true"
+    k8s-app: fluentd-logging
+    version: v1
 spec:
   selector:
     matchLabels:
-      k8s-app: fluentd-es
-      version: v2.6.0
-  updateStrategy:
-    type: RollingUpdate
+      k8s-app: fluentd-logging
+      version: v1
   template:
     metadata:
       labels:
-        k8s-app: fluentd-es
-        version: v2.6.0
-      # This annotation ensures that fluentd does not get evicted if the node
-      # supports critical pod annotation based priority scheme.
-      # Note that this does not guarantee admission on the nodes (#40573).
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-        seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
+        k8s-app: fluentd-logging
+        version: v1
     spec:
-      priorityClassName: system-node-critical
-      serviceAccountName: fluentd-es
+      serviceAccount: fluentd
+      serviceAccountName: fluentd
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       containers:
-        - name: fluentd-es
-          # updated as per https://github.com/kubernetes/kubernetes/issues/78684
-          image: quay.io/fluentd_elasticsearch/fluentd:v2.6.0
-          env:
-            - name: FLUENTD_ARGS
-              value: --no-supervisor -q
-            - name: ELASTIC_USER
-              value: elastic
-            - name: ELASTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: eck-es-elastic-user
-                  key: elastic
-          resources:
-            limits:
-              memory: 500Mi
-            requests:
-              cpu: 100m
-              memory: 200Mi
-          volumeMounts:
-            - name: varlog
-              mountPath: /var/log
-            - name: varlibdockercontainers
-              mountPath: /var/lib/docker/containers
-              readOnly: true
-            - name: config-volume
-              mountPath: /etc/fluent/config.d
-            - name: elastic-cert
-              mountPath: "/etc/fluent/elastic"
-              readOnly: true
+      - name: fluentd
+        image: fluent/fluentd-kubernetes-daemonset:v1.9.3-debian-elasticsearch7-1.0
+        env:
+          - name: FLUENTD_OPTS
+            value: "--no-supervisor -q"
+          - name: FLUENT_ELASTICSEARCH_HOST
+            value: "elasticsearch-es-http.eck.svc"
+          - name: FLUENT_ELASTICSEARCH_PORT
+            value: "9200"
+          - name: FLUENT_ELASTICSEARCH_SCHEME
+            value: "https"
+          # Option to configure elasticsearch plugin with self signed certs
+          # ================================================================
+          - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
+            value: "false"
+          - name: FLUENT_ELASTICSEARCH_SSL_CA_FILE
+            value: "/fluentd/etc/elastic/ca.crt"
+          # Option to configure elasticsearch plugin with tls
+          # ================================================================
+          - name: FLUENT_ELASTICSEARCH_SSL_VERSION
+            value: "TLSv1_2"
+          # X-Pack Authentication
+          # =====================
+          - name: FLUENT_ELASTICSEARCH_USER
+            value: "elastic"
+          - name: FLUENT_ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: elasticsearch-es-elastic-user
+                key: elastic
+          - name: FLUENT_ELASTICSEARCH_ILM
+            value: "true"
+          - name: FLUENT_ELASTICSEARCH_ILM_POLICY
+            value: |-
+                { "policy": { "phases": { "hot": { "actions": { "rollover": { "max_age": "1d", "max_size": "5gb" }, "set_priority": { "priority": 10 } } }, "warm": { "actions": { "allocate": { "include": {}, "exclude": {}, "require": { "data": "warm" } }, "set_priority": { "priority":20 } } }, "delete": { "min_age": "90d", "actions": { "delete": {} } } } } }
+          - name: FLUENT_ELASTICSEARCH_ILM_POLICY_OVERWRITE
+            value: "true"
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: config-volume
+          mountPath: /fluentd/etc
+        - name: elastic-cert
+          mountPath: /fluentd/etc/elastic
+          readOnly: true
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: varlog
-          hostPath:
-            path: /var/log
-        - name: varlibdockercontainers
-          hostPath:
-            path: /var/lib/docker/containers
-        - name: config-volume
-          configMap:
-            name: fluentd-es-config-v0.2.0
-        - name: elastic-cert
-          secret:
-            secretName: eck-es-http-certs-public
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: config-volume
+        configMap:
+          name: fluentd-config
+      - name: elastic-cert
+        secret:
+          secretName: elasticsearch-es-http-certs-public

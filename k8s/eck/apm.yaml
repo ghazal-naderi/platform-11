@@ -8,6 +8,72 @@ spec:
   count: 1
   elasticsearchRef:
     name: elasticsearch
+    rum:
+      allow_origins:
+      - '*.example.com'
+    ilm:
+      enabled: "auto"
+      setup:
+        mapping:
+        - event_type: "error"
+          policy_name: "apm-error-span-policy"
+        - event_type: "span"
+          policy_name: "apm-error-span-policy"
+        - event_type: "transaction"
+          policy_name: "apm-transaction-metric-policy"
+        - event_type: "metric"
+          policy_name: "apm-transaction-metric-policy"
+        enabled: "true"
+        overwrite: "true"
+      policies:
+        - name: "apm-error-span-policy"
+          policy:
+            phases:
+              hot:
+                actions:
+                  rollover:
+                    max_size: "50gb"
+                    max_age: "1d"
+                  set_priority:
+                    priority: 100
+              warm:
+                min_age: "7d"
+                actions:
+                  set_priority:
+                    priority: 50
+                  readonly: {}
+              cold:
+                min_age: "30d"
+                actions:
+                  set_priority:
+                    priority: 0
+                  freeze: {}
+              delete:
+                min_age: "60d"
+                actions:
+                  delete: {}
+        - name: "apm-transaction-metric-policy"
+          policy:
+            phases:
+              hot:
+                actions:
+                  rollover:
+                    max_size: "50gb"
+                    max_age: "30d"
+                  set_priority:
+                    priority: 100
+              warm:
+                min_age: "60d"
+                actions:
+                  set_priority:
+                    priority: 50
+                  readonly: {}
+              cold:
+                min_age: "90d"
+                actions:
+                  set_priority:
+                    priority: 0
+                  freeze: {}
   http:
     tls:
       certificate:
@@ -32,7 +98,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: apm-http
+          serviceName: apm-apm-http
           servicePort: 8200
 ---
 apiVersion: cert-manager.io/v1alpha2

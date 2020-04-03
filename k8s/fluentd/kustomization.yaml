@@ -9,6 +9,5 @@ kind: Kustomization
 namespace: kube-system
 
 resources:
-  - secrets.yaml
   - configmap.yaml
   - fluentd.yaml
