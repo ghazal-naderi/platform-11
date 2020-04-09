@@ -1,10 +1,8 @@
 ---
 resources:
-- crds.yaml
-- namespace.yaml
-- nginx-ingress.yaml
-- external-dns.yaml
-- cert-manager.yaml
+- nginx-mandatory-0.30.0.yaml
 - issuer.yaml
-
-namespace: ingress
+- external-dns.yaml
+- service-l4.yaml
+patchesStrategicMerge:
+- patch-configmap-l4.yaml
