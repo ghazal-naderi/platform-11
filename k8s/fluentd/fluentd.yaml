@@ -75,7 +75,7 @@ spec:
           # Option to configure elasticsearch plugin with self signed certs
           # ================================================================
           - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
-            value: "false"
+            value: "true"
           - name: FLUENT_ELASTICSEARCH_SSL_CA_FILE
             value: "/fluentd/etc/elastic/ca.crt"
           # Option to configure elasticsearch plugin with tls
@@ -93,12 +93,8 @@ spec:
                 key: elastic
           - name: FLUENT_ELASTICSEARCH_ILM
             value: "true"
-          - name: FLUENT_ELASTICSEARCH_TEMPLATE_NAME
-            value: "logstash"
-          - name: FLUENT_ELASTICSEARCH_TEMPLATE_OVERWRITE
+          - name: FLUENT_ELASTICSEARCH_ROLLOVER_INDEX
             value: "true"
-          - name: FLUENT_ELASTICSEARCH_TEMPLATE_FILE
-            value: "/fluentd/etc/template.json"
           - name: FLUENT_ELASTICSEARCH_ILM_POLICY_ID
             value: "logstash-policy"
           - name: FLUENT_ELASTICSEARCH_ILM_POLICY
@@ -108,10 +104,10 @@ spec:
             value: "true"
         resources:
           limits:
-            memory: 200Mi
+            memory: 256Mi
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: 128m
+            memory: 256Mi
         volumeMounts:
         - name: varlog
           mountPath: /var/log
