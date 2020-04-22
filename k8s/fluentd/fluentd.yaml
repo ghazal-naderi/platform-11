@@ -106,6 +106,7 @@ spec:
             value: "true"
         resources:
           limits:
+            cpu: 300m
             memory: 256Mi
           requests:
             cpu: 128m
