@@ -1,8 +1,0 @@
----
-resources:
-- nginx-mandatory-0.30.0.yaml
-- issuer.yaml
-- external-dns.yaml
-- service-l4.yaml
-patchesStrategicMerge:
-- patch-configmap-l4.yaml
