@@ -148,7 +148,7 @@ metadata:
     release: o2p
   name: o2p-oauth2-proxy
   annotations:
-    cert-manager.io/issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/ingress.class: nginx-external
 spec:
   rules:
