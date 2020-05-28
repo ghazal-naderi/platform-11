@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: cron-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: gitrevision
+    value: master
+  - name: gitrepositoryurl
+    value: https://github.com/AvaBank/infra

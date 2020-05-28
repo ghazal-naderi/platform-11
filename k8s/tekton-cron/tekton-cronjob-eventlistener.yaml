@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: cron-listener
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-triggers-cron-sa
+  triggers:
+    - name: cron-trig
+      bindings:
+      - name: cron-binding
+      template:
+        name: infra-cd

@@ -1,0 +1,19 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+  namespace: tekton-pipelines
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            args:
+              - wget
+              - --spider
+              - el-cron-listener.tekton-pipelines.svc.cluster.local:8080
+          restartPolicy: Never
