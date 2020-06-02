@@ -6,7 +6,7 @@ When creating the cluster, ensure that you set `KOPS_STATE_STORE=${s3_bucket}` a
 ```
 export KOPS_STATE_STORE=s3://fakebank-stage-state
 export KOPS_DNS_ZONE=Z00979322Q0EUOGTXWWA2
-kops create cluster fakebank-stage.enva.gen6bk.com \
+kops create cluster fakebank.stage.env.fake.com \
     --state "${KOPS_STATE_STORE}" \
     --zones "us-east-1a,us-east-1b,us-east-1c" \
     --master-zones "us-east-1a,us-east-1b,us-east-1c" \
@@ -28,8 +28,14 @@ spec:
   kubeDNS:
     provider: CoreDNS
 ```
+For metrics monitoring, we should edit in order to add:
+```
+kubelet:
+    authenticationTokenWebhook: true
+    authorizationMode: Webhook
+```
 
-If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should make sure to add `additionalPolicies` sufficient to give nodes and masters the ability to pull their configurations from the bucket and therefore to decrypt the contents. The policy to do so is below and can be applied via `kops edit cluster ${CLUSTER_NAME}`. Be sure to change the `arn` values to your own for `arn:aws:kms`, `arn:aws:secretsmanager`, `arn:aws:autoscaling` and `arn:aws:r53`.
+If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should make sure to add `additionalPolicies` sufficient to give nodes and masters the ability to pull their configurations from the bucket and therefore to decrypt the contents. The policy to do so is below and can be applied via `kops edit cluster ${CLUSTER_NAME}`. Be sure to change the `arn` values to your own for `arn:aws:kms` (S3 bucket KMS key for state storage), `arn:aws:secretsmanager` (k8s will be able to access all secrets by default with this policy), `arn:aws:autoscaling` (to point to your own ASG) and `arn:aws:r53` (to point to your cluster's zone ID).
 
 ```
 spec:
@@ -95,7 +101,7 @@ spec:
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
-            "Resource": [ "arn:aws:autoscaling:us-east-1:850315125037:autoScalingGroup:6c1fe66b-cf23-46a9-b285-db285d9cacf6:autoScalingGroupName/nodes.fakebank-stage.enva.gen6bk.com" ]
+            "Resource": [ "arn:aws:autoscaling:us-east-1:850315125037:autoScalingGroup:6c1fe66b-cf23-46a9-b285-db285d9cacf6:autoScalingGroupName/nodes.fakebank-stage.env.fake.com" ]
         }
       ]
     node: |

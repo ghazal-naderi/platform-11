@@ -7,25 +7,21 @@ variable "region" {
   default = "us-east-1"
 }
 
-variable "stack_name" {
-  default = "mino-stage"
-}
-
 variable "environment" {
-  default = "stage"
+  default = "dev"
 }
 
 variable "project" {
-  default = "gen6"
+  default = "fake"
 }
 
 variable "zone_name" {
-  default = "mino-stage.enva.gen6bk.com"
+  default = "us-east-1.dev.fakebank.com"
 }
 
 resource "aws_iam_user" "kops" {
-  name = "kops"
-  path = "/system/"
+   name = "${var.region}-${var.environment}-${var.project}-kops"
+   path = "/system/${var.region}/${var.environment}/${var.project}/"
 }
 
 resource "aws_iam_access_key" "kops" {
@@ -77,13 +73,13 @@ resource "aws_s3_bucket_public_access_block" "bucket-bolock" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "${var.stack_name}-state"
+  bucket = "${var.region}-${var.environment}-${var.project}-state"
   acl    = "private"
   versioning {
     enabled = true
   }
   tags = {
-    Name        = "State store for ${var.stack_name}"
+    Name        = "State store for ${var.environment} env for ${var.project} in ${var.region}"
     Environment = var.environment
     Project     = var.project
   }
@@ -98,9 +94,9 @@ resource "aws_s3_bucket" "bucket" {
 }
 
 resource "aws_iam_policy" "bucket" {
-  name        = "${var.stack_name}-state-bucket-policy"
+  name        = "${var.region}-${var.environment}-${var.project}-state-bucket-policy"
   path        = "/"
-  description = "Policy for Terraform/kops access to bucket ${var.stack_name}"
+  description = "Policy for Terraform/kops access to bucket ${aws_s3_bucket.bucket.id}"
   policy      = <<EOF
 {
   "Version": "2012-10-17",
@@ -144,7 +140,7 @@ resource "aws_route53_zone" "zone" {
 
 locals {
   zone_name_list   = split(".", var.zone_name)
-  parent_zone_name = join(".", slice(local.zone_name_list, 1, length(local.zone_name_list)))
+  parent_zone_name = join(".", slice(local.zone_name_list, 1, length(local.zone_name_list))) # dev.fakebank.com 
 }
 
 data "aws_route53_zone" "parent_zone" {

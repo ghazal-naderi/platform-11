@@ -22,7 +22,7 @@ resource "aws_subnet" "db_subnets" {
     availability_zone = each.value.az
 
     tags = {
-      Name = "db-${each.value.az}-subnet"
+      Name = "${var.name}-db-${each.value.az}-subnet"
     }
 }
 
