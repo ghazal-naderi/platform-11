@@ -1,0 +1,40 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: 'INSERT_SLACK_WEBHOOK_URL_HERE'
+route:
+  group_by: ['alertname', 'app', 'job']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 1h
+  receiver: 'slack-notifications'
+  routes:
+  - match:
+      alertname: Watchdog
+    receiver: 'null'
+  - match:
+      severity: critical
+    receiver: 'slack-notifications'
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'app', 'job']
+receivers:
+- name: 'null'
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: 'slack-notifications-test'
+    send_resolved: true
+    color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+    title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Prometheus Event Notification'
+    pretext: '{{ .CommonAnnotations.summary }}'
+    text: |-
+       {{ range .Alerts }}
+         {{- if .Annotations.summary }}*Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`{{- end }}
+         *Description:* {{ .Annotations.description }}{{ .Annotations.message }}
+         *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>{{ if or .Annotations.runbook .Annotations.runbook_url }} *Runbook:* <https://github.com/11FSConsulting/platform/tree/master/docs/ALERTS.md#{{ .Labels.alertname }}|:spiral_note_pad:>{{ end }}
+         *Details:*
+         {{ range .Labels.SortedPairs }} - *{{ .Name }}:* `{{ .Value }}`
+         {{ end }}
+       {{ end }}

@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: eck
+  namespace: eck
+spec:
+  endpoints:
+  - port: http
+  jobLabel: job
+  selector:
+    matchLabels:
+      app: elasticsearch-exporter

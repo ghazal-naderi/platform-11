@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kafka
+  namespace: kafka
+spec:
+  endpoints:
+  - port: prometheus
+  jobLabel: job
+  selector:
+    matchLabels:
+      strimzi.io/name: cluster-kafka-exporter

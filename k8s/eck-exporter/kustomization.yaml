@@ -1,0 +1,4 @@
+---
+namespace: eck
+resources:
+  - eck-exporter.yaml

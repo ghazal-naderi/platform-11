@@ -59,6 +59,7 @@ data:
            queue_limit_length "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_QUEUE_LIMIT_LENGTH'] || '32'}"
            retry_max_interval "#{ENV['FLUENT_ELASTICSEARCH_BUFFER_RETRY_MAX_INTERVAL'] || '30'}"
            retry_forever true
+           overflow_action drop_oldest_chunk
          </buffer>
       </match>
   kubernetes.conf: |-
