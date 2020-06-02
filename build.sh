@@ -13,7 +13,9 @@ for folder in k8s/*/; do
     file_name="$(echo "${folder}" | cut -d'/' -f2)"
     if [ -d "${folder}/chart" ]; then
         echo "INFO: Detected ${file_name} as containing a Helm chart, rendering..."
-        helm template "${folder}/chart" > "k8s/${file_name}/${file_name}.yaml" && echo "✅ ${file_name}: k8s Helm passes"
+        namespace="${file_name}" # safe default
+        release="platform" # safe default
+        helm template -n "${namespace}" "${release}" "${folder}/chart" > "k8s/${file_name}/${file_name}.yaml" && echo "✅ ${file_name}: k8s Helm passes"
     fi
     if [ -f "${folder}/kustomization.yaml" ]; then
         echo "INFO: Detected ${file_name} as containing Kustomize, templating..."
