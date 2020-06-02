@@ -1,0 +1,51 @@
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: stream
+spec:
+  strategy: streaming
+  collector:
+    maxReplicas: 5
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    options:
+      kafka: 
+        producer:
+          topic: jaeger-spans
+          brokers: cluster-kafka-brokers.kafka:9092
+  ingester:
+    maxReplicas: 8
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    options:
+      kafka: 
+        consumer:
+          topic: jaeger-spans
+          brokers: cluster-kafka-brokers.kafka:9092
+      ingester:
+        deadlockInterval: 5s 
+  storage:
+    type: elasticsearch
+    options:
+      es:
+        server-urls: https://elasticsearch-es-http.eck:9200
+        index-prefix: jaeger
+        tls:
+          ca: /es/certificates/ca.crt
+    secretName: jaeger-es-secret
+  ui:
+    options:
+      dependencies:
+        menuEnabled: true
+  volumeMounts:
+  - name: certificates
+    mountPath: /es/certificates
+    readOnly: true
+  volumes:
+  - name: certificates
+    secret:
+      secretName: elasticsearch-es-http-certs-public
