@@ -12,26 +12,22 @@ spec:
       - name: kustomizeDir
         type: string
         description: Path to the kustomize dir to apply relative to repo root
-        default: k8s/production
+        default: k8s/dev
   steps:
     - name: k8s-dry-run
-      image: lachlanevenson/k8s-kubectl:v1.17.2
+      image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest
       workingDir: /workspace/source
-      command: ["kubectl"]
+      command: ["/bin/ash"]
       args:
-        - "apply"
-        - "-k"
-        - $(inputs.params.kustomizeDir)
-        - "--dry-run"
+        - "-c"
+        - "kustomize build $(inputs.params.kustomizeDir) | kubectl apply -f - --dry-run"
     - name: k8s-apply
-      image: lachlanevenson/k8s-kubectl:v1.17.2
+      image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
       workingDir: /workspace/source
-      command: ["kubectl"]
+      command: ["/bin/ash"]
       args:
-        - "apply"
-        - "-k"
-        - $(inputs.params.kustomizeDir)
-
+        - "-c"
+        - "kustomize build $(inputs.params.kustomizeDir) | kubectl apply -f -"
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: Task

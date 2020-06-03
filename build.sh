@@ -20,7 +20,7 @@ for folder in k8s/*/; do
     if [ -f "${folder}/kustomization.yaml" ]; then
         echo "INFO: Detected ${file_name} as containing Kustomize, templating..."
         # Generate k8s YAML for future parsing
-        kubectl kustomize "${folder}" > "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s Kustomize passes"
+        kustomize build "${folder}" > "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s Kustomize passes"
     fi
     if [[ "${LINT}" == 'yes' ]]; then
       # KubEval check - we need to use git directly as @garethr hasn't updated the site yet
