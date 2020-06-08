@@ -2120,7 +2120,7 @@ spec:
         message: |
           Topic {{ $labels.topic }} has {{ $value }} under-replicated partition {{ $labels.partition }}
       expr: kafka_topic_partition_under_replicated_partition > 0
-      for: 10s
+      for: 60s
       labels:
         severity: warning
     - alert: TooLargeConsumerGroupLag
@@ -2128,16 +2128,16 @@ spec:
         message: |
           Consumer group {{ $labels.consumergroup}} lag is too big ({{ $value }}) on topic {{ $labels.topic }}/partition {{ $labels.partition }}
       expr: kafka_consumergroup_lag > 1000
-      for: 10s
+      for: 60s
       labels:
         severity: warning
     - alert: NoMessageForTooLong
       annotations:
         message: |
           There have been no messages in topic {{ $labels.topic}}/partition {{ $labels.partition }} for 10 minutes
-      expr: changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[10m])
+      expr: changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[30m])
         == 0
-      for: 10s
+      for: 30m
       labels:
         severity: warning
   - name: elasticsearch_alerts
@@ -2272,8 +2272,8 @@ spec:
         description: 'No new documents for 10 min!   VALUE = {{ $value }}   LABELS:
           {{ $labels }}'
         summary: Elasticsearch no new documents (instance {{ $labels.instance }})
-      expr: rate(elasticsearch_indices_docs{es_data_node="true"}[10m]) < 1
-      for: 10m
+      expr: rate(elasticsearch_indices_docs{es_data_node="true"}[40m]) < 1
+      for: 40m
       labels:
         severity: warning
     - alert: ElasticSearchDiskRunningFullIn24Hours

@@ -174,8 +174,8 @@
             "description": "No new documents for 10 min!   VALUE = {{ $value }}   LABELS: {{ $labels }}",
             "summary": "Elasticsearch no new documents (instance {{ $labels.instance }})"
           },
-          "expr": "rate(elasticsearch_indices_docs{es_data_node=\"true\"}[10m]) < 1",
-          "for": "10m",
+          "expr": "rate(elasticsearch_indices_docs{es_data_node=\"true\"}[40m]) < 1",
+          "for": "40m", 
           "labels": {
             "severity": "warning"
           },

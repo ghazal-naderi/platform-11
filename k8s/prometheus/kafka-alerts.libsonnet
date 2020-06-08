@@ -322,7 +322,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
         rules: [{
           alert: 'UnderReplicatedPartition',
           expr: 'kafka_topic_partition_under_replicated_partition > 0',
-          'for': '10s',
+          'for': '60s',
           labels: {
             severity: 'warning',
           },
@@ -334,7 +334,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
     },{
           alert: 'TooLargeConsumerGroupLag',
           expr: 'kafka_consumergroup_lag > 1000',
-          'for': '10s',
+          'for': '60s',
           labels: {
             severity: 'warning',
           },
@@ -345,8 +345,8 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
     },{
           alert: 'NoMessageForTooLong',
-          expr: 'changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[10m]) == 0',
-          'for': '10s',
+          expr: 'changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[30m]) == 0',
+          'for': '30m',
           labels: {
             severity: 'warning',
           },
