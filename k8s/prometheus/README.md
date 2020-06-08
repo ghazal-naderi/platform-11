@@ -63,6 +63,10 @@ spec:
   - host: grafana.example.com
     http:
       paths:
+      - path: /avatar/ # https://grafana.com/blog/2020/06/03/grafana-6.7.4-and-7.0.2-released-with-important-security-fix/
+        backend:
+          serviceName: does-not-exist
+          servicePort: 80
       - path: /
         backend:
           serviceName: grafana
