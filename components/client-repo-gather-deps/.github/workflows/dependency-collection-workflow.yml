@@ -27,5 +27,5 @@ jobs:
         run: curl -Lo yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x yq 
       - name: Gather dependencies from manifest.yaml and commit them to the repo 
         env:
-          GITHUB_SECRET_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+          GITHUB_SECRET_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
         run: .github/workflows/gather.sh

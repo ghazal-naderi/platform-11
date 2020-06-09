@@ -2,7 +2,7 @@
 ## `infra` repository
 1. If not done already, create a new `infra` Github repository on the client's Github accont
 2. Populate the `infra` repository with the Github action from [client-repo-gather-deps](https://github.com/11FSConsulting/platform/tree/master/components/client-repo-gather-deps)
-3. Setup the secrets `AWS_PLATFORM_ECR_ACCESS_KEY_ID`, `AWS_PLATFORM_ECR_SECRET_ACCESS_KEY` & `GITHUB_BOT_SECRET_TOKEN` on the repository.
+3. Setup the secrets `AWS_PLATFORM_ECR_ACCESS_KEY_ID`, `AWS_PLATFORM_ECR_SECRET_ACCESS_KEY` & `GH_BOT_SECRET_TOKEN` on the repository.
 ## Creating a Kubernetes cluster
 1. Create the directory `k8s/{env}`, with `{env}` representing one of the agreed environment names (eg. `int`, `qa`, `production`)
 2. Create the directory `terraform/{account}`, with `{account}` representing the AWS account name (eg. `dev`, `prod`)
