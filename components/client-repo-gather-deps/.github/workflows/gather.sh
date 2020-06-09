@@ -35,7 +35,7 @@ for package in $(seq 0 "${COUNT}"); do
     pref="${pref:-$defaultref}"
     path="$(./yq r manifest.yaml "packages[${package}].path")"
     prelease="$(./yq r manifest.yaml "packages[${package}].release")"
-    prelease="${prelease:platform}"
+    prelease="${prelease:=platform}"
     defaultpath="structs/${pname}"
     path="${path:-$defaultpath}"
     render_package "${pname}" "${pref}" "${path}" "${prelease}"
