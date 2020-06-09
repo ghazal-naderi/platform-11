@@ -8,12 +8,13 @@ render_package() {
             local pname=${1}
             local pref=${2}
             local path=${3}
+            local prelease=${4}
             mkdir -p "temp/${pname}"
             sudo rm -rf "${path}"
             git clone -c advice.detachedHead=false --quiet --progress "https://${GITHUB_SECRET_TOKEN}@github.com/11FSConsulting/platform.git" "temp/${pname}"
             (cd "temp/${pname}" && git checkout "${pref}")
             sudo rm -rf "temp/${pname}/.git"
-            (cd "temp/${pname}" && docker run -e LINT=no -v "$(pwd):/workspace" -t platform/infra-tester)
+            (cd "temp/${pname}" && docker run -e "RELEASE=${prelease}" -e "LINT=no" -v "$(pwd):/workspace" -t platform/infra-tester)
             if [[ "${path}" =~ k8s/.* ]]; then
                 git rm -f "${path}.yaml" || echo "path not found" 
                 mkdir -p "$(echo "${path}" | rev | cut -d'/' -f2- | rev)"  || echo "mkdir failed"
@@ -33,9 +34,11 @@ for package in $(seq 0 "${COUNT}"); do
     pref="$(./yq r manifest.yaml "packages[${package}].ref")"
     pref="${pref:-$defaultref}"
     path="$(./yq r manifest.yaml "packages[${package}].path")"
+    prelease="$(./yq r manifest.yaml "packages[${package}.release")"
+    prelease="${prelease:platform}"
     defaultpath="structs/${pname}"
     path="${path:-$defaultpath}"
-    render_package "${pname}" "${pref}" "${path}"
+    render_package "${pname}" "${pref}" "${path}" "${prelease}"
 done
 
 if git commit -m 'Vendor dependencies'; then

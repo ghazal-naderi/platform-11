@@ -1,5 +1,7 @@
 #!/bin/bash
 LINT="${LINT:=yes}"
+RELEASE="${RELEASE:=platform}" # safe default
+
 set -eu -o pipefail
 
 # Start checks
@@ -14,8 +16,7 @@ for folder in k8s/*/; do
     if [ -d "${folder}/chart" ]; then
         echo "INFO: Detected ${file_name} as containing a Helm chart, rendering..."
         namespace="${file_name}" # safe default
-        release="platform" # safe default
-        helm template -n "${namespace}" "${release}" "${folder}/chart" > "k8s/${file_name}/${file_name}.yaml" && echo "✅ ${file_name}: k8s Helm passes"
+        helm template -n "${namespace}" "${RELEASE}" "${folder}/chart" > "k8s/${file_name}/${file_name}.yaml" && echo "✅ ${file_name}: k8s Helm passes"
     fi
     if [ -f "${folder}/kustomization.yaml" ]; then
         echo "INFO: Detected ${file_name} as containing Kustomize, templating..."
