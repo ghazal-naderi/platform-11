@@ -35,10 +35,9 @@ kubelet:
     authorizationMode: Webhook
 ```
 
-If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should make sure to add `additionalPolicies` sufficient to give nodes and masters the ability to pull their configurations from the bucket and therefore to decrypt the contents. The policy to do so is below and can be applied via `kops edit cluster ${CLUSTER_NAME}`. Be sure to change the `arn` values to your own for `arn:aws:kms` (S3 bucket KMS key for state storage), `arn:aws:secretsmanager` (k8s will be able to access all secrets by default with this policy), `arn:aws:autoscaling` (to point to your own ASG) and `arn:aws:r53` (to point to your cluster's zone ID).
+If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should make sure to add `additionalPolicies` sufficient to give nodes and masters the ability to pull their configurations from the bucket and therefore to decrypt the contents. The policy to do so is below and can be applied via `kops edit cluster ${CLUSTER_NAME}`. Be sure to refer to the notes below on how to change the ARN values for your own infrastructure.
 
 ```
-spec:
   additionalPolicies:
     master: |
       [
@@ -53,7 +52,7 @@ spec:
             "kms:ReEncrypt*"
           ],
           "Resource": [
-            "arn:aws:kms:us-east-1:850315125037:key/4b0966b8-c474-4d00-9d5d-d785e4e324d6"
+            "<< SEE NOTE #1 BELOW >>"
           ]
         },
         {
@@ -64,7 +63,7 @@ spec:
                 "secretsmanager:DescribeSecret",
                 "secretsmanager:ListSecretVersionIds"
             ],
-            "Resource": "arn:aws:secretsmanager:*:850315125037:secret:*"
+            "Resource": "<< SEE NOTE #2 BELOW >>"
         },
         {
             "Effect": "Allow",
@@ -72,7 +71,7 @@ spec:
                 "route53:ChangeResourceRecordSets"
             ],
             "Resource": [
-                "arn:aws:route53:::hostedzone/Z00979322Q0EUOGTXWWA2"
+                "<< SEE NOTE #3 BELOW >>"
             ]
         },
         {
@@ -101,7 +100,7 @@ spec:
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
-            "Resource": [ "arn:aws:autoscaling:us-east-1:850315125037:autoScalingGroup:6c1fe66b-cf23-46a9-b285-db285d9cacf6:autoScalingGroupName/nodes.fakebank-stage.env.fake.com" ]
+            "Resource": [ "<< SEE NOTE #4 BELOW >>" ]
         }
       ]
     node: |
@@ -117,7 +116,7 @@ spec:
             "kms:ReEncrypt*"
           ],
           "Resource": [
-            "arn:aws:kms:us-east-1:850315125037:key/4b0966b8-c474-4d00-9d5d-d785e4e324d6"
+            "<< SEE NOTE #1 BELOW >>"
           ]
         },
         {
@@ -128,16 +127,13 @@ spec:
                 "secretsmanager:DescribeSecret",
                 "secretsmanager:ListSecretVersionIds"
             ],
-            "Resource": "arn:aws:secretsmanager:*:850315125037:secret:*"
+            "Resource": "<< SEE NOTE #2 BELOW >>"
         },
         {
             "Effect": "Allow",
             "Action": [
                 "route53:ChangeResourceRecordSets"
             ],
-            "Resource": [
-                "arn:aws:route53:::hostedzone/*"
-            ]
         },
         {
             "Effect": "Allow",
@@ -151,6 +147,12 @@ spec:
         }
       ]
 ```
+
+Notes:
+1. This is the KMS key used to encrypt/decrypt objects in your kops S3 bucket, to retrieve it from the Terraform `aws-kops-seed` state use the command `terraform show -json | jq -r '.values.root_module.child_modules|.[].resources|.[]|select(.address=="aws_kms_key.bucketenckey")|.values.arn'`
+2. This is the AWS SecretsManager ARN used to permit access to external secrets via AWSSM. To allow access to all secrets, use `arn:aws:secretsmanager:::secret:*` - be aware this will permit access to all AWS secrets across the account and other connected accounts. It is suggested to use something more granular such as a secret prefix here that is specific to a single environment.
+3. This is the AWS Route53 zone ID under which records will be created. Use the command `terraform show -json | jq -r '.values.root_module.child_modules|.[].resources|.[]|select(.address=="aws_route53_zone.zone")|.values.zone_id'` to extract this from Terraform `aws-kops-seed` state. 
+4. This is the autoscaling group that the master instances are able to control to scale-up and scale-down the cluster. It should refer to the nodes ASG ARN - use `arn:aws:autoscaling:::autoScalingGroup::autoScalingGroupName/nodes.fakebank.stage.env.fake.com` replacing `fakebank.stage.env.fake.com` with the FQDN of the zone used in step 3. 
 
 There are a few extra commands to run when the cluster is up, since we're using coredns:
 for (kops#6318)[https://github.com/kubernetes/kops/issues/6318]:
