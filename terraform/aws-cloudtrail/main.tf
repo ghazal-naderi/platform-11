@@ -6,6 +6,7 @@ variable "project" {
 }
 
 resource "aws_cloudtrail" "audit" {
+  depends_on                    = [aws_s3_bucket_policy.audit-policy]
   name                          = "${var.project}-audit-trail"
   s3_bucket_name                = aws_s3_bucket.audit.id
   s3_key_prefix                 = "audit"
