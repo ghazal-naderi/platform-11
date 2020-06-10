@@ -1,0 +1,19 @@
+name: Lint & verify 
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  check_package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to OCR
+        env:
+          OCR_USERNAME: ${{ secrets.OCR_USERNAME }}
+          OCR_PASSWORD: ${{ secrets.OCR_PASSWORD }}
+          OCR_SERVER: jed.ocir.io
+        run: |
+          docker login jed.ocir.io -u $OCR_USERNAME -p $OCR_PASSWORD
+          docker pull jed.ocir.io/fr9ckauowgwh/platform/infra-tester:latest
+          docker run -v `pwd`:/workspace -t jed.ocir.io/fr9ckauowgwh/platform/infra-tester:latest
