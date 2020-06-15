@@ -1,0 +1,12 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tekton-pipelines
+
+resources:
+- tekton-cronjob-binding.yaml
+- tekton-cronjob-eventlistener.yaml
+- tekton-cronjob-role.yaml
+- tekton-cronjob-serviceaccount.yaml
+- tekton-cronjob-triggerbinding.yaml
+- tekton-cronjob.yaml
