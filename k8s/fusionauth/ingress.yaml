@@ -1,0 +1,22 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: fusionauth
+  namespace: fusionauth
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx-external
+spec:
+  tls:
+  - hosts:
+    - fusionauth.stage.oci.11fs-structs.com
+    secretName: fusionauth-11fs-structs-tls
+  rules:
+  - host: fusionauth.example.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: fusionauth
+          servicePort: 9011
