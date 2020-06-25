@@ -9,8 +9,8 @@ deploymentStrategy: {}
   # type: RollingUpdate
 
 nexus:
-  imageName: quay.io/travelaudience/docker-nexus
-  imageTag: 3.23.0
+  imageName: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/sonatype-nexus
+  imageTag: latest
   imagePullPolicy: IfNotPresent
   # Uncomment this to scheduler pods on priority
   # priorityClassName: "high-priority"
@@ -133,7 +133,7 @@ persistence:
   # annotations:
   #  "helm.sh/resource-policy": keep
   storageClass: "stable"
-  storageSize: 512Gi
+  storageSize: 32Gi
   # If PersistentDisk already exists you can create a PV for it by including the 2 following keypairs.
   # pdName: nexus-data-disk
   # fsType: ext4
@@ -247,26 +247,106 @@ service:
   # loadBalancerIP: "192.168.1.10"
 
 additionalConfigMaps: # info at https://github.com/sonatype-nexus-community/nexus-kubernetes-openshift 
+  - name: apollo-bintray
+    labels:
+      nexus-type: repository
+    data:
+      recipe: 'MavenProxy'
+      remoteUrl: 'https://dl.bintray.com/apollographql/android'
+      blobStoreName: 'proxied-cache'
+      strictContentTypeValidation: 'true'
+      versionPolicy: 'RELEASE'
+      layoutPolicy: 'PERMISSIVE'
+  - name: jcenter
+    labels:
+      nexus-type: repository
+    data:
+      recipe: 'MavenProxy'
+      remoteUrl: 'https://jcenter.bintray.com/'
+      blobStoreName: 'proxied-cache'
+      strictContentTypeValidation: 'true'
+      versionPolicy: 'RELEASE'
+      layoutPolicy: 'PERMISSIVE'
+  - name: jcenter-snapshots
+    labels:
+      nexus-type: repository
+    data:
+      recipe: 'MavenProxy'
+      remoteUrl: 'http://oss.jfrog.org/artifactory/oss-snapshot-local/'
+      blobStoreName: 'proxied-cache'
+      strictContentTypeValidation: 'true'
+      versionPolicy: 'SNAPSHOT'
+      layoutPolicy: 'STRICT'
   - name: maven-central
     labels:
       nexus-type: repository
     data:
       recipe: 'MavenProxy'
-      remoteUrl: 'https://repo.maven.apache.org/maven2/'
+      remoteUrl: 'https://jcenter.bintray.com/'
       blobStoreName: 'proxied-cache'
-      strictContentTypeValidation: 'true'
+      strictContentTypeValidation: 'false'
       versionPolicy: 'RELEASE'
-      layoutPolicy: 'STRICT'
-  - name: maven-local
+      layoutPolicy: 'PERMISSIVE'
+  - name: maven-public
+    labels:
+      nexus-type: repository
+    data:
+      recipe: MavenGroup
+      blobStoreName: 'proxied-cache'
+      members: "maven-releases,maven-snapshots,maven-central,jcenter,jcenter-snapshots,spring-milestone,apollo-bintray"
+  - name: maven-releases
     labels:
       nexus-type: repository
     data:
       recipe: 'MavenHosted'
       blobStoreName: 'default'
-      strictContentTypeValidation: 'true'
+      strictContentTypeValidation: 'false'
       versionPolicy: 'RELEASE'
-      writePolicy: 'ALLOW_ONCE'
+      writePolicy: 'DENY'
       layoutPolicy: 'STRICT'
+  - name: maven-snapshots
+    labels:
+      nexus-type: repository
+    data:
+      recipe: 'MavenHosted'
+      blobStoreName: 'default'
+      strictContentTypeValidation: 'false'
+      versionPolicy: 'SNAPSHOT'
+      writePolicy: 'ALLOW'
+      layoutPolicy: 'STRICT'
+  - name: nuget-group
+    labels:
+      nexus-type: repository
+    data:
+      recipe: NugetGroup
+      blobStoreName: 'proxied-cache'
+      members: "nuget-hosted,nuget.org-proxy"
+  - name: nuget-hosted
+    labels:
+      nexus-type: repository
+    data:
+      recipe: NugetHosted
+      blobStoreName: 'default'
+      strictContentTypeValidation: 'true'
+      writePolicy: 'ALLOW'
+  - name: nuget.org-proxy
+    labels:
+      nexus-type: repository
+    data:
+      recipe: NugetProxy
+      blobStoreName: 'proxied-cache'
+      remoteUrl: 'https://www.nuget.org/api/v2/'
+      strictContentTypeValidation: 'true'
+  - name: spring-milestone
+    labels:
+      nexus-type: repository
+    data: 
+      recipe: 'MavenProxy'
+      blobStoreName: 'proxied-cache'
+      remoteUrl: 'https://repo.spring.io/milestone'
+      versionPolicy: 'RELEASE'
+      layoutPolicy: 'PERMISSIVE'
+      strictContentTypeValidation: 'true'
   - name: proxied-cache
     labels:
       nexus-type: blobstore
