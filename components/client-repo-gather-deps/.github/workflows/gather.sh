@@ -12,7 +12,7 @@ render_package() {
             mkdir -p "temp/${pname}"
             sudo rm -rf "${path}"
             git clone -c advice.detachedHead=false --quiet --progress "https://${GITHUB_SECRET_TOKEN}@github.com/11FSConsulting/platform.git" "temp/${pname}"
-            (cd "temp/${pname}" && git checkout "${pref}")
+            (cd "temp/${pname}" && git fetch origin --tags && git checkout "${pref}")
             sudo rm -rf "temp/${pname}/.git"
             (cd "temp/${pname}" && docker run -e "RELEASE=${prelease}" -e "LINT=no" -v "$(pwd):/workspace" -t platform/infra-tester)
             if [[ "${path}" =~ k8s/.* ]]; then
