@@ -18,6 +18,13 @@ spec:
       containers:
         - name: redis
           image: redis:5.0.6
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: 200m
+            limits:
+              memory: "400Mi"
+              cpu: 500m
           args:
             - "--appendonly"
             - "yes"
