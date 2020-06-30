@@ -95,14 +95,20 @@ spec:
                 key: elastic
           - name: FLUENT_ELASTICSEARCH_ILM
             value: "true"
-          - name: FLUENT_ELASTICSEARCH_ROLLOVER_INDEX
-            value: "true"
           - name: FLUENT_ELASTICSEARCH_ILM_POLICY_ID
             value: "logstash-policy"
           - name: FLUENT_ELASTICSEARCH_ILM_POLICY
             value: |-
                 { "policy": { "phases": { "hot": { "actions": { "rollover": { "max_age": "1d", "max_size": "5gb" }, "set_priority": { "priority": 10 } } }, "warm": { "actions": { "allocate": { "include": {}, "exclude": {}, "require": { "data": "warm" } }, "set_priority": { "priority":20 } } }, "delete": { "min_age": "90d", "actions": { "delete": {} } } } } }
           - name: FLUENT_ELASTICSEARCH_ILM_POLICY_OVERWRITE
+            value: "true"
+          - name: FLUENT_ELASTICSEARCH_LOG_ES_400_REASON
+            value: "true"
+          - name: FLUENT_ELASTICSEARCH_TEMPLATE_NAME
+            value: "logstash-template"
+          - name: FLUENT_ELASTICSEARCH_TEMPLATE_FILE
+            value: "/fluentd/etc/logstash.template"
+          - name: FLUENT_ELASTICSEARCH_TEMPLATE_OVERWRITE
             value: "true"
         resources:
           limits:
