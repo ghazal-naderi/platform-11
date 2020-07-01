@@ -4,6 +4,5 @@ kind: Kustomization
 resources:
 - deployment.yaml
 - ingress.yaml
-- postgres.yaml
 - secret.yaml
 - service.yaml
