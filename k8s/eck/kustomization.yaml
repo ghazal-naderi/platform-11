@@ -2,6 +2,5 @@
 resources:
   - eck-all-in-one.yaml
   - elasticsearch.yaml
-  - apm.yaml
   - kibana.yaml
   - namespace.yaml
