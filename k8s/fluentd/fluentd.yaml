@@ -108,8 +108,8 @@ spec:
             value: "logstash-template"
           - name: FLUENT_ELASTICSEARCH_TEMPLATE_FILE
             value: "/fluentd/etc/logstash.template"
-          - name: FLUENT_ELASTICSEARCH_TEMPLATE_OVERWRITE
-            value: "true"
+          - name: FLUENT_ELASTICSEARCH_REQUEST_TIMEOUT
+            value: "120s" 
         resources:
           limits:
             cpu: 500m
