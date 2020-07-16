@@ -8,7 +8,7 @@ k get secret -n eck elasticsearch-es-http-certs-public --export -o yaml | k appl
 ```
 - Create `jaeger` role for Elasticsearch with:
     - `monitor` and `manager_index_templates` cluster permissions
-    - `create`, `create_index`, `write`, `read`, `index`, `monitor`, `create_doc` and `view_index_metadata` on indices `jaeger-*`
+    - `create`, `create_index`, `delete`, `delete_index`, `write`, `read`, `index`, `monitor`, `create_doc` and `view_index_metadata` on indices `jaeger-*`
 - Create `jaeger` user and apply `jaeger` role with a random password
 - Create `jaeger` user secret
 ```
