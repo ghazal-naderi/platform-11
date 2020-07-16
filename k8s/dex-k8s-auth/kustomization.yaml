@@ -1,0 +1,7 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dex-k8s-auth
+resources:
+    - dex-k8s-auth.yaml
+    - namespace.yaml
