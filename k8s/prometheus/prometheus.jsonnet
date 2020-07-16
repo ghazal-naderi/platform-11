@@ -4,9 +4,8 @@ local elasticsearchAlerts = (import 'elasticsearch-alerts.libsonnet').prometheus
 local jaegerDashboard = (import 'jaeger-mixin/mixin.libsonnet').grafanaDashboards;
 local kp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
-  // TODO:
-  // (import 'kube-prometheus/kube-prometheus-kops.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-kops-coredns.libsonnet') +
+  (import 'kube-prometheus/kube-prometheus-kops.libsonnet') +
+  (import 'kube-prometheus/kube-prometheus-kops-coredns.libsonnet') +
   // or
   // (import 'kube-prometheus/kube-prometheus-kube-aws.libsonnet')
   // Uncomment the following imports to enable its patches
@@ -143,7 +142,16 @@ local kp =
             )
           }
         else
-          group,
+          if group.name == 'kubernetes-system-apiserver' || group.name == 'kubernetes-system-controller-manager' || group.name == 'kubernetes-system-scheduler' || group.name == 'prometheus' then
+             group {
+               rules: std.filter(
+                 function(rule)
+                   rule.alert != 'AggregatedAPIDown' && rule.alert != 'KubeControllerManagerDown' && rule.alert != 'KubeSchedulerDown' && rule.alert != 'PrometheusDuplicateTimestamps',
+                 group.rules
+               ),
+             }
+          else
+            group,
       super.groups
     ),
   },

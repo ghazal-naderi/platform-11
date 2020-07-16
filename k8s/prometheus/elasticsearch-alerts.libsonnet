@@ -169,13 +169,13 @@
           }
         },
         {
-          "alert": "ElasticsearchNoNewDocuments",
+          "alert": "FluentdToomanyRetries",
           "annotations": {
-            "description": "No new documents for 10 min!   VALUE = {{ $value }}   LABELS: {{ $labels }}",
-            "summary": "Elasticsearch no new documents (instance {{ $labels.instance }})"
+            "description": "Too many log client retries in 5m!  VALUE = {{ $value }}   LABELS: {{ $labels }}",
+            "summary": "fluentd pod {{$labels.pod}} is retrying too much in 5m"
           },
-          "expr": "rate(elasticsearch_indices_docs{es_data_node=\"true\"}[40m]) < 1",
-          "for": "40m", 
+          "expr": "rate(fluentd_output_status_retry_count{type=\"elasticsearch\"}[5m]) > 0.1",
+          "for": "5m", 
           "labels": {
             "severity": "warning"
           },

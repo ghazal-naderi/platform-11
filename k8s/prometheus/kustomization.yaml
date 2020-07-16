@@ -1,5 +1,6 @@
 ---
 resources:
+- addons/fluentd-logging.yaml
 - manifests/setup/prometheus-operator-0alertmanagerCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-0prometheusCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-0prometheusruleCustomResourceDefinition.yaml
@@ -19,6 +20,7 @@ resources:
 - manifests/prometheus-roleBindingConfig.yaml
 - manifests/grafana-service.yaml
 - manifests/kube-state-metrics-clusterRoleBinding.yaml
+- manifests/prometheus-kubeDnsPrometheusDiscoveryService.yaml
 - manifests/prometheus-serviceMonitorCoreDNS.yaml
 - manifests/prometheus-adapter-roleBindingAuthReader.yaml
 - manifests/prometheus-serviceMonitorJaeger.yaml
@@ -31,6 +33,7 @@ resources:
 - manifests/node-exporter-serviceMonitor.yaml
 - manifests/grafana-config.yaml
 - manifests/kube-state-metrics-role.yaml
+- manifests/prometheus-kubeSchedulerPrometheusDiscoveryService.yaml
 - manifests/grafana-dashboardSources.yaml
 - manifests/grafana-serviceAccount.yaml
 - manifests/node-exporter-clusterRoleBinding.yaml
@@ -52,6 +55,7 @@ resources:
 - manifests/prometheus-adapter-clusterRoleServerResources.yaml
 - manifests/alertmanager-alertmanager.yaml
 - manifests/prometheus-serviceMonitorKubeControllerManager.yaml
+- manifests/prometheus-kubeControllerManagerPrometheusDiscoveryService.yaml
 - manifests/kube-state-metrics-serviceAccount.yaml
 - manifests/prometheus-adapter-apiService.yaml
 - manifests/prometheus-adapter-serviceAccount.yaml

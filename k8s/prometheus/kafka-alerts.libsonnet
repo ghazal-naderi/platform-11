@@ -266,57 +266,57 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
         },
       ],
       },
-      {
-        name: 'connect_alerts',
-        rules: [{
-          alert: 'ConnectContainersDown',
-          expr: 'absent(container_last_seen{container_name=~".+-connect",pod_name=~".+-connect-.+"})',
-          'for': '3m',
-          labels: {
-            severity: 'major',
-          },
-          annotations: {
-            message: |||
-                All Kafka Connect containers have been down or in CrashLookBackOff status for 3 minutes
-            |||,
-          },
-    },
-    ],
-    },
-      {
-        name: 'bridge_alerts',
-        rules: [{
-          alert: 'BridgeContainersDown',
-          expr: 'absent(container_last_seen{container_name=~".+-bridge",pod_name=~".+-bridge-.+"})',
-          'for': '3m',
-          labels: {
-            severity: 'major',
-          },
-          annotations: {
-            message: |||
-                All Kafka Bridge containers have been down or in CrashLookBackOff status for 3 minutes
-            |||,
-          },
-    },
-    ],
-    },
-      {
-        name: 'mirrormaker_alerts',
-        rules: [{
-          alert: 'MirrorMakerContainerDown',
-          expr: 'absent(container_last_seen{container_name=~".+-mirror-maker",pod_name=~".+-mirror-maker-.+"})',
-          'for': '3m',
-          labels: {
-            severity: 'major',
-          },
-          annotations: {
-            message: |||
-                All Kafka Mirror Maker containers have been down or in CrashLookBackOff status for 3 minutes
-            |||,
-          },
-    }
-    ],
-    },
+#      {
+#        name: 'connect_alerts',
+#        rules: [{
+#          alert: 'ConnectContainersDown',
+#          expr: 'absent(container_last_seen{container_name=~".+-connect",pod_name=~".+-connect-.+"})',
+#          'for': '3m',
+#          labels: {
+#            severity: 'major',
+#          },
+#          annotations: {
+#            message: |||
+#                All Kafka Connect containers have been down or in CrashLookBackOff status for 3 minutes
+#            |||,
+#          },
+#    },
+#    ],
+#    },
+#      {
+#        name: 'bridge_alerts',
+#        rules: [{
+#          alert: 'BridgeContainersDown',
+#          expr: 'absent(container_last_seen{container_name=~".+-bridge",pod_name=~".+-bridge-.+"})',
+#          'for': '3m',
+#          labels: {
+#            severity: 'major',
+#          },
+#          annotations: {
+#            message: |||
+#                All Kafka Bridge containers have been down or in CrashLookBackOff status for 3 minutes
+#            |||,
+#          },
+#    },
+#    ],
+#    },
+#    {
+#        name: 'mirrormaker_alerts',
+#        rules: [{
+#          alert: 'MirrorMakerContainerDown',
+#          expr: 'absent(container_last_seen{container_name=~".+-mirror-maker",pod_name=~".+-mirror-maker-.+"})',
+#          'for': '3m',
+#          labels: {
+#            severity: 'major',
+#          },
+#          annotations: {
+#            message: |||
+#                All Kafka Mirror Maker containers have been down or in CrashLookBackOff status for 3 minutes
+#            |||,
+#          },
+#    }
+#    ],
+#    },
       {
         name: 'kafkaExporter_alerts',
         rules: [{
@@ -343,19 +343,20 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
                 Consumer group {{ $labels.consumergroup}} lag is too big ({{ $value }}) on topic {{ $labels.topic }}/partition {{ $labels.partition }}
             |||,
           },
-    },{
-          alert: 'NoMessageForTooLong',
-          expr: 'changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[30m]) == 0',
-          'for': '30m',
-          labels: {
-            severity: 'warning',
-          },
-          annotations: {
-            message: |||
-                There have been no messages in topic {{ $labels.topic}}/partition {{ $labels.partition }} for 10 minutes
-          |||,
-          },
     },
+#    {
+#          alert: 'NoMessageForTooLong',
+#          expr: 'changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[30m]) == 0',
+#          'for': '30m',
+#          labels: {
+#            severity: 'warning',
+#          },
+#          annotations: {
+#            message: |||
+#                There have been no messages in topic {{ $labels.topic}}/partition {{ $labels.partition }} for 10 minutes
+#          |||,
+#          },
+#    },
     ],
     },
     ],

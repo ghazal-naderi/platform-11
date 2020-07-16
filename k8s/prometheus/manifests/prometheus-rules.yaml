@@ -1421,16 +1421,6 @@ spec:
         sum by(name, namespace)(increase(aggregator_unavailable_apiservice_count[5m])) > 2
       labels:
         severity: warning
-    - alert: AggregatedAPIDown
-      annotations:
-        message: An aggregated API {{ $labels.name }}/{{ $labels.namespace }} is down.
-          It has not been available at least for the past five minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-aggregatedapidown
-      expr: |
-        sum by(name, namespace)(sum_over_time(aggregator_unavailable_apiservice[5m])) > 0
-      for: 5m
-      labels:
-        severity: warning
     - alert: KubeAPIDown
       annotations:
         message: KubeAPI has disappeared from Prometheus target discovery.
@@ -1509,27 +1499,9 @@ spec:
       labels:
         severity: critical
   - name: kubernetes-system-scheduler
-    rules:
-    - alert: KubeSchedulerDown
-      annotations:
-        message: KubeScheduler has disappeared from Prometheus target discovery.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeschedulerdown
-      expr: |
-        absent(up{job="kube-scheduler"} == 1)
-      for: 15m
-      labels:
-        severity: critical
+    rules: []
   - name: kubernetes-system-controller-manager
-    rules:
-    - alert: KubeControllerManagerDown
-      annotations:
-        message: KubeControllerManager has disappeared from Prometheus target discovery.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecontrollermanagerdown
-      expr: |
-        absent(up{job="kube-controller-manager"} == 1)
-      for: 15m
-      labels:
-        severity: critical
+    rules: []
   - name: prometheus
     rules:
     - alert: PrometheusBadConfig
@@ -1633,17 +1605,6 @@ spec:
         summary: Prometheus is not ingesting samples.
       expr: |
         rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="monitoring"}[5m]) <= 0
-      for: 10m
-      labels:
-        severity: warning
-    - alert: PrometheusDuplicateTimestamps
-      annotations:
-        description: Prometheus {{$labels.namespace}}/{{$labels.pod}} is dropping
-          {{ printf "%.4g" $value  }} samples/s with different values but duplicated
-          timestamp.
-        summary: Prometheus is dropping samples with duplicate timestamps.
-      expr: |
-        rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0
       for: 10m
       labels:
         severity: warning
@@ -2083,36 +2044,6 @@ spec:
       for: 3m
       labels:
         severity: major
-  - name: connect_alerts
-    rules:
-    - alert: ConnectContainersDown
-      annotations:
-        message: |
-          All Kafka Connect containers have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name=~".+-connect",pod_name=~".+-connect-.+"})
-      for: 3m
-      labels:
-        severity: major
-  - name: bridge_alerts
-    rules:
-    - alert: BridgeContainersDown
-      annotations:
-        message: |
-          All Kafka Bridge containers have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name=~".+-bridge",pod_name=~".+-bridge-.+"})
-      for: 3m
-      labels:
-        severity: major
-  - name: mirrormaker_alerts
-    rules:
-    - alert: MirrorMakerContainerDown
-      annotations:
-        message: |
-          All Kafka Mirror Maker containers have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name=~".+-mirror-maker",pod_name=~".+-mirror-maker-.+"})
-      for: 3m
-      labels:
-        severity: major
   - name: kafkaExporter_alerts
     rules:
     - alert: UnderReplicatedPartition
@@ -2129,15 +2060,6 @@ spec:
           Consumer group {{ $labels.consumergroup}} lag is too big ({{ $value }}) on topic {{ $labels.topic }}/partition {{ $labels.partition }}
       expr: kafka_consumergroup_lag > 1000
       for: 60s
-      labels:
-        severity: warning
-    - alert: NoMessageForTooLong
-      annotations:
-        message: |
-          There have been no messages in topic {{ $labels.topic}}/partition {{ $labels.partition }} for 10 minutes
-      expr: changes(kafka_topic_partition_current_offset{topic!="__consumer_offsets"}[30m])
-        == 0
-      for: 30m
       labels:
         severity: warning
   - name: elasticsearch_alerts
@@ -2267,13 +2189,13 @@ spec:
       for: 5m
       labels:
         severity: warning
-    - alert: ElasticsearchNoNewDocuments
+    - alert: FluentdToomanyRetries
       annotations:
-        description: 'No new documents for 10 min!   VALUE = {{ $value }}   LABELS:
+        description: 'Too many log client retries in 5m!  VALUE = {{ $value }}   LABELS:
           {{ $labels }}'
-        summary: Elasticsearch no new documents (instance {{ $labels.instance }})
-      expr: rate(elasticsearch_indices_docs{es_data_node="true"}[40m]) < 1
-      for: 40m
+        summary: fluentd pod {{$labels.pod}} is retrying too much in 5m
+      expr: rate(fluentd_output_status_retry_count{type="elasticsearch"}[5m]) > 0.1
+      for: 5m
       labels:
         severity: warning
     - alert: ElasticSearchDiskRunningFullIn24Hours
