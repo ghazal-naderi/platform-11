@@ -115,6 +115,10 @@ spec:
           - name: FLUENT_ELASTICSEARCH_CUSTOMIZE_TEMPLATE
             value: |-
               {"<<index_prefix>>": "logstash"}
+          - name: K8S_NODE_NAME
+            valueFrom:
+             fieldRef:
+               fieldPath: spec.nodeName
         resources:
           limits:
             cpu: 500m
