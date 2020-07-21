@@ -1,0 +1,46 @@
+Key configuration files
+=============
+
+Operator
+---------------
+
+In the operator you must configure the following for WAL
+
+  aws_region: me-jeddah-1
+  aws_endpoint: <<aws_endpoint_for_wal>>
+  wal_s3_bucket: <<name_of_wal_bucket>>
+  
+In the operator you must configure the following for logical S3 backups
+
+  logical_backup_docker_image: <<image_id>>
+  logical_backup_s3_access_key_id: <<key_id>>
+  logical_backup_s3_bucket: <<name_of_bucket>>
+  logical_backup_s3_endpoint: <<s3 endpoint>>
+  logical_backup_s3_region: <<region>>
+  logical_backup_s3_secret_access_key: <<secret_key>>
+
+Postgres-cluster configuration
+---------------
+
+postgres_cluster_configuration, in order to configure WAL backups you must create a configmap that the postgres clusters are able to mount.  The below is an example will create an incremental WAL backup to minio every 5 mins.  Keeping the last 12 on the server.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-pod-config
+  namespace: postgres-cluster
+data: 
+  BACKUP_SCHEDULE: "*/5 * * * *"
+  BACKUP_NUM_TO_RETAIN: "12"
+  AWS_ACCESS_KEY_ID: <<KEY_ID>>
+  AWS_SECRET_ACCESS_KEY: <<KEY_ID>>
+  AWS_ENDPOINT:  http://platform-minio.minio.svc.cluster.local:9000
+  AWS_S3_FORCE_PATH_STYLE: "true"
+  AWS_REGION: me-jeddah-1
+  USE_WALG_BACKUP: "true"
+  WALG_DISABLE_S3_SSE: "true"
+  
+for a standard AWS set up drop the AWS_S3_FORCE_PATH_STYLE option.
+
+  
+  
