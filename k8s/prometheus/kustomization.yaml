@@ -1,6 +1,5 @@
 ---
 resources:
-- addons/fluentd-logging.yaml
 - manifests/setup/prometheus-operator-0alertmanagerCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-0prometheusCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-0prometheusruleCustomResourceDefinition.yaml

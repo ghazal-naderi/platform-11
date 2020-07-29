@@ -22,6 +22,15 @@
     {
       "source": {
         "git": {
+          "remote": "https://github.com/grafana/loki.git",
+          "subdir": "production/loki-mixin"
+        }
+      },
+      "version": "master"
+    },
+    {
+      "source": {
+        "git": {
           "remote": "https://github.com/jaegertracing/jaeger.git",
           "subdir": "monitoring/jaeger-mixin"
         }

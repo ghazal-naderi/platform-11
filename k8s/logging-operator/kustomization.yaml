@@ -5,9 +5,10 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
-namespace: kube-system
-
+namespace: logging-operator
 resources:
-  - configmap.yaml
-  - fluentd.yaml
+  - namespace.yaml
+  - logging.yaml
+  - clusterflow.yaml
+  - clusteroutput.yaml
+  - logging-operator.yaml

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - env: []
-        image: grafana/grafana:6.4.3
+        image: grafana/grafana:7.1.0
         name: grafana
         ports:
         - containerPort: 3000
@@ -76,6 +76,15 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/kubelet
           name: grafana-dashboard-kubelet
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/loki-chunks
+          name: grafana-dashboard-loki-chunks
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/loki-reads
+          name: grafana-dashboard-loki-reads
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/loki-writes
+          name: grafana-dashboard-loki-writes
+          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/namespace-by-pod
           name: grafana-dashboard-namespace-by-pod
           readOnly: false
@@ -114,6 +123,18 @@ spec:
           readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/workload-total
           name: grafana-dashboard-workload-total
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/elasticsearch-logs
+          name: grafana-dashboard-elasticsearch-logs
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/kafka
+          name: grafana-dashboard-kafka
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/loki-logs
+          name: grafana-dashboard-loki-logs
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/loki-operational
+          name: grafana-dashboard-loki-operational
           readOnly: false
         - mountPath: /etc/grafana
           name: grafana-config
@@ -167,6 +188,15 @@ spec:
           name: grafana-dashboard-kubelet
         name: grafana-dashboard-kubelet
       - configMap:
+          name: grafana-dashboard-loki-chunks
+        name: grafana-dashboard-loki-chunks
+      - configMap:
+          name: grafana-dashboard-loki-reads
+        name: grafana-dashboard-loki-reads
+      - configMap:
+          name: grafana-dashboard-loki-writes
+        name: grafana-dashboard-loki-writes
+      - configMap:
           name: grafana-dashboard-namespace-by-pod
         name: grafana-dashboard-namespace-by-pod
       - configMap:
@@ -205,6 +235,18 @@ spec:
       - configMap:
           name: grafana-dashboard-workload-total
         name: grafana-dashboard-workload-total
+      - configMap:
+          name: grafana-dashboard-elasticsearch-logs
+        name: grafana-dashboard-elasticsearch-logs
+      - configMap:
+          name: grafana-dashboard-kafka
+        name: grafana-dashboard-kafka
+      - configMap:
+          name: grafana-dashboard-loki-logs
+        name: grafana-dashboard-loki-logs
+      - configMap:
+          name: grafana-dashboard-loki-operational
+        name: grafana-dashboard-loki-operational
       - name: grafana-config
         secret:
           secretName: grafana-config

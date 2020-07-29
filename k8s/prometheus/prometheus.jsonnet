@@ -1,7 +1,10 @@
 local jaegerAlerts = (import 'jaeger-mixin/alerts.libsonnet').prometheusAlerts;
+local lokiAlerts = (import 'loki-mixin/alerts.libsonnet').prometheusAlerts;
 local kafkaAlerts = (import 'kafka-alerts.libsonnet').prometheusAlerts;
 local elasticsearchAlerts = (import 'elasticsearch-alerts.libsonnet').prometheusAlerts;
 local jaegerDashboard = (import 'jaeger-mixin/mixin.libsonnet').grafanaDashboards;
+local lokiDashboard = (import 'loki-mixin/dashboards.libsonnet').grafanaDashboards;
+local lokiRules = (import 'loki-mixin/recording_rules.libsonnet').prometheusRules;
 local kp =
   (import 'kube-prometheus/kube-prometheus.libsonnet') +
   (import 'kube-prometheus/kube-prometheus-kops.libsonnet') +
@@ -18,12 +21,28 @@ local kp =
     _config+:: {
       namespace: 'monitoring',
       prometheus+:: {
-        namespaces+: ['jaeger', 'kafka', 'eck', 'tekton-pipelines', 'external-dns', 'ingress-nginx', 'cert-manager', 'auth', 'elastic-system'],
+        namespaces+: ['jaeger', 'kafka', 'loki', 'logging-operator', 'eck', 'tekton-pipelines', 'external-dns', 'ingress-nginx', 'cert-manager', 'auth' ],
       },
       alertmanager+: {
         config: (importstr 'alertmanager.config.yaml'),
       },
       grafana+:: {
+        datasources+: [{
+          name: 'loki',
+          type: 'loki',
+          access: 'proxy',
+          org_id: 1,
+          url: 'http://platform-loki.loki.svc.cluster.local:3100',
+          version: 1,
+          editable: false,
+        }],
+        // FIXME: Loki dashboards below are strangely integrated as they are too large to import normally
+        rawDashboards+:: {
+          'kafka.json': (importstr 'kafka.json'),
+          'elasticsearch-logs.json': (importstr 'elasticsearch-logs.json'),
+          'loki-operational.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboard-loki-operational.json'),
+          'loki-logs.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboard-loki-logs.json'),
+        },
         config: { // http://docs.grafana.org/installation/configuration/
           sections: {
             server+: {
@@ -33,12 +52,36 @@ local kp =
           },
         },
       },
+      versions+:: {
+        grafana: '7.1.0',
+      },
     },
     prometheus+:: {
         prometheus+: {
             spec+: {
                 externalUrl: 'http://prometheus.example.com',
             },
+        },
+        serviceMonitorElasticsearch: {	
+          apiVersion: 'monitoring.coreos.com/v1',	
+          kind: 'ServiceMonitor',	
+          metadata: {	
+            name: 'eck',	
+            namespace: 'eck',	
+          },	
+          spec: {	
+            jobLabel: 'job',	
+            endpoints: [	
+              {	
+                port: 'http',	
+              },	
+            ],	
+            selector: {	
+              matchLabels: {	
+                app: 'elasticsearch-exporter',	
+              },	
+            },	
+          },	
         },
         serviceMonitorJaeger: {
           apiVersion: 'monitoring.coreos.com/v1',
@@ -57,27 +100,6 @@ local kp =
             selector: {
               matchLabels: {
                 name: 'jaeger-operator',
-              },
-            },
-          },
-        },
-        serviceMonitorElasticsearch: {
-          apiVersion: 'monitoring.coreos.com/v1',
-          kind: 'ServiceMonitor',
-          metadata: {
-            name: 'eck',
-            namespace: 'eck',
-          },
-          spec: {
-            jobLabel: 'job',
-            endpoints: [
-              {
-                port: 'http',
-              },
-            ],
-            selector: {
-              matchLabels: {
-                app: 'elasticsearch-exporter',
               },
             },
           },
@@ -104,14 +126,9 @@ local kp =
         },
       },
     },
-    rawGrafanaDashboards+:: {
-      'kafka.json': (importstr 'kafka.json'),
-      'elasticsearch-logs.json': (importstr 'elasticsearch-logs.json'),
-    },
-    grafanaDashboards+:: {
-      'jaeger.json': jaegerDashboard['jaeger.json'],
-    },
-    prometheusAlerts+:: jaegerAlerts + kafkaAlerts + elasticsearchAlerts, 
+    grafanaDashboards+:: jaegerDashboard + { 'loki-writes.json': lokiDashboard['loki-writes.json'], 'loki-reads.json': lokiDashboard['loki-reads.json'], 'loki-chunks.json': lokiDashboard['loki-chunks.json'], },
+    prometheusAlerts+:: jaegerAlerts + elasticsearchAlerts + kafkaAlerts + lokiAlerts,
+    prometheusRules+:: lokiRules,
     alertmanager+:: {
         alertmanager+: {
             spec+: {

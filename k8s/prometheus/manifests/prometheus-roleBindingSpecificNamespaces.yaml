@@ -69,6 +69,32 @@ items:
   kind: RoleBinding
   metadata:
     name: prometheus-k8s
+    namespace: loki
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: prometheus-k8s
+  subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s
+    namespace: monitoring
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: prometheus-k8s
+    namespace: logging-operator
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: prometheus-k8s
+  subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s
+    namespace: monitoring
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: prometheus-k8s
     namespace: eck
   roleRef:
     apiGroup: rbac.authorization.k8s.io
@@ -135,19 +161,6 @@ items:
   metadata:
     name: prometheus-k8s
     namespace: auth
-  roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: prometheus-k8s
-  subjects:
-  - kind: ServiceAccount
-    name: prometheus-k8s
-    namespace: monitoring
-- apiVersion: rbac.authorization.k8s.io/v1
-  kind: RoleBinding
-  metadata:
-    name: prometheus-k8s
-    namespace: elastic-system
   roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: Role

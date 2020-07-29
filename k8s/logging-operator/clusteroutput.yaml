@@ -1,0 +1,12 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterOutput
+metadata:
+  name: loki-output
+  namespace: logging-operator
+spec:
+  loki:
+    url: http://platform-loki.loki.svc.cluster.local:3100
+    configure_kubernetes_labels: true
+    extract_kubernetes_labels: true
+    remove_keys:
+      - kubernetes

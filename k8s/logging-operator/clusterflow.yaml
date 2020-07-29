@@ -1,0 +1,20 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: ClusterFlow
+metadata:
+  name: loki-flow
+  namespace: logging-operator
+spec:
+  match:
+    - select: {}
+  filters:
+    - tag_normaliser: {}
+    - parser:
+        key_name: message
+        reserve_time: true
+        reserve_data: true
+        remove_key_name_field: true
+        inject_key_prefix: log_
+        parse:
+          type: json
+  outputRefs:
+    - loki-output
