@@ -1,0 +1,6 @@
+---
+resources:
+- hubble-ui.yaml
+- metrics-service.yaml
+- service-monitor.yaml
+namespace: kube-system
