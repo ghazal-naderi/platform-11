@@ -322,6 +322,19 @@ load _helpers
   [ "${actual}" = "true" ]
 }
 
+@test "injector/deployment: disable security context when openshift enabled" {
+  cd `chart_dir`
+  local object=$(helm template \
+      --show-only templates/injector-deployment.yaml  \
+      --set 'global.openshift=true' \
+      . | tee /dev/stderr |
+      yq -r '.spec.template.spec.containers[0].env' | tee /dev/stderr)
+
+  local actual=$(echo $object |
+    yq -r '.[9].name' | tee /dev/stderr)
+  [ "${actual}" = "AGENT_INJECT_SET_SECURITY_CONTEXT" ]
+}
+
 #--------------------------------------------------------------------
 # extraEnvironmentVars
 
@@ -424,4 +437,48 @@ load _helpers
       . | tee /dev/stderr |
       yq -r '.spec.template.spec.nodeSelector' | tee /dev/stderr)
   [ "${actual}" = "testing" ]
+}
+
+#--------------------------------------------------------------------
+# priorityClassName
+
+@test "injector/deployment: priorityClassName not set by default" {
+  cd `chart_dir`
+  local actual=$(helm template \
+      --show-only templates/injector-deployment.yaml  \
+      . | tee /dev/stderr |
+      yq '.spec.template.spec | .priorityClassName? == null' | tee /dev/stderr)
+  [ "${actual}" = "true" ]
+}
+
+@test "injector/deployment: priorityClassName can be set" {
+  cd `chart_dir`
+  local actual=$(helm template \
+      --show-only templates/injector-deployment.yaml  \
+      --set 'injector.priorityClassName=armaggeddon' \
+      . | tee /dev/stderr |
+      yq '.spec.template.spec | .priorityClassName == "armaggeddon"' | tee /dev/stderr)
+  [ "${actual}" = "true" ]
+}
+#--------------------------------------------------------------------
+# OpenShift
+
+@test "injector/deployment: OpenShift - runAsUser disabled" {
+  cd `chart_dir`
+  local actual=$(helm template \
+      --show-only templates/injector-deployment.yaml  \
+      --set 'global.openshift=true' \
+      . | tee /dev/stderr |
+      yq '.spec.template.spec.securityContext.runAsUser | length > 0' | tee /dev/stderr)
+  [ "${actual}" = "false" ]
+}
+
+@test "injector/deployment: OpenShift - runAsGroup disabled" {
+  cd `chart_dir`
+  local actual=$(helm template \
+      --show-only templates/injector-deployment.yaml  \
+      --set 'global.openshift=true' \
+      . | tee /dev/stderr |
+      yq '.spec.template.spec.securityContext.runAsGroup | length > 0' | tee /dev/stderr)
+  [ "${actual}" = "false" ]
 }

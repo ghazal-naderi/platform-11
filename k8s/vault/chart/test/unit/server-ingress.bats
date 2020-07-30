@@ -70,7 +70,7 @@ load _helpers
   [ "${actual}" = "external" ]
 }
 
-@test "server/ingress: annotations added to object" {
+@test "server/ingress: annotations added to object - string" {
   cd `chart_dir`
 
   local actual=$(helm template \
@@ -80,4 +80,44 @@ load _helpers
       . | tee /dev/stderr |
       yq -r '.metadata.annotations["kubernetes.io/ingress.class"]' | tee /dev/stderr)
   [ "${actual}" = "nginx" ]
+}
+
+@test "server/ingress: annotations added to object - yaml" {
+  cd `chart_dir`
+
+  local actual=$(helm template \
+      --show-only templates/server-ingress.yaml \
+      --set 'server.ingress.enabled=true' \
+      --set server.ingress.annotations."kubernetes\.io/ingress\.class"=nginx \
+      . | tee /dev/stderr |
+      yq -r '.metadata.annotations["kubernetes.io/ingress.class"]' | tee /dev/stderr)
+  [ "${actual}" = "nginx" ]
+}
+
+@test "server/ingress: uses active service when ha - yaml" {
+  cd `chart_dir`
+
+  local actual=$(helm template \
+      --show-only templates/server-ingress.yaml \
+      --set 'server.ingress.enabled=true' \
+      --set 'server.dev.enabled=false' \
+      --set 'server.ha.enabled=true' \
+      --set 'server.service.enabled=true' \
+      . | tee /dev/stderr |
+      yq -r '.spec.rules[0].http.paths[0].backend.serviceName' | tee /dev/stderr)
+  [ "${actual}" = "RELEASE-NAME-vault-active" ]
+}
+
+@test "server/ingress: uses regular service when not ha - yaml" {
+  cd `chart_dir`
+
+  local actual=$(helm template \
+      --show-only templates/server-ingress.yaml \
+      --set 'server.ingress.enabled=true' \
+      --set 'server.dev.enabled=false' \
+      --set 'server.ha.enabled=false' \
+      --set 'server.service.enabled=true' \
+      . | tee /dev/stderr |
+      yq -r '.spec.rules[0].http.paths[0].backend.serviceName' | tee /dev/stderr)
+  [ "${actual}" = "RELEASE-NAME-vault" ]
 }

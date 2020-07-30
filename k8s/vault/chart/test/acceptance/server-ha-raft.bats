@@ -19,11 +19,6 @@ load _helpers
     jq -r '.initialized')
   [ "${init_status}" == "false" ]
 
-  # Security
-  local ipc=$(kubectl get statefulset "$(name_prefix)" --output json |
-    jq -r '.spec.template.spec.containers[0].securityContext.capabilities.add[0]')
-  [ "${ipc}" == "IPC_LOCK" ]
-
   # Replicas
   local replicas=$(kubectl get statefulset "$(name_prefix)" --output json |
     jq -r '.spec.replicas')
@@ -32,12 +27,12 @@ load _helpers
   # Volume Mounts
   local volumeCount=$(kubectl get statefulset "$(name_prefix)" --output json |
     jq -r '.spec.template.spec.containers[0].volumeMounts | length')
-  [ "${volumeCount}" == "2" ]
+  [ "${volumeCount}" == "3" ]
 
   # Volumes
   local volumeCount=$(kubectl get statefulset "$(name_prefix)" --output json |
     jq -r '.spec.template.spec.volumes | length')
-  [ "${volumeCount}" == "1" ]
+  [ "${volumeCount}" == "2" ]
 
   local volume=$(kubectl get statefulset "$(name_prefix)" --output json |
     jq -r '.spec.template.spec.volumes[0].configMap.name')
