@@ -9,12 +9,11 @@ spec:
   filters:
     - tag_normaliser: {}
     - parser:
-        key_name: message
-        reserve_time: true
-        reserve_data: true
-        remove_key_name_field: true
-        inject_key_prefix: log_
+        key_name: log
         parse:
           type: json
+        remove_key_name_field: true
+        reserve_time: true
+        reserve_data: true
   outputRefs:
     - loki-output
