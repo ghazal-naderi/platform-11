@@ -2105,15 +2105,15 @@ spec:
       annotations:
         message: |
           There are only {{ $value }} bytes available at {{ $labels.persistentvolumeclaim }} PVC
-      expr: kubelet_volume_stats_available_bytes{pod_name=~"([a-z]+-)+kafka-[0-9]+"}
-        < 5368709120
+      expr: kubelet_volume_stats_available_bytes{pod=~"([a-z]+-)+kafka-[0-9]+"} <
+        5368709120
       for: 10s
       labels:
         severity: warning
     - alert: UnderReplicatedPartitions
       annotations:
         message: |
-          There are {{ $value }} under replicated partitions on {{ $labels.pod_name }}
+          There are {{ $value }} under replicated partitions on {{ $labels.pod }}
       expr: kafka_server_replicamanager_underreplicatedpartitions > 0
       for: 10s
       labels:
@@ -2137,7 +2137,7 @@ spec:
     - alert: UnderMinIsrPartitionCount
       annotations:
         message: |
-          There are {{ $value }} partitions under the min ISR on {{ $labels.pod_name }}
+          There are {{ $value }} partitions under the min ISR on {{ $labels.pod }}
       expr: kafka_server_replicamanager_underminisrpartitioncount > 0
       for: 10s
       labels:
@@ -2145,7 +2145,7 @@ spec:
     - alert: OfflineLogDirectoryCount
       annotations:
         message: |
-          There are {{ $value }} offline log directories on {{ $labels.pod_name }}
+          There are {{ $value }} offline log directories on {{ $labels.pod }}
       expr: kafka_log_logmanager_offlinelogdirectorycount > 0
       for: 10s
       labels:
@@ -2153,8 +2153,8 @@ spec:
     - alert: ScrapeProblem
       annotations:
         message: |
-          Prometheus was unable to scrape metrics from {{ $labels.pod_name }}/{{ $labels.instance }} for more than 3 minutes
-      expr: up{job="kubernetes-services",kubernetes_namespace!~"openshift-.+",pod_name=~".+-kafka-[0-9]+"}
+          Prometheus was unable to scrape metrics from {{ $labels.pod }}/{{ $labels.instance }} for more than 3 minutes
+      expr: up{job="kubernetes-services",kubernetes_namespace!~"openshift-.+",pod=~".+-kafka-[0-9]+"}
         == 0
       for: 3m
       labels:
@@ -2163,8 +2163,8 @@ spec:
       annotations:
         message: |
           The Cluster Operator has been down for longer than 60 seconds
-      expr: count((container_last_seen{container_name="strimzi-cluster-operator"}
-        > (time() - 90))) < 1 or absent(container_last_seen{container_name="strimzi-cluster-operator"})
+      expr: count((container_last_seen{container="strimzi-cluster-operator"} > (time()
+        - 90))) < 1 or absent(container_last_seen{container="strimzi-cluster-operator"})
       for: 1m
       labels:
         severity: major
@@ -2172,7 +2172,7 @@ spec:
       annotations:
         message: |
           All `kafka` containers have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="kafka",pod_name=~".+-kafka-[0-9]+"})
+      expr: absent(container_last_seen{pod=~".+-kafka-[0-9]+"})
       for: 3m
       labels:
         severity: major
@@ -2180,7 +2180,7 @@ spec:
       annotations:
         message: |
           All `tls-sidecar` containers in the Kafka pods are down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="tls-sidecar",pod_name=~".+-kafka-[0-9]+"})
+      expr: absent(container_last_seen{container="tls-sidecar",pod=~".+-kafka-[0-9]+"})
       for: 3m
       labels:
         severity: major
@@ -2188,8 +2188,8 @@ spec:
       annotations:
         message: |
           One or more Kafka containers were restarted too often within the last 5 minutes
-      expr: count(count_over_time(container_last_seen{container_name="kafka"}[5m]))
-        > 2 * count(container_last_seen{container_name="kafka",pod_name=~".+-kafka-[0-9]+"})
+      expr: count(count_over_time(container_last_seen{container="kafka"}[5m])) > 2
+        * count(container_last_seen{container="kafka",pod=~".+-kafka-[0-9]+"})
       for: 5m
       labels:
         severity: warning
@@ -2197,8 +2197,8 @@ spec:
     rules:
     - alert: AvgRequestLatency
       annotations:
-        message: "The average request latency is {{ $value }} on {{ $labels.pod_name
-          }} \n"
+        message: "The average request latency is {{ $value }} on {{ $labels.pod }}
+          \n"
       expr: zookeeper_avgrequestlatency > 10
       for: 10s
       labels:
@@ -2206,7 +2206,7 @@ spec:
     - alert: OutstandingRequests
       annotations:
         message: |
-          There are {{ $value }} outstanding requests on {{ $labels.pod_name }}
+          There are {{ $value }} outstanding requests on {{ $labels.pod }}
       expr: zookeeper_outstandingrequests > 10
       for: 10s
       labels:
@@ -2215,7 +2215,7 @@ spec:
       annotations:
         message: |
           There are only {{ $value }} bytes available at {{ $labels.persistentvolumeclaim }} PVC
-      expr: kubelet_volume_stats_available_bytes{pod_name=~"([a-z]+-)+zookeeper-[0-9]+"}
+      expr: kubelet_volume_stats_available_bytes{pod=~"([a-z]+-)+zookeeper-[0-9]+"}
         < 5368709120
       for: 10s
       labels:
@@ -2224,8 +2224,8 @@ spec:
       annotations:
         message: |
           One or more Zookeeper containers were restarted too often within the last 5 minutes. This alert can be ignored when the Zookeeper cluster is scaling up
-      expr: count(count_over_time(container_last_seen{container_name="zookeeper"}[5m]))
-        > 2 * count(container_last_seen{container_name="zookeeper",pod_name=~".+-zookeeper-[0-9]+"})
+      expr: count(count_over_time(container_last_seen{container="zookeeper"}[5m]))
+        > 2 * count(container_last_seen{container="zookeeper",pod=~".+-zookeeper-[0-9]+"})
       for: 5m
       labels:
         severity: warning
@@ -2233,7 +2233,7 @@ spec:
       annotations:
         message: |
           All `zookeeper` containers in the Zookeeper pods have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="zookeeper",pod_name=~".+-zookeeper-[0-9]+"})
+      expr: absent(container_last_seen{container="zookeeper",pod=~".+-zookeeper-[0-9]+"})
       for: 3m
       labels:
         severity: major
@@ -2241,7 +2241,7 @@ spec:
       annotations:
         message: |
           All `tls-sidecar` containers in the Zookeeper pods have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="tls-sidecar",pod_name=~".+-zookeeper-[0-9]+"})
+      expr: absent(container_last_seen{container="tls-sidecar",pod=~".+-zookeeper-[0-9]+"})
       for: 3m
       labels:
         severity: major
@@ -2251,7 +2251,7 @@ spec:
       annotations:
         message: |
           Container topic-operator in Entity Operator pod has been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="topic-operator",pod_name=~".+-entity-operator-.+"})
+      expr: absent(container_last_seen{container="topic-operator",pod=~".+-entity-operator-.+"})
       for: 3m
       labels:
         severity: major
@@ -2259,7 +2259,7 @@ spec:
       annotations:
         message: |
           Container user-operator in Entity Operator pod have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="user-operator",pod_name=~".+-entity-operator-.+"})
+      expr: absent(container_last_seen{container="user-operator",pod=~".+-entity-operator-.+"})
       for: 3m
       labels:
         severity: major
@@ -2267,7 +2267,7 @@ spec:
       annotations:
         message: |
           Container tls-sidecar in Entity Operator pod have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container_name="tls-sidecar",pod_name=~".+-entity-operator-.+"})
+      expr: absent(container_last_seen{container="tls-sidecar",pod=~".+-entity-operator-.+"})
       for: 3m
       labels:
         severity: major

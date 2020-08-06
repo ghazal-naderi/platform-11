@@ -1128,7 +1128,7 @@
           "bucketAggs": [
             {
               "fake": true,
-              "field": "kubernetes.pod_name.keyword",
+              "field": "kubernetes.pod.keyword",
               "id": "4",
               "settings": {
                 "min_doc_count": 1,

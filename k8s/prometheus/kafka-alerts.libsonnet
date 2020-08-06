@@ -15,7 +15,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
         name: 'kafka_alerts',
         rules: [{
           alert: 'KafkaRunningOutOfSpace',
-          expr: 'kubelet_volume_stats_available_bytes{pod_name=~"([a-z]+-)+kafka-[0-9]+"} < 5368709120',
+          expr: 'kubelet_volume_stats_available_bytes{pod=~"([a-z]+-)+kafka-[0-9]+"} < 5368709120',
           'for': '10s',
           labels: {
             severity: 'warning',
@@ -34,7 +34,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
           annotations: {
             message: |||
-                There are {{ $value }} under replicated partitions on {{ $labels.pod_name }}
+                There are {{ $value }} under replicated partitions on {{ $labels.pod }}
            |||,
           },
         }, {
@@ -70,7 +70,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
           annotations: {
             message: |||
-                There are {{ $value }} partitions under the min ISR on {{ $labels.pod_name }}
+                There are {{ $value }} partitions under the min ISR on {{ $labels.pod }}
             |||,
           },
         }, {
@@ -82,24 +82,24 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
           annotations: {
             message: |||
-                There are {{ $value }} offline log directories on {{ $labels.pod_name }}
+                There are {{ $value }} offline log directories on {{ $labels.pod }}
             |||,
           },
         }, {
           alert: 'ScrapeProblem',
-          expr: 'up{job="kubernetes-services",kubernetes_namespace!~"openshift-.+",pod_name=~".+-kafka-[0-9]+"} == 0',
+          expr: 'up{job="kubernetes-services",kubernetes_namespace!~"openshift-.+",pod=~".+-kafka-[0-9]+"} == 0',
           'for': '3m',
           labels: {
             severity: 'major',
           },
           annotations: {
             message: |||
-                Prometheus was unable to scrape metrics from {{ $labels.pod_name }}/{{ $labels.instance }} for more than 3 minutes
+                Prometheus was unable to scrape metrics from {{ $labels.pod }}/{{ $labels.instance }} for more than 3 minutes
             |||,
           },
         }, {
           alert: 'ClusterOperatorContainerDown',
-          expr: 'count((container_last_seen{container_name="strimzi-cluster-operator"} > (time() - 90))) < 1 or absent(container_last_seen{container_name="strimzi-cluster-operator"})',
+          expr: 'count((container_last_seen{container="strimzi-cluster-operator"} > (time() - 90))) < 1 or absent(container_last_seen{container="strimzi-cluster-operator"})',
           'for': '1m',
           labels: {
             severity: 'major',
@@ -111,7 +111,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         }, {
           alert: 'KafkaBrokerContainersDown',
-          expr: 'absent(container_last_seen{container_name="kafka",pod_name=~".+-kafka-[0-9]+"})',
+          expr: 'absent(container_last_seen{pod=~".+-kafka-[0-9]+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -123,7 +123,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         }, {
           alert: 'KafkaTlsSidecarContainersDown',
-          expr: 'absent(container_last_seen{container_name="tls-sidecar",pod_name=~".+-kafka-[0-9]+"})',
+          expr: 'absent(container_last_seen{container="tls-sidecar",pod=~".+-kafka-[0-9]+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -135,7 +135,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         }, {
           alert: 'KafkaContainerRestartedInTheLast5Minutes',
-          expr: 'count(count_over_time(container_last_seen{container_name="kafka"}[5m])) > 2 * count(container_last_seen{container_name="kafka",pod_name=~".+-kafka-[0-9]+"})',
+          expr: 'count(count_over_time(container_last_seen{container="kafka"}[5m])) > 2 * count(container_last_seen{container="kafka",pod=~".+-kafka-[0-9]+"})',
           'for': '5m',
           labels: {
             severity: 'warning',
@@ -159,7 +159,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
           annotations: {
             message: |||
-               The average request latency is {{ $value }} on {{ $labels.pod_name }} 
+               The average request latency is {{ $value }} on {{ $labels.pod }} 
             |||,
           },
         }, {
@@ -171,12 +171,12 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
           annotations: {
             message: |||
-                There are {{ $value }} outstanding requests on {{ $labels.pod_name }}
+                There are {{ $value }} outstanding requests on {{ $labels.pod }}
             |||,
           },
         }, {
           alert: 'ZookeeperRunningOutOfSpace',
-          expr: 'kubelet_volume_stats_available_bytes{pod_name=~"([a-z]+-)+zookeeper-[0-9]+"} < 5368709120',
+          expr: 'kubelet_volume_stats_available_bytes{pod=~"([a-z]+-)+zookeeper-[0-9]+"} < 5368709120',
           'for': '10s',
           labels: {
             severity: 'warning',
@@ -188,7 +188,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         }, {
           alert: 'ZookeeperContainerRestartedInTheLast5Minutes',
-          expr: 'count(count_over_time(container_last_seen{container_name="zookeeper"}[5m])) > 2 * count(container_last_seen{container_name="zookeeper",pod_name=~".+-zookeeper-[0-9]+"})',
+          expr: 'count(count_over_time(container_last_seen{container="zookeeper"}[5m])) > 2 * count(container_last_seen{container="zookeeper",pod=~".+-zookeeper-[0-9]+"})',
           'for': '5m',
           labels: {
             severity: 'warning',
@@ -200,7 +200,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         }, {
           alert: 'ZookeeperContainersDown',
-          expr: 'absent(container_last_seen{container_name="zookeeper",pod_name=~".+-zookeeper-[0-9]+"})',
+          expr: 'absent(container_last_seen{container="zookeeper",pod=~".+-zookeeper-[0-9]+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -212,7 +212,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         }, {
           alert: 'ZookeeperTlsSidecarContainersDown',
-          expr: 'absent(container_last_seen{container_name="tls-sidecar",pod_name=~".+-zookeeper-[0-9]+"})',
+          expr: 'absent(container_last_seen{container="tls-sidecar",pod=~".+-zookeeper-[0-9]+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -229,7 +229,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
         name: 'entityOperator_alerts',
         rules: [{
           alert: 'TopicOperatorContainerDown',
-          expr: 'absent(container_last_seen{container_name="topic-operator",pod_name=~".+-entity-operator-.+"})',
+          expr: 'absent(container_last_seen{container="topic-operator",pod=~".+-entity-operator-.+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -241,7 +241,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         },{
           alert: 'UserOperatorContainerDown',
-          expr: 'absent(container_last_seen{container_name="user-operator",pod_name=~".+-entity-operator-.+"})',
+          expr: 'absent(container_last_seen{container="user-operator",pod=~".+-entity-operator-.+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -253,7 +253,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
           },
         },{
           alert: 'EntityOperatorTlsSidecarContainerDown',
-          expr: 'absent(container_last_seen{container_name="tls-sidecar",pod_name=~".+-entity-operator-.+"})',
+          expr: 'absent(container_last_seen{container="tls-sidecar",pod=~".+-entity-operator-.+"})',
           'for': '3m',
           labels: {
             severity: 'major',
@@ -270,7 +270,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
 #        name: 'connect_alerts',
 #        rules: [{
 #          alert: 'ConnectContainersDown',
-#          expr: 'absent(container_last_seen{container_name=~".+-connect",pod_name=~".+-connect-.+"})',
+#          expr: 'absent(container_last_seen{container=~".+-connect",pod=~".+-connect-.+"})',
 #          'for': '3m',
 #          labels: {
 #            severity: 'major',
@@ -287,7 +287,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
 #        name: 'bridge_alerts',
 #        rules: [{
 #          alert: 'BridgeContainersDown',
-#          expr: 'absent(container_last_seen{container_name=~".+-bridge",pod_name=~".+-bridge-.+"})',
+#          expr: 'absent(container_last_seen{container=~".+-bridge",pod=~".+-bridge-.+"})',
 #          'for': '3m',
 #          labels: {
 #            severity: 'major',
@@ -304,7 +304,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
 #        name: 'mirrormaker_alerts',
 #        rules: [{
 #          alert: 'MirrorMakerContainerDown',
-#          expr: 'absent(container_last_seen{container_name=~".+-mirror-maker",pod_name=~".+-mirror-maker-.+"})',
+#          expr: 'absent(container_last_seen{container=~".+-mirror-maker",pod=~".+-mirror-maker-.+"})',
 #          'for': '3m',
 #          labels: {
 #            severity: 'major',

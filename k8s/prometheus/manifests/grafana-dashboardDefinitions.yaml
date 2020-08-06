@@ -39886,7 +39886,7 @@ items:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "$metrics",
+            "datasource": "metrics",
             "fill": 0,
             "gridPos": {
               "h": 10,
@@ -39977,7 +39977,7 @@ items:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "$metrics",
+            "datasource": "metrics",
             "fill": 0,
             "gridPos": {
               "h": 10,
@@ -40068,7 +40068,7 @@ items:
             "bars": false,
             "dashLength": 10,
             "dashes": false,
-            "datasource": "$metrics",
+            "datasource": "metrics",
             "fill": 0,
             "gridPos": {
               "h": 10,
@@ -40534,7 +40534,7 @@ items:
             {
               "allValue": null,
               "current": {},
-              "datasource": "$metrics",
+              "datasource": "metrics",
               "definition": "",
               "hide": 0,
               "includeAll": false,
@@ -40556,7 +40556,7 @@ items:
             {
               "allValue": null,
               "current": {},
-              "datasource": "$metrics",
+              "datasource": "metrics",
               "definition": "",
               "hide": 0,
               "includeAll": false,
@@ -40583,7 +40583,7 @@ items:
                   "$__all"
                 ]
               },
-              "datasource": "$metrics",
+              "datasource": "metrics",
               "definition": "label_values(kafka_consumergroup_current_offset{namespace=\"$kubernetes_namespace\",strimzi_io_cluster=\"$strimzi_cluster_name\"}, consumergroup)",
               "hide": 0,
               "includeAll": true,
@@ -40610,7 +40610,7 @@ items:
                   "$__all"
                 ]
               },
-              "datasource": "$metrics",
+              "datasource": "metrics",
               "definition": "label_values(kafka_topic_partition_current_offset{namespace=\"$kubernetes_namespace\",strimzi_io_cluster=\"$strimzi_cluster_name\"}, topic)",
               "hide": 0,
               "includeAll": true,
