@@ -35,7 +35,33 @@ local kp =
           url: 'http://platform-loki.loki.svc.cluster.local:3100',
           version: 1,
           editable: false,
-        }],
+          jsonData: {
+            maxLines: 5000,
+            derivedFields: [
+            {
+                "datasourceUid": "jaeger",
+                "matcherRegex": 'traceId":"(.+)","spanId"',
+                "name": "traceId",
+                "url": "${__value.raw}",
+            },
+            {
+                "datasourceUid": "jaeger",
+                "matcherRegex": '"parentId":"(.+)"',
+                "name": "parentId",
+                "url": "${__value.raw}",
+            },
+            ],
+          },
+        },
+        {
+          name: 'jaeger',
+          type: 'jaeger',
+          access: 'proxy',
+          org_id: 1,
+          url: 'http://stream-query.jaeger.svc.cluster.local:16686',
+          version: 1,
+          editable: false,
+        },],
         // FIXME: Loki dashboards below are strangely integrated as they are too large to import normally
         rawDashboards+:: {
           'kafka.json': (importstr 'kafka.json'),
