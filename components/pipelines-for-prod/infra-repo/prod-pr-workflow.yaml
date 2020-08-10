@@ -1,0 +1,126 @@
+# This will react to a prod PR being approved by development leads and QA. It will cut a production release.
+name: Production prep workflow 
+on:
+  pull_request_review:
+    branches:
+    - master
+    types:
+    - edited
+    - submitted
+jobs:
+  check-privileges:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'release/prod') &&
+        contains(github.event.review.state, 'approved') &&
+        contains('fakeci', github.event.pull_request.user.login)
+    steps:
+     - uses: actions/checkout@v2
+       with:
+        ref: ${{ github.event.pull_request.base.ref }}
+     - name: Check leadership team approval
+       env:
+         GITHUB_USER: fakeci
+         GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         ORG: ${{ github.event.pull_request.head.user.login }}
+         TEAM: development-leads
+         PR_NUMBER: ${{ github.event.pull_request.number }}
+       run: |
+           if ./.github/workflows/approved-by-team.sh; then
+             echo "approved by ${TEAM}!"
+             exit 0
+           else
+             echo "not yet approved by ${TEAM}"
+             exit 1 
+           fi
+     - name: Check QA team approval
+       env:
+         GITHUB_USER: fakeci
+         GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         ORG: ${{ github.event.pull_request.head.user.login }}
+         TEAM: qa
+         PR_NUMBER: ${{ github.event.pull_request.number }}
+       run: |
+           if ./.github/workflows/approved-by-team.sh; then
+             echo "approved by ${TEAM}!"
+             exit 0
+           else
+             echo "not yet approved by ${TEAM}"
+             exit 1 
+           fi
+  prepare: 
+    needs: check-privileges
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.base.ref }}
+    - uses: geertvdc/setup-hub@master
+    - name: Squash, merge and version
+      id: version
+      run: |
+        hub config --global user.email "developers+ci@fakebank.com"
+        hub config --global user.name "FakeBank Bot"
+        if [[ ! -z "$(hub pr show ${PROD_PR_NUMBER} -f '%mt')" ]]; then # already merged!
+          git pull
+        else
+          hub api -XPUT "repos/${GITHUB_REPO}/pulls/${PROD_PR_NUMBER}/merge" -f merge_method="squash" -f commit _title="#${PROD_PR_NUMBER}: rolling \`prod\` release"
+          git pull
+        fi
+        git fetch --depth=1 origin +refs/tags/*:refs/tags/* # need to fetch tags for versioning
+        VERSION_NUMBER=$(date "+%y.%m") # CalVer
+        git tag "v${VERSION_NUMBER}-${GITHUB_RUN_NUMBER}"
+        git push origin --tags
+        echo ::set-output name=version::$(echo "v${VERSION_NUMBER}-${GITHUB_RUN_NUMBER}")
+      env:
+          GITHUB_LABELS: ${{ toJson(github.event.pull_request.labels) }}
+          GITHUB_USER: fakeci
+          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PROD_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPO: ${{ github.repository }}
+    - uses: imranismail/setup-kustomize@master
+      with:
+        kustomize-version: "3.6.1"
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }} 
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Production pre-release
+        body: |
+            ${{ github.event.pull_request.body }}
+        draft: true
+        prerelease: false
+    - name: Prep release artifacts
+      env:
+        GITHUB_REF: ${{ github.ref }}
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        cd k8s/production
+        echo "# production release, version ${NEW_VERSION}" > ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
+        echo "# from ${GITHUB_REF} on $(date)" >> ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
+        kustomize build . >> ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
+    - name: Upload release to Github
+      id: uploadgh
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with: 
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/prod-release-${{ steps.version.outputs.version }}.yaml
+        asset_name: prod-release-${{ steps.version.outputs.version }}.yaml
+        asset_content_type: 'text/yaml'
+    - name: Notify slack
+      uses: innocarpe/actions-slack@v1
+      if: always()
+      with:
+        status: ${{ job.status }}
+        success_text: '💯 *successfully* drafted release for `prod`'
+        failure_text: '☠️ *failed* to draft release for `prod`'
+        cancelled_text: '✋ *cancelled* drafted release for `prod`'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

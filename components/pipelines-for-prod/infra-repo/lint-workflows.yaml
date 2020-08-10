@@ -1,0 +1,33 @@
+# This will automatically lint shell and YAML files in `.github/workflows` directory
+name: Workflow lint
+on:
+  pull_request:
+    paths:
+    - '.github/workflows/**'
+    types:
+    - opened
+    - reopened
+    - edited
+    - synchronize
+    - ready_for_review
+    - labeled
+    - unlabeled
+    - unlocked
+  pull_request_review:
+    types:
+    - submitted
+  check_suite:
+    types:
+    - completed
+  status: {}
+jobs:
+  lint_workflows:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Lint workflow YAML and bash on PR
+      env:
+        YQ_VERSION: "3.3.2"
+        SHELLCHECK_VERSION: "v0.7.1"
+      run: |
+        ./.github/workflows/lint-workflows.sh

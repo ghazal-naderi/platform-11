@@ -1,0 +1,28 @@
+name: pinversion
+on:
+  issue_comment:
+    types: [created, edited]
+jobs:
+  pin:
+    if: (contains(github.event.issue.labels.*.name, 'release/qa') || contains(github.event.issue.labels.*.name, 'release/prod')) &&
+         contains('fakeci', github.event.issue.user.login) &&
+         contains(github.event.comment.body, '/pin')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: geertvdc/setup-hub@master
+      - uses: imranismail/setup-kustomize@master
+        with:
+          kustomize-version: "3.6.1" 
+      - name: Pin version
+        env:
+          GITHUB_USER: fakeci
+          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+          GITHUB_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
+          COMMENT: ${{ github.event.comment.body }}
+        run: |
+          curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
+          .github/workflows/pin-version.sh

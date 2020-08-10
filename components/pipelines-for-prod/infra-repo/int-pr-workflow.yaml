@@ -1,0 +1,58 @@
+# This will automatically merge the int PR raised by the application if checks are passed and will raise a PR or modify the current PR to merge development to qa
+name: Integration deployment workflow
+on:
+  pull_request:
+    paths:
+    - 'k8s/int/kustomization.yaml'
+    types:
+    - opened
+    - reopened
+    - edited
+    - synchronize
+    - ready_for_review
+    - unlocked
+    - labeled
+    - unlabeled
+  pull_request_review:
+    types:
+    - submitted
+jobs:
+  automerge:
+    if: contains(github.event.pull_request.labels.*.name, 'release/int') &&
+        contains('fakeci', github.event.pull_request.user.login) 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.base.ref }}
+    - uses: geertvdc/setup-hub@master
+    - uses: imranismail/setup-kustomize@master
+      with:
+        kustomize-version: "3.6.1"
+    - name: Set up Ruby 2.6
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.6.x
+    - name: Merge PR
+      env:
+        GITHUB_USER: fakeci
+        GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+        BASE_REF: ${{ github.event.pull_request.base.ref }}
+        INT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        GITHUB_REPO: ${{ github.repository }}
+      run: |
+        gem install octocam
+        curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq 
+        .github/workflows/int-pr.sh
+    - name: Notify slack
+      uses: innocarpe/actions-slack@v1
+      if: always()
+      with:
+        status: ${{ job.status }}
+        success_text: '💯 *successfully* raised/updated PR for `qa`'
+        failure_text: '☠️ *failed* PR for `qa`'
+        cancelled_text: '✋ *cancelled* PR for `qa`'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,0 +1,76 @@
+# This workflow will react to QA approving a QA PR
+name: Preproduction release workflow 
+on:
+  pull_request_review:
+    paths:
+    - 'k8s/qa/kustomization.yaml'
+    types:
+    - submitted
+    - edited
+jobs:
+   check-privileges:
+     runs-on: ubuntu-latest
+     if: contains(github.event.pull_request.labels.*.name, 'release/qa') &&
+         contains(github.event.review.state, 'approved') &&
+         contains('fakeci', github.event.pull_request.user.login)
+     steps:
+      - uses: actions/checkout@v2
+        with:
+         ref: ${{ github.event.pull_request.base.ref }}
+      - name: Check QA team approval
+        env:
+          GITHUB_USER: fakeci
+          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+          ORG: ${{ github.event.pull_request.head.user.login }}
+          TEAM: qa 
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if ./.github/workflows/approved-by-team.sh; then
+            echo "approved by ${TEAM}!"
+            exit 0
+          else
+            echo "not yet approved by ${TEAM}"
+            exit 1
+          fi
+   prerelease:
+     needs: check-privileges
+     runs-on: ubuntu-latest
+     if: contains(github.event.pull_request.labels.*.name, 'release/qa') &&
+         contains('fakeci', github.event.pull_request.user.login)
+     steps:
+     - uses: actions/checkout@v2
+       with:
+         ref: ${{ github.event.pull_request.base.ref }}
+     - uses: geertvdc/setup-hub@master
+     - uses: imranismail/setup-kustomize@master
+       with:
+         kustomize-version: "3.6.1"
+     - name: Set up Ruby 2.6
+       uses: actions/setup-ruby@v1
+       with:
+         ruby-version: 2.6.x
+     - name: Prepare release 
+       env:
+         GITHUB_USER: fakeci
+         GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         HEAD_REF: ${{ github.event.pull_request.head.ref }}
+         BASE_REF: ${{ github.event.pull_request.base.ref }}
+         QA_PR_NUMBER: ${{ github.event.pull_request.number }}
+         GITHUB_REPO: ${{ github.repository }}
+       run: |
+         gem install octocam
+         curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
+         .github/workflows/qa-pr.sh
+     # Let's tell slack how this whole thing turned out.
+     - name: Notify slack
+       uses: innocarpe/actions-slack@v1
+       if: always()
+       with:
+         status: ${{ job.status }}
+         success_text: '💯 *passed* pre-release checks'
+         failure_text: '☠️ *failed* pre-release checks'
+         cancelled_text: '✋ *cancelled* pre-release checks'
+       env:
+         GITHUB_TOKEN: ${{ github.token }}
+         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

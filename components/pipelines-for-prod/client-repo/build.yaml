@@ -1,0 +1,176 @@
+name: Build
+on:
+  push:
+    branches:
+      - master 
+      - noticket/pipeline
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set 'REPOSITORY_NAME'
+      run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") 
+      shell: bash
+    - shell: bash
+      name: Set the output 'extract-branch.branch'
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})" 
+      id: extract-branch
+    - name: Add jdk-8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Run the tests
+      env:
+        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        NEXUS_USERNAME: developer
+        MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
+      run: mvn -f pom.xml -s settings.xml verify -ntp -Dci=true -Djib.skip=true
+    - name: run debug
+      if: ( ! success() )
+      run: |
+        cat /home/runner/work/${REPOSITORY_NAME}/${REPOSITORY_NAME}/target/failsafe-reports/*-jvmRun*.dump
+        cat /home/runner/work/${REPOSITORY_NAME}/${REPOSITORY_NAME}/target/failsafe-reports/failsafe-summary.xml
+    - name: Notify slack
+      uses: innocarpe/actions-slack@v1
+      if: ( ! success() )
+      with:
+        status: ${{ job.status }}
+        failure_text: 'Tests failed on ${{ github.repository }} ☠️'
+        cancelled_text: 'Tests cancelled on ${{ github.repository }} ✋'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # This job executes the build and will result in a new image
+  # being pushed to the ECR repository for this service.
+  # The actual image build and push are handled by Maven for this service.
+  build:
+    runs-on: ubuntu-latest
+    name: Build image
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set the env var 'REPOSITORY_NAME' 
+      run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
+      shell: bash
+    - name: Add jdk-8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - uses: actions/cache@v1
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Build and push
+      env:
+        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        NEXUS_USERNAME: developer
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
+      run: mvn -f pom.xml -s settings.xml package -ntp -Dci=true -Dmaven.test.skip -DskipTests 
+    - name: Notify slack
+      uses: innocarpe/actions-slack@v1
+      if: ( ! success() )
+      with:
+        status: ${{ job.status }}
+        failure_text: 'Build failed on ${{ github.repository }} ☠️'
+        cancelled_text: 'Build cancelled on ${{ github.repository }} ✋'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # This job will update the infra repo with the newly built image tag
+  # on the int overlay. It will only create the PR.
+  # After the PR is raised the infra repo CI/CD process takes over
+  update-manifests:
+    name: Update manifests
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: source
+    - name: Set the env var 'REPOSITORY_NAME'
+      run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
+      shell: bash
+    - name: Checkout infra repo
+      uses: actions/checkout@v2
+      with:
+        repository: fakebank/infra
+        path: infra
+        token: ${{ secrets.GH_PAT }}
+    - name: Add jdk-8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 8
+    - name: Get image tag
+      id: image-tag
+      env:
+        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        NEXUS_USERNAME: developer
+        MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
+      run: |
+        IMAGE_TAG=$(mvn -f source/pom.xml -s source/settings.xml \
+        pl.project13.maven:git-commit-id-plugin:revision \
+        help:evaluate -Dexpression=jib.image.version.tag -q -DforceStdout)
+        [ -z "$IMAGE_TAG" ] && exit 1
+
+        echo "##[set-output name=tag;]$IMAGE_TAG"
+    - uses: heinrichreimer/github-changelog-generator-action@v2.1.1
+      id: changelog
+      with:
+        pullRequests: true
+        prWoLabels: true
+        issues: true
+        issuesWoLabels: true
+        releaseBranch: ${{ steps.extract-branch.outputs.branch }}
+        author: true
+        unreleased: true
+        futureRelease: ${{ steps.image-tag.outputs.tag }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        output: CHANGELOG.md
+    - uses: imranismail/setup-kustomize@master
+      with:
+        kustomize-version: "2.0.3"
+    - uses: geertvdc/setup-hub@master
+    - name: Create PR
+      env:
+        GITHUB_USER: fakeci
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_BRANCH: ${{ steps.extract-branch.outputs.branch }}
+        AWS_ECR_ACCOUNT_ID: ${{ secrets.AWS_ECR_ACCOUNT_ID }}
+        AWS_REGION: 'us-east-1'
+        APP_VERSION: ${{ steps.image-tag.outputs.tag }}
+      run: source/.github/workflows/raise-pr.sh
+    # Let's tell slack if this fails. 
+    - name: Notify slack
+      uses: innocarpe/actions-slack@v1
+      if: ( ! success() ) 
+      with:
+        status: ${{ job.status }}
+        success_text: '💯 *successfully* raised `infra` PR for `int` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
+        failure_text: '☠️ *failed* to raise `infra` PR for `int` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
+        cancelled_text: '✋ *cancelled* `infra` PR `int` overlay creation for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

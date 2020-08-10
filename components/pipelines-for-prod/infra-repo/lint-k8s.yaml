@@ -1,0 +1,37 @@
+# This will automatically lint kubernetes files in PRs in order to ensure that they will actually correctly deploy to environment
+name: Kubernetes lint
+on:
+  pull_request:
+    paths:
+    - 'k8s/**'
+    types:
+    - opened
+    - reopened
+    - edited
+    - synchronize
+    - ready_for_review
+    - labeled
+    - unlabeled
+    - unlocked
+  pull_request_review:
+    types:
+    - submitted
+  check_suite:
+    types:
+    - completed
+  status: {}
+jobs:
+  lint_k8s:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: imranismail/setup-kustomize@master
+      with:
+        kustomize-version: "3.6.1"
+    - name: Lint k8s on PR
+      env:
+        KUBEVAL_VERSION: "0.14.0"
+        KUBESCORE_VERSION: "1.5.1"
+        KUBERNETES_VERSION: "v1.15.7"
+      run: |
+        ./.github/workflows/lint-k8s.sh

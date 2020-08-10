@@ -1,0 +1,249 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: create-prod-webhook
+  namespace: tekton-pipelines
+spec:
+  inputs:
+    params:
+    - description: The external domain for the EventListener e.g. `$(inputs.params.EventListenerName).<PROXYIP>.nip.io`
+      name: ExternalDomain
+      type: string
+    - description: The GitHub user
+      name: GitHubUser
+      type: string
+    - description: The GitHub repo where the webhook will be created
+      name: GitHubRepo
+      type: string
+    - description: The GitHub organization where the webhook will be created
+      name: GitHubOrg
+      type: string
+    - description: The Secret name for GitHub access token and string. Must contain
+        keys 'access-token' and  'secret-string'
+      name: GitHubSecretName
+      type: string
+    - default: github.com
+      description: The GitHub domain. Override for GitHub Enterprise
+      name: GitHubDomain
+      type: string
+    - default: '[\"push\"]'
+      description: List of events the webhook will send notifications for
+      name: WebhookEvents
+      type: string
+  steps:
+  - args:
+    - -ce
+    - |
+      set -e
+      echo "Create Webhook"
+      if [ $(inputs.params.GitHubDomain) = "github.com" ];then
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://api.github.com/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+      else
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://$(inputs.params.GitHubDomain)/api/v3/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+      fi
+    command:
+    - sh
+    image: pstauffer/curl:latest
+    name: create-prod-webhook
+    volumeMounts:
+    - mountPath: /var/secret
+      name: github-secret
+  volumes:
+  - name: github-secret
+    secret:
+      secretName: $(inputs.params.GitHubSecretName)
+---
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: infra-cd-prod
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: version
+    description: The release version to apply 
+  - name: prerelease
+    description: Whether this is a prerelease
+  - name: draft
+    description: Whether this is a draft 
+  - name: gitrepositoryurl
+    description: The repository from which this release was obtained
+  tasks:
+  - name: apply-k8s-prod
+    taskRef:
+      name: kustomize-apply-release
+      kind: ClusterTask
+    params:
+    - name: version
+      value: $(params.version)
+    - name: prerelease
+      value: $(params.prerelease)
+    - name: draft
+      value: $(params.draft)
+    - name: gitrepositoryurl
+      value: $(params.gitrepositoryurl)
+---
+apiVersion: tekton.dev/v1alpha1
+kind: ClusterTask
+metadata:
+  name: kustomize-apply-release
+spec:
+  inputs:
+    params:
+      - name: version
+        type: string
+        description: The release version to apply
+      - name: prerelease
+        type: string
+        description: Whether this is a prerelease
+      - name: draft
+        type: string
+        description: Whether this is a draft 
+      - name: gitrepositoryurl
+        type: string
+        description: The repository from which this release was obtained
+  steps:
+    - name: k8s-dry-run
+      image: lachlanevenson/k8s-kubectl:v1.17.2
+      workingDir: /workspace/releases
+      env:
+        - name: GITHUB_OAUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: git-webhook
+              key: access-token
+      script: |-
+          #!/usr/bin/env ash
+          set -ex
+          # Fetch from gruntwork helps to grab releases from Github
+          wget https://github.com/gruntwork-io/fetch/releases/download/v0.3.9/fetch_linux_amd64 -O fetch
+          chmod +x fetch
+          ./fetch --repo="$(inputs.params.gitrepositoryurl)" --tag="$(inputs.params.version)" --release-asset="prod-release-$(inputs.params.version)" . 
+          echo "checking release validity with a dry-run"
+          kubectl apply -f "prod-release-$(inputs.params.version).yaml" --dry-run
+          if ([[ "$(inputs.params.draft)" == 'false' ]] && [[ "$(inputs.params.prerelease)" == 'false' ]]); then
+            echo 'this is not a prerelease or draft, we will apply it'
+            kubectl apply -f "prod-release-$(inputs.params.version).yaml"
+          else
+            echo 'this is a prerelease or draft, no further action required'
+          fi
+---
+apiVersion: tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: infra-cd-prod
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: version
+    description: The version to deploy
+  - name: draft
+    description: Whether the release is a draft or not
+  - name: prerelease
+    description: Whether the release is a prerelease or not
+  - name: gitrepositoryurl
+    description: The github repo from which to obtain releases
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1alpha1
+    kind: PipelineRun
+    metadata:
+      name: infra-cd-prod-$(uid)
+      namespace: tekton-pipelines
+    spec:
+      serviceAccountName: infra-build-bot
+      pipelineRef:
+        name: infra-cd-prod
+      params:
+      - name: version
+        value: "$(params.version)"
+      - name: draft
+        value: "$(params.draft)"
+      - name: prerelease
+        value: "$(params.prerelease)"
+      - name: gitrepositoryurl
+        value: "$(params.gitrepositoryurl)"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: infra-cd-prod
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: version
+    value: "$(body.release.tag_name)"
+  - name: draft
+    value: "$(body.release.draft)"
+  - name: prerelease
+    value: "$(body.release.prerelease)"
+  - name: gitrepositoryurl
+    value: "https://github.com/$(body.repository.full_name)"
+---
+apiVersion: tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: infra-cd-prod
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-triggers-admin
+  triggers:
+  - name: infra-cd-prod
+    interceptors:
+    - github:
+        secretRef:
+          secretName: git-webhook
+          secretKey: secret-string 
+        eventTypes:
+        - release
+    bindings:
+    - name: infra-cd-prod
+    template:
+      name: infra-cd-prod
+---
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: infra-cd-prod-webhook-run
+  namespace: tekton-pipelines
+spec:
+  taskRef:
+    name: create-prod-webhook
+  inputs:
+    params:
+    - name: GitHubOrg
+      value: "fakebank"
+    - name: GitHubUser
+      value: "fakeci"
+    - name: GitHubRepo
+      value: "infra"
+    - name: GitHubSecretName
+      value: git-webhook
+    - name: ExternalDomain
+      value: infra-cd-prod.fakebank.com
+    - name: WebhookEvents
+      value: '[\"release\"]'
+  timeout: 1000s
+  serviceAccountName: tekton-triggers-createwebhook
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: infra-cd-prod
+  namespace: tekton-pipelines
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx-external
+spec:
+  tls:
+  - hosts:
+    - infra-cd-prod.fakebank.com
+    secretName: infra-cd-prod-tls
+  rules:
+  - host: infra-cd-prod.fakebank.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: el-infra-cd-prod
+          servicePort: 8080
