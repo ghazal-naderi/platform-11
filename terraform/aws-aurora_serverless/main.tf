@@ -16,14 +16,14 @@ resource "aws_security_group" "db" {
 }
 
 resource "aws_subnet" "db_subnets" {
-    for_each          = var.db_subnet_confs 
-    vpc_id            = var.vpc_id
-    cidr_block        = each.value.cidr
-    availability_zone = each.value.az
+  for_each          = var.db_subnet_confs
+  vpc_id            = var.vpc_id
+  cidr_block        = each.value.cidr
+  availability_zone = each.value.az
 
-    tags = {
-      Name = "${var.name}-db-${each.value.az}-subnet"
-    }
+  tags = {
+    Name = "${var.name}-db-${each.value.az}-subnet"
+  }
 }
 
 resource "aws_db_subnet_group" "default" {
@@ -59,7 +59,7 @@ resource "aws_rds_cluster" "postgresql" {
   }
 
   lifecycle {
-     ignore_changes = [master_password]
+    ignore_changes = [master_password]
   }
 
   tags = {
