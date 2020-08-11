@@ -34,21 +34,22 @@ local kp =
           org_id: 1,
           url: 'http://platform-loki.loki.svc.cluster.local:3100',
           version: 1,
+          uid: 'lokids',
           editable: false,
           jsonData: {
             maxLines: 5000,
             derivedFields: [
             {
-                "datasourceUid": "jaeger",
+                "datasourceUid": "jaegerds",
                 "matcherRegex": 'traceId":"(.+)","spanId"',
                 "name": "traceId",
-                "url": "${__value.raw}",
+                "url": "$${__value.raw}",
             },
             {
-                "datasourceUid": "jaeger",
+                "datasourceUid": "jaegerds",
                 "matcherRegex": '"parentId":"(.+)"',
                 "name": "parentId",
-                "url": "${__value.raw}",
+                "url": "$${__value.raw}",
             },
             ],
           },
@@ -56,6 +57,7 @@ local kp =
         {
           name: 'jaeger',
           type: 'jaeger',
+          uid: 'jaegerds',
           access: 'proxy',
           org_id: 1,
           url: 'http://stream-query.jaeger.svc.cluster.local:16686',
