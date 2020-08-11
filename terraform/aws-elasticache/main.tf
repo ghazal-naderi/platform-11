@@ -1,6 +1,6 @@
 resource "aws_security_group" "cache" {
   vpc_id      = var.vpc_id
-  name        = format("%s-sg", var.name)
+  name        = format("cache-%s-sg", var.name)
   description = format("Security Group for %s ElastiCache instance", var.name)
 
   ingress {
@@ -38,6 +38,7 @@ resource "aws_elasticache_replication_group" "redis" {
   node_type                     = var.node_type
   port                          = 6379
   transit_encryption_enabled    = true
+  at_rest_encryption_enabled    = true
   parameter_group_name          = "default.redis5.0.cluster.on"
   snapshot_retention_limit      = 1
   snapshot_window               = "00:00-05:00"
