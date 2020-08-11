@@ -37,6 +37,7 @@ resource "aws_elasticache_replication_group" "redis" {
   replication_group_description = "Redis cluster"
   node_type                     = var.node_type
   port                          = 6379
+  transit_encryption_enabled    = true
   parameter_group_name          = "default.redis5.0.cluster.on"
   snapshot_retention_limit      = 1
   snapshot_window               = "00:00-05:00"
