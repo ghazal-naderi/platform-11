@@ -26,10 +26,10 @@ RUN pip install awscli
 RUN unzip -q -d /tmp/ /tmp/consul.zip && mv /tmp/consul /usr/local/bin/consul && chmod +x /usr/local/bin/consul
 RUN aws configure set default.region me-jeddah-1; aws configure set aws_access_key_id "$CONSUL_BUCKET_ACCESS" ; aws configure set aws_secret_access_key "$CONSUL_BUCKET_SECRET"
 
-COPY consul-snapshot.sh ./
-WORKDIR /workspace
+COPY consul-snapshot.sh ./usr/bin/
+RUN chmod +x /usr/bin/consul-snapshot.sh
 VOLUME ["/workspace"]
 
 # ENTRYPOINT ["sleep"]
 # CMD ["100000"]
-ENTRYPOINT ["/bin/ash","./consul-snapshot.sh"]
+ENTRYPOINT ["/bin/ash","/usr/bin/consul-snapshot.sh"]
