@@ -11,7 +11,12 @@ spec:
     - parser:
         key_name: log
         parse:
-          type: json
+          type: multi_format
+          patterns:
+          - format: json
+          - format: nginx
+          - format: syslog
+          - format: apache2
         remove_key_name_field: true
         reserve_time: true
         reserve_data: true
