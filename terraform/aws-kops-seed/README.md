@@ -16,9 +16,9 @@ kops create cluster fakebank.stage.env.fake.com \
     --dns public \
     --dns-zone "${KOPS_DNS_ZONE}" \
     --node-count 4 \
-    --node-size r5.large \
-    --kubernetes-version 1.15.10 \
-    --master-size r5.large 
+    --node-size m5a.large \
+    --kubernetes-version 1.16.13 \
+    --master-size t3a.large
 ```
 
 For DNS, we should edit with `kops edit cluster` in order to add:
@@ -28,11 +28,48 @@ spec:
   kubeDNS:
     provider: CoreDNS
 ```
+For networking observability, we should add:
+```
+  networking:
+    cilium:
+      hubble:
+        enabled: true
+        metrics:
+        - dns
+        - drop
+        - flow
+        - http
+        - icmp
+        - port-distribution
+        - tcp
+      preallocateBPFMaps: true
+      version: v1.8.2
+```
 For metrics monitoring, we should edit in order to add:
 ```
 kubelet:
     authenticationTokenWebhook: true
     authorizationMode: Webhook
+```
+For RBAC, we should add:
+```
+authorization:
+  rbac: {}
+kubeAPIServer:
+    authorizationMode: RBAC
+    oidcClientID: dex-k8s-authenticator
+    oidcGroupsClaim: groups
+    oidcIssuerURL: https://dex.<cluster url>
+    oidcUsernameClaim: email
+```
+For easier debugging, we should add:
+```
+kubelet:
+  featureGates:
+    EphemeralContainers: "true"
+kubeAPIServer:
+  featureGates:
+    EphemeralContainers: "true"
 ```
 
 If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should make sure to add `additionalPolicies` sufficient to give nodes and masters the ability to pull their configurations from the bucket and therefore to decrypt the contents. The policy to do so is below and can be applied via `kops edit cluster ${CLUSTER_NAME}`. Be sure to refer to the notes below on how to change the ARN values for your own infrastructure.
