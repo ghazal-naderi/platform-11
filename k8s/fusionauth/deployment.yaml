@@ -64,15 +64,15 @@ spec:
               value: 256M
             - name: FUSIONAUTH_SEARCH_ENGINE_TYPE
               value: database
-          image: fusionauth/fusionauth-app:latest
+          image: fusionauth/fusionauth-app:1.18.7
           name: fusionauth
           ports:
             - containerPort: 9011
           resources:
             requests:
               cpu: 1000m
-              memory: 500Mi
+              memory: 1000Mi
             limits:
               cpu: 1000m
-              memory: 500Mi
+              memory: 1000Mi
       restartPolicy: Always
