@@ -94,25 +94,9 @@ This seed initializes the environment with basic configuration and the seed modu
 
 5. Re-set your AWS keys (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) with the keys from the previous step. Export the variable `KOPS_STATE_STORE` with the S3 bucket (eg `s3://$bucketname`) created by the aforementioned module and `KOPS_DNS_ZONE` with the zone ID of the first environment to be created (eg. `Z0220055AWXE17E24EY` for `int.eu-west-1.dev.fakebank.com`) created by the `main.tf` code above.
 
-6. Install `kops` (`brew install kops`) and use it to initialize the cluster on the S3 bucket using the DNS zone exported in the last step.
-```
-kops create cluster int.us-east-1.dev.fakebank.com \
-    --state "${KOPS_STATE_STORE}" \
-    --zones "us-east-1a,us-east-1b,us-east-1c" \
-    --master-zones "us-east-1a,us-east-1b,us-east-1c" \
-    --networking cilium \
-    --topology private \
-    --bastion \
-    --dns public \
-    --dns-zone "${KOPS_DNS_ZONE}" \
-    --node-count 3 \
-    --node-size t3a.medium \
-    --kubernetes-version 1.15.10 \
-    --master-size t3a.medium 
-```
-The above example command will create a 3-master, 3-node Kubernetes cluster.
+6. Install `kops` (`brew install kops`)
 
-7. Make the edits (with `kops edit cluster int.us-east-1.dev.fakebank.com`) outlined in the `aws-kops-seed` `README.md` available [here](https://github.com/11FSConsulting/platform/tree/master/terraform/aws-kops-seed). This will enable `coredns`, provide access to the encrypted S3 bucket for nodes and enable metrics monitoring.
+7. Using `kops`, initialize the cluster on the S3 bucket using the DNS zone exported in step 4. Use the commands and make the edits (with `kops edit cluster int.us-east-1.dev.fakebank.com`) outlined in the `aws-kops-seed` `README.md` available [here](https://github.com/11FSConsulting/platform/tree/master/terraform/aws-kops-seed). This will enable `coredns`, provide access to the encrypted S3 bucket for nodes and enable metrics monitoring.
 
 8. Use `kops update cluster int.us-east-1.dev.fakebank.com --yes` - if anything isn't working, review step 7 and make the necessary changes.
 

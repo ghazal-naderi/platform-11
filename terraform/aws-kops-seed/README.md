@@ -17,7 +17,7 @@ kops create cluster fakebank.stage.env.fake.com \
     --dns-zone "${KOPS_DNS_ZONE}" \
     --node-count 4 \
     --node-size m5a.large \
-    --kubernetes-version 1.16.13 \
+    --kubernetes-version 1.16.14 \
     --master-size t3a.large
 ```
 
@@ -28,7 +28,7 @@ spec:
   kubeDNS:
     provider: CoreDNS
 ```
-For networking observability, we should add:
+For networking observability, we should add (requires latest `kops`):
 ```
   networking:
     cilium:
@@ -108,7 +108,7 @@ If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should
                 "route53:ChangeResourceRecordSets"
             ],
             "Resource": [
-                "<< SEE NOTE #3 BELOW >>"
+                "arn:aws:route53:::hostedzone/<< SEE NOTE #3 BELOW >>"
             ]
         },
         {
@@ -171,6 +171,9 @@ If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should
             "Action": [
                 "route53:ChangeResourceRecordSets"
             ],
+            "Resource": [
+                "arn:aws:route53:::hostedzone/<< SEE NOTE #3 BELOW >>"
+            ]
         },
         {
             "Effect": "Allow",
@@ -191,8 +194,9 @@ Notes:
 3. This is the AWS Route53 zone ID under which records will be created. Use the command `terraform show -json | jq -r '.values.root_module.child_modules|.[].resources|.[]|select(.address=="aws_route53_zone.zone")|.values.zone_id'` to extract this from Terraform `aws-kops-seed` state. 
 4. This is the autoscaling group that the master instances are able to control to scale-up and scale-down the cluster. It should refer to the nodes ASG ARN - use `arn:aws:autoscaling:::autoScalingGroup::autoScalingGroupName/nodes.fakebank.stage.env.fake.com` replacing `fakebank.stage.env.fake.com` with the FQDN of the zone used in step 3. 
 
-There are a few extra commands to run when the cluster is up, since we're using coredns:
-for (kops#6318)[https://github.com/kubernetes/kops/issues/6318]:
+At this point, it's worth adding any other policies required - eg. if you're using the `logging-operator` struct and want to send logs to S3, you should add the policies outlined [here](https://github.com/11FSConsulting/platform/tree/master/terraform/aws-s3-logs).
+
+There are a few extra commands to run when the cluster is up since we're using coredns. This only applies to versions of kops affected by [kops#6318](https://github.com/kubernetes/kops/issues/6318):
 ```
 k delete deployment -n kube-system kube-dns-autoscaler
 k delete deployment -n kube-system kube-dns
