@@ -108,22 +108,26 @@ kops validate cluster
 10. Identify the necessary structs. The `sandbox` includes almost every struct, remove the ones that are not required from `manifest.yaml`, `k8s/base/structs` and `k8s/base/kustomization.yaml`. Make a copy of `k8s/sandbox` called `k8s/${env}` with `${env}` being your environment name (eg. `int`).
 
 For a base installation:
-- `tekton-pipelines` provides CD for the environment and links up to Github
+- `tekton-pipelines` or `tekton-prod` provide CD for the environment and links up to Github
 - `reloader` will automatically refresh pods that depend on secrets via annotations
 - `prometheus` will automatically monitor the cluster
 - `postgres-operator` will provide CRDs to manage postgres users and databases
 - `kafka` will provide an HA Kafka cluster
 - `jaeger` will provide distributed tracing capabilities
+- `eck` will provide an elasticsearch cluster to store `jaeger` traces
+- `dex-k8s-auth` will provide a basic frontend for obtaining rbac tokens
+- `dex-rbac` will provide the backend to integrate k8s RBAC with Github/LDAP
+- `eck-exporter` will provide monitoring for `eck` via `prometheus`
 - `ingress-nginx` will provide the means to automatically manage ingresses
 - `external-dns` wil expose those ingresses under the cluster's subdomain
-- `fluentd` will provide logging for nodes
-- `eck` will provide an elasticsearch cluster to host logs
-- `eck-exporter` will provide monitoring for `eck` via `prometheus`
+- `logging-operator` will provide logging for nodes
+- `loki` will provide log aggregation and and browsing capabilities via grafana installed by `prometheus`
 - `descheduler` will attempt to keep nodes balanced in resource usage
+- on aws, `aws-cluster-autoscaler` will automatically grow and shrink the cluster and pairs well with `descheduler`
 - `cert-manager` will manage and auto-generate certificates via letsencrypt
 - `external-secrets` will interface with Vault or AWS Secrets Manager to manage secret values
 - `auth` will ensure properly annotated `ingress` resources are authenticated via Github org membership
-- `aws-cluster-autoscaler` will manage the ASG for nodes and attempt to automatically and smartly scale 
+- `hubble-ui` will provide network observability if you use `cilium` as your CNI (as the default)
 
 11. Use `sed` to replace all mention of the default domain name with your own. Example:
 ```
