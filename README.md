@@ -33,3 +33,6 @@ More information on structs and their usage can be found [here](https://github.c
 * `k8s` contains all of our Kubernetes Platform components. Examples would be `loki` for serving logs, `prometheus` for Kubernetes monitoring and `kafka` for our Kubernetes-managed Kafka solution using Strimzi's Kafka distribution and operator.
 * `terraform` contains all of our reusable Terraform modules. Examples would be `aws-cloudtrail` that enforces a logging trail on AWS accounts, `aws-ses` that creates an AWS Simple Email Service for sending out email notifications to users or `oci-mailer` that creates noreply type mailers in Oracle Cloud.
 * `build.sh` is the code that validates and renders all code that enters this repository. It is run on the client repository side whenever an update is made to their platform code in order to pull any required updates in from this repository.
+
+## versioning
+The [CalVer](https://calver.org/#scheme) scheme is used to construct tag names. The format is 'YY.0M.0D' with optional '-<number>' for intra-day updates.
