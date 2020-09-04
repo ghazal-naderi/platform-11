@@ -10,6 +10,8 @@ resource "aws_cloudtrail" "audit" {
   name                          = "${var.project}-audit-trail"
   s3_bucket_name                = aws_s3_bucket.audit.id
   s3_key_prefix                 = "audit"
+  kms_key_id                    = aws_kms_key.audit.arn
+  enable_log_file_validation    = true
   include_global_service_events = true
   event_selector {
     read_write_type           = "All"
