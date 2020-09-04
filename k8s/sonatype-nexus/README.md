@@ -105,3 +105,4 @@ spec:
 - Create a user for this role, perhaps `developer` with the role `developer`
 - Disallow `anonymous` access
 - Add `Tasks` for `Cleanup snapshots` (of type `Meven - Delete Snapshot`) and to `Remote deleted items` (of type `Admin - Compact blob store`) with automatic scheduling for 6am once per day.
+- Navigate to the `maven-sandbox` repository and disable auto-blocking since the environment is only alive during the day. Add the `developer` username and password neccessary for the repository.
