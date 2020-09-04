@@ -44,3 +44,5 @@ This is to be paired with the `logging-operator` `k8s` struct. It can be used to
       "Resource": "arn:aws:s3:::awsexamplebucket"
     },
 ```
+
+It also comes preconfigured for `ingress-nginx` to be configured to send ELB access logs under the prefix `logs`.
