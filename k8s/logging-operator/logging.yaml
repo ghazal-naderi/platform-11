@@ -5,5 +5,9 @@ metadata:
 spec:
   enableRecreateWorkloadOnImmutableFieldChange: true
   controlNamespace: logging-operator
-  fluentd: {}
-  fluentbit: {}
+  fluentd:
+    metrics:
+      serviceMonitor: true
+  fluentbit: 
+    metrics:
+      serviceMonitor: true
