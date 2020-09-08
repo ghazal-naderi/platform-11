@@ -1,5 +1,7 @@
-# prometheus
+# Prometheus
+
 Version `v0.3.0` from (coreos/kube-prometheus)[https://github.com/coreos/kube-prometheus/tree/v0.3.0]
+
 ## install
 - Apply the struct to conduct basic setup of CRDs and some services
 - Apply the struct once again to intialize the basic Prometheus, AlertManager, etc

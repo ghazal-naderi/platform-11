@@ -18,7 +18,7 @@
             "description": "There are only {{ $value }} < 3 ElasticSearch nodes running",
             "summary": "ElasticSearch running on less than 3 nodes"
           },
-          "expr": "elasticsearch_cluster_health_number_of_nodes < 3",
+          "expr": "elasticsearch_cluster_health_number_of_nodes < kube_statefulset_replicas{statefulset=\"elasticsearch-es-default\"}",
           "for": "5m",
           "labels": {
             "severity": "critical"
