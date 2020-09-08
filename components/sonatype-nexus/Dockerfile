@@ -1,4 +1,4 @@
-FROM sonatype/nexus3:latest
+FROM sonatype/nexus3:3.27.0
 LABEL maintainer="Deven Phillips <deven.phillips@redhat.com>" \
       vendor="Red Hat" \
       description="Sonatype Nexus repository manager with Kubernetes/OpenShift Config plugin" \
