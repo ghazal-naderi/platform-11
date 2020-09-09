@@ -6,6 +6,9 @@ metadata:
 spec:
   loki:
     url: http://platform-loki.loki.svc.cluster.local:3100
+    buffer:
+      timekey: 10s
+      timekey_wait: 0s
     configure_kubernetes_labels: true
     extract_kubernetes_labels: true
     remove_keys:
