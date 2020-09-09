@@ -13,6 +13,12 @@ This indicates an issue in AlertManager configuration and can be resolved in the
 # Watchdog
 This alert is suppressed normally and should always be firing - if it isn't, it indicates an issue in Prometheus Alertmanager that may be preventing other alerts from getting through.
 
+# KubeContainerWaiting
+This indicates that a container is waiting to be scheduled. For some applications (eg. jaeger) it can indicate a configuration issue that should be investigated and addressed after checking the status and error on the appropriate pods. In other cases, it can indicate a cluster resourcing issue preventing pods from being scheduled - this is resolved by adding more resources (eg. new nodes).
+
+# KubeletTooManyPods
+This generally indicates a resource issue - too many pods on too few nodes in a particular area zone. Resolve it by scaling up the cluster.
+
 # KubeDaemonSetMisScheduled
 This indicates that a daemonset is scheduled on a node that it should not be scheduled on. In some cases, this is observed when AWS applies the node label `NodeWithImpairedVolumes=true:NoSchedule` after failing to attach an EBS volume - often, this is a transient issue within an EKS cluster. In order to resolve it, you can simply remove that taint from the node with `k edit no ${node_name}`.
 
@@ -24,6 +30,9 @@ This often indicates an underlying issue in deployment configuration - look at t
 
 # NoMessageForTooLong
 This indicates that Kafka is not processing many messages. In inactive environments, this is often expected. It is suggested that you do a quick health check to make sure that Kafka is running okay and that messages are getting through from the apps.
+
+# TargetDown
+This indicates that Prometheus is having trouble spidering the metrics endpoint for a service. In some cases, this means that the service is down but it could alsoo indicate that Prometheus itself is overloaded. Refer to the Status -> Targets page on Prometheus for further detail.
 
 # BridgeContainersDown
 This means that Kafka Bridge containers are all unavailable - okay if you don't use Kafka Bridge, a problem if you do.
