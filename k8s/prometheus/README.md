@@ -170,8 +170,35 @@ spec:
 ```
 - If using `fluentd` for logging, apply `addons/fluentd-logging.yaml` into your own cluster
 ## notes
-- `KubeControllerManager` and `KubeScheduler` alerts can be disabled on AWS EKS and other managed Kubernetes services - they are not implemented or used
-
+- In order to allow Prometheus to monitor all namespaces, kustomize the `ClusterRole` as follows:
+```
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-k8s
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes/metrics
+  verbs:
+  - get
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - pods
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+``` 
 ## contributing 
 - Get `jsonnet-bundler` and `gojsontoyaml`
 ```
