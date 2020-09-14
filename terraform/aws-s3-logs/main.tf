@@ -10,7 +10,7 @@ variable "project" {
 
 data "aws_caller_identity" "current" {}
 
-resource "s3_bucket_policy" "logs_policy" {
+resource "aws_s3_bucket_policy" "logs_policy" {
   bucket = aws_s3_bucket.logs.id
 
   policy = <<POLICY
