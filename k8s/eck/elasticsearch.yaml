@@ -4,10 +4,15 @@ metadata:
   name: elasticsearch
   namespace: eck
 spec:
-  version: 7.6.2
+  version: 7.9.1
+  auth:
+    roles:
+    - secretName: jaeger-role
+    fileRealm:
+    - secretName: filerealm-jaeger 
   nodeSets:
   - name: default
-    count: 3
+    count: 1
     config:
       node.master: true
       node.data: true
@@ -21,7 +26,7 @@ spec:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 100Gi
+              storage: 10Gi
           storageClassName: stable
 ---
 apiVersion: extensions/v1beta1

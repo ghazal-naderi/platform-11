@@ -2,5 +2,6 @@
 resources:
   - eck-all-in-one.yaml
   - elasticsearch.yaml
-  - kibana.yaml
   - namespace.yaml
+  - jaeger-user.yaml
+  - jaeger-role.yaml

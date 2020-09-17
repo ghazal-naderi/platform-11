@@ -9,6 +9,7 @@ resources:
     - role_binding.yaml
     - cluster_role.yaml
     - cluster_role_binding.yaml
+    - credential_sync.yaml
     - operator.yaml
     - serviceaccount.yaml
     - jaeger.yaml

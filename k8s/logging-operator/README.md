@@ -31,15 +31,23 @@ spec:
   match:
     - select: {}
   filters:
-    - tag_normaliser: {}
+    - tag_normaliser:
+        format: ${namespace_name}.${pod_name}.${container_name}
+    - record_modifier:
+        records:
+          - fluentd_worker: ${hostname}
     - parser:
-        key_name: message
+        key_name: log
         reserve_time: true
         reserve_data: true
         remove_key_name_field: true
-        inject_key_prefix: log_
         parse:
-          type: json
+          type: multi_format
+          patterns:
+          - format: json
+          - format: nginx
+          - format: syslog
+          - format: apache2
   outputRefs:
     - loki-output
     - s3-output

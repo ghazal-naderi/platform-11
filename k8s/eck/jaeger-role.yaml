@@ -1,0 +1,37 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: sync-eck-secret
+  namespace: eck
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sync-eck-secret
+  namespace: eck
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: sync-eck-secret
+subjects:
+  - name: sync-eck-secret
+    namespace: jaeger
+    kind: ServiceAccount
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: jaeger-role
+  namespace: eck
+stringData:
+  roles.yml: |-
+    jaeger:
+      cluster: [ 'monitor', 'manage_index_templates' ]
+      indices:
+      - names: [ 'jaeger-*' ]
+        privileges: [ 'create', 'create_index', 'delete', 'delete_index', 'write', 'read', 'index', 'monitor', 'create_doc', 'view_index_metadata' ]

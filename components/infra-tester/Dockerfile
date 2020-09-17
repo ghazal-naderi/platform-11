@@ -13,6 +13,7 @@ ADD https://github.com/zegl/kube-score/releases/download/v${KUBESCORE_VERSION}/k
 ADD https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip /tmp/terraform.zip
 ADD https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz /tmp/kustomize.tgz
 ADD https://dl.k8s.io/${KUBERNETES_VERSION}/kubernetes-client-linux-amd64.tar.gz /tmp/kubernetes.tgz
+RUN apk add jq
 RUN chmod +x /usr/local/bin/tfsec /usr/local/bin/kube-score && \
     tar -C /tmp/ -xf /tmp/shellcheck.tar.xz && \
     mv /tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck /usr/local/bin && chmod +x /usr/local/bin/shellcheck && \

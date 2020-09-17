@@ -3,11 +3,30 @@ kind: Logging
 metadata:
   name: default-log
 spec:
-  enableRecreateWorkloadOnImmutableFieldChange: true
   controlNamespace: logging-operator
-  fluentd:
+  enableRecreateWorkloadOnImmutableFieldChange: true
+  fluentbit:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500M
+      limits:
+        cpu: 600m
+        memory: 1Gi
+    filterKubernetes:
+      Merge_Log: "On"
+      Keep_Log: "Off"
     metrics:
       serviceMonitor: true
-  fluentbit: 
+  fluentd:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500M
+      limits:
+        cpu: 600m
+        memory: 1Gi
+    scaling:
+      replicas: 3
     metrics:
       serviceMonitor: true

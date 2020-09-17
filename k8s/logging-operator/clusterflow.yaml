@@ -7,9 +7,16 @@ spec:
   match:
     - select: {}
   filters:
-    - tag_normaliser: {}
+    - tag_normaliser:
+        format: ${namespace_name}.${pod_name}.${container_name}
+    - record_modifier:
+        records:
+          - fluentd_worker: ${hostname}
     - parser:
         key_name: log
+        reserve_time: true
+        reserve_data: true
+        remove_key_name_field: true
         parse:
           type: multi_format
           patterns:
@@ -17,8 +24,5 @@ spec:
           - format: nginx
           - format: syslog
           - format: apache2
-        remove_key_name_field: true
-        reserve_time: true
-        reserve_data: true
   outputRefs:
     - loki-output

@@ -15,9 +15,9 @@ kops create cluster fakebank.stage.env.fake.com \
     --bastion \
     --dns public \
     --dns-zone "${KOPS_DNS_ZONE}" \
-    --node-count 4 \
+    --node-count 3 \
     --node-size m5a.large \
-    --kubernetes-version 1.16.14 \
+    --kubernetes-version 1.18.8 \
     --master-size t3a.large
 ```
 

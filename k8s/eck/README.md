@@ -1,10 +1,60 @@
 # ECK struct
 ## Setup
-In order to get logs, you must also obtain the `fluentd` struct - please read it's `README.md` for necessary pre-requisites. You must install the `eck` struct before the `fluentd` struct.
+This includes a user/role for `jaeger` struct.
 
-Once ECK is deployed, you can access Kibana at `kibana.example.com` with `example.com` being your domain. 
+For Kibana, use Kustomize to add the resources, changing values as appropriate:
+```
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: eck
+spec:
+  version: 7.9.1
+  count: 1
+  elasticsearchRef:
+    name: elasticsearch
+  http:
+    tls:
+      certificate:
+        secretName: kibana-tls-secret
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kibana
+  namespace: eck
+  annotations:
+    kubernetes.io/ingress.class: "nginx-external"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+spec:
+  tls:
+    - hosts:
+        - kibana.example.com
+      secretName: kibana-tls-secret
+  rules:
+    - host: kibana.example.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: kb-http
+              servicePort: 5601
 
-A standard setup on Kibana is to:
-- Create default index pattern `logstash-*` using `@timestamp`
-- Create a role for developer use with name `developer`, cluster privileges `read_ccr, read_slm, read_ilm, monitor, monitor_data_frame_transforms, monitor_ml, monitor_rollup, monitor_snapshot, monitor_transform, monitor_watcher`, privileges on `logstash-*` indices as `monitor, read, read_cross_cluster, index, view_index_metadata, create_doc, create` and `Global` `Read` permission on Kibana.
-- Create a user for developer use with roles `kibana_user, apm_user, enrich_user, machine_learning_user, monitoring_user, reporting_user, rollup_user, snapshot_user, transform_user, watcher_user, developer` 
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: kibana
+  namespace: eck
+spec:
+  secretName: kibana-tls-secret
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: kibana.example.com
+  dnsNames:
+    - kibana.example.com
+```
