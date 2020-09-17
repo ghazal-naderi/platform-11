@@ -4,3 +4,5 @@ kind: Kustomization
 resources:
 - nginx-mandatory-0.32.0.yaml
 - service-l4.yaml
+patchesStrategicMerge:
+- nginx-no-server-header.yaml

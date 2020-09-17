@@ -1,0 +1,126 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: infra-cd
+spec:
+  params:
+  - name: git-url
+    value: "https://github.com/$(body.repository.full_name)"
+  - name: git-revision
+    value: $(body.head_commit.id)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: infra-cd
+spec:
+  serviceAccountName: tekton-triggers-admin
+  triggers:
+  - name: infra-cd
+    interceptors:
+    - github:
+        secretRef:
+          secretName: git-webhook
+          secretKey: secret-string
+        eventTypes:
+        - push
+    - cel: 
+        filter: >-
+          (header.match('X-GitHub-Event', 'push') &&
+           body.repository.name == 'infra') &&
+           body.ref.startsWith('refs/heads/master')
+    bindings:
+    - ref: infra-cd
+      kind: TriggerBinding
+    template:
+      name: infra-cd
+---
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: infra-cd-webhook-run
+spec:
+  taskRef:
+    name: create-webhook
+  params:
+  - name: GitHubOrg
+    value: "11FSConsulting"
+  - name: GitHubUser
+    value: "11fs-cicd"
+  - name: GitHubRepo
+    value: "infra"
+  - name: GitHubSecretName
+    value: git-webhook
+  - name: ExternalDomain
+    value: infra-updater.sandbox.11fs-structs.com
+  timeout: 1000s
+  serviceAccountName: tekton-triggers-createwebhook
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-webhook
+spec:
+  volumes:
+  - name: github-secret
+    secret:
+      secretName: $(inputs.params.GitHubSecretName)
+  params:
+  - name: ExternalDomain
+    description: "The external domain for the EventListener e.g. `$(inputs.params.EventListenerName).<PROXYIP>.nip.io`"
+  - name: GitHubUser
+    description: "The GitHub user"
+  - name: GitHubRepo
+    description: "The GitHub repo where the webhook will be created"
+  - name: GitHubOrg
+    description: "The GitHub organization where the webhook will be created"
+  - name: GitHubSecretName
+    description: "The Secret name for GitHub access token and string. Must contain keys 'access-token' and  'secret-string'"
+  - name: GitHubDomain
+    description: "The GitHub domain. Override for GitHub Enterprise"
+    default: "github.com"
+  - name: WebhookEvents
+    description: "List of events the webhook will send notifications for"
+    default: '[\"push\"]'
+  steps:
+  - name: create-webhook
+    image: pstauffer/curl:latest
+    volumeMounts:
+    - name: github-secret
+      mountPath: /var/secret
+    command:
+    - sh
+    args:
+    - -ce
+    - |
+      set -e
+      echo "Create Webhook"
+      if [ $(inputs.params.GitHubDomain) = "github.com" ];then
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://api.github.com/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+      else
+        curl -d "{\"name\": \"web\",\"active\": true,\"events\": $(inputs.params.WebhookEvents),\"config\": {\"url\": \"https://$(inputs.params.ExternalDomain)/\",\"content_type\": \"json\",\"insecure_ssl\": \"0\" ,\"secret\": \"$(cat /var/secret/secret-string)\"}}" -X POST -u $(inputs.params.GitHubUser):$(cat /var/secret/access-token) -L https://$(inputs.params.GitHubDomain)/api/v3/repos/$(inputs.params.GitHubOrg)/$(inputs.params.GitHubRepo)/hooks
+      fi
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: infra-cd
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: nginx-external
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: http01
+spec:
+  tls:
+  - hosts:
+    - infra-updater.sandbox.11fs-structs.com
+    secretName: infra-cd-tls
+  rules:
+  - host: infra-updater.sandbox.11fs-structs.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: el-infra-cd
+          servicePort: 8080

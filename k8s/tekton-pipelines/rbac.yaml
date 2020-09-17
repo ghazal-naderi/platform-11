@@ -6,7 +6,6 @@ metadata:
   namespace: tekton-pipelines
 secrets:
   - name: git-ssh-key
-
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -15,7 +14,6 @@ metadata:
   namespace: tekton-pipelines
 secrets:
   - name: git-ssh-key
-
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -30,7 +28,6 @@ roleRef:
  kind: ClusterRole
  name: cluster-admin
  apiGroup: rbac.authorization.k8s.io
-
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -39,12 +36,11 @@ metadata:
   namespace: tekton-pipelines
 rules:
 - apiGroups:
-  - tekton.dev
+  - triggers.tekton.dev
   resources:
   - eventlisteners
   - triggerbindings
   - triggertemplates
-  - pipelineresources
   verbs:
   - get
 - apiGroups:
@@ -52,6 +48,13 @@ rules:
   resources:
   - pipelineruns
   - pipelineresources
+  verbs:
+  - create
+- apiGroups:
+  - tekton.dev
+  resources:
+  - pipelineresources
+  - pipelineruns
   verbs:
   - create
 - apiGroups:
@@ -63,14 +66,12 @@ rules:
   - get
   - list
   - watch
-
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: tekton-triggers-admin
   namespace: tekton-pipelines
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -84,7 +85,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: tekton-triggers-admin
-
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -103,7 +103,7 @@ rules:
   - update
   - delete
 - apiGroups:
-  - tekton.dev
+  - triggers.tekton.dev
   resources:
   - eventlisteners
   verbs:
@@ -122,14 +122,12 @@ rules:
   - list
   - delete
   - update
-
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: tekton-triggers-createwebhook
   namespace: tekton-pipelines
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
