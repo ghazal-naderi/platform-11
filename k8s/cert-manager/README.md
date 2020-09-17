@@ -1,7 +1,7 @@
 # cert-manager
-Version `0.14.1-legacy`
+Version `v1.0.1`
 
-## Upgrade process
+## Upgrade process (old)
 Unfortunately this is a manual operation. In this process, I was upgrading from `v0.8.1` to `v0.14.1`. If you are already running `v0.11.0` or higher, steps 1-4 are likely unnecessary:
 
 1. Get all old certs

@@ -1,6 +1,6 @@
 ---
 namespace: kafka
 resources:
-- strimzi-cluster-operator-0.16.2.yaml
+- strimzi-cluster-operator-0.19.0.yaml 
 - kafka-namespace.yaml
 - kafka-persistent.yaml
