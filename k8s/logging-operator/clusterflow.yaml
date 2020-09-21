@@ -7,11 +7,7 @@ spec:
   match:
     - select: {}
   filters:
-    - tag_normaliser:
-        format: ${namespace_name}.${pod_name}.${container_name}
-    - record_modifier:
-        records:
-          - fluentd_worker: ${hostname}
+    - tag_normaliser: {}
     - parser:
         key_name: log
         reserve_time: true

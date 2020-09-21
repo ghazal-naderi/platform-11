@@ -4,3 +4,5 @@ resources:
 - strimzi-cluster-operator-0.19.0.yaml 
 - kafka-namespace.yaml
 - kafka-persistent.yaml
+patchesStrategicMerge:
+- kafka-rbac.yaml

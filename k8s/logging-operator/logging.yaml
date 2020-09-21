@@ -13,9 +13,6 @@ spec:
       limits:
         cpu: 600m
         memory: 1Gi
-    filterKubernetes:
-      Merge_Log: "On"
-      Keep_Log: "Off"
     metrics:
       serviceMonitor: true
   fluentd:
