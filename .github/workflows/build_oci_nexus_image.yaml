@@ -1,0 +1,29 @@
+name: Build & Push 
+on:
+  push:
+    paths:
+    - 'components/sonatype-nexus/Dockerfile'
+    branches:
+      - nexus_image
+jobs:
+    build:
+      name: Build image
+      runs-on: ubuntu-latest
+      steps:
+      - name: Login to OCR
+        env:
+          OCR_USERNAME: ${{ secrets.OCR_USERNAME }}
+          OCR_PASSWORD: ${{ secrets.OCR_PASSWORD }}
+          OCR_SERVER: jed.ocir.io
+        run: |
+          docker login jed.ocir.io -u $OCR_USERNAME -p $OCR_PASSWORD
+      - uses: actions/checkout@master
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: jed.ocir.io/fr9ckauowgwh/platform/sonatype-nexus
+          username: ${{ secrets.OCR_USERNAME }}
+          password: ${{ secrets.OCR_PASSWORD }}
+          registry: jed.ocir.io
+          tags: "latest"
+          workdir: components/sonatype-nexus

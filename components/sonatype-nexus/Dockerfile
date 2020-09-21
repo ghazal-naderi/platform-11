@@ -4,6 +4,7 @@ LABEL maintainer="Deven Phillips <deven.phillips@redhat.com>" \
       description="Sonatype Nexus repository manager with Kubernetes/OpenShift Config plugin" \
       source="https://github.com/sonatype-nexus-community/nexus-kubernetes-openshift" \
       documentation="https://github.com/sonatype-nexus-community/nexus-kubernetes-openshift/blob/master/README.md"
+
 ARG PLUGIN_VERSION=0.2.8
 
 USER root
