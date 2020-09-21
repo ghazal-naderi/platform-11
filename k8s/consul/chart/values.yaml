@@ -1285,4 +1285,4 @@ terminatingGateways:
 # When using helm install, the test Pod is not submitted to the cluster so this
 # is only useful when running helm template.
 tests:
-  enabled: true
+  enabled: false
