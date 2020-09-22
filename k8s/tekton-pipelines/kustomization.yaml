@@ -9,3 +9,4 @@ resources:
 - webhook.yaml
 - pipeline-kustomize.yaml 
 - git-clone.yaml
+- tekton-cleaner.yaml
