@@ -48,7 +48,7 @@ spec:
           - format: nginx
           - format: syslog
           - format: apache2
-  clusterOutputRefs:
+  globalOutputRefs:
     - loki-output
     - s3-output
 ``` 
