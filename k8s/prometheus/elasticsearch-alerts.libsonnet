@@ -85,18 +85,6 @@
           }
         },
         {
-          "alert": "ElasticsearchClusterYellow",
-          "annotations": {
-            "description": "Elastic Cluster Yellow status   VALUE = {{ $value }}   LABELS: {{ $labels }}",
-            "summary": "Elasticsearch Cluster Yellow (instance {{ $labels.instance }})"
-          },
-          "expr": "elasticsearch_cluster_health_status{color=\"yellow\"} == 1",
-          "for": "5m",
-          "labels": {
-            "severity": "warning"
-          }
-        },
-        {
           "alert": "ElasticsearchHealthyNodes",
           "annotations": {
             "description": "Number Healthy Nodes less then number_of_nodes   VALUE = {{ $value }}   LABELS: {{ $labels }}",
@@ -142,18 +130,6 @@
           "for": "5m",
           "labels": {
             "severity": "warning"
-          }
-        },
-        {
-          "alert": "ElasticsearchUnassignedShards",
-          "annotations": {
-            "description": "Number of unassigned shards for 2 min   VALUE = {{ $value }}   LABELS: {{ $labels }}",
-            "summary": "Elasticsearch unassigned shards (instance {{ $labels.instance }})"
-          },
-          "expr": "elasticsearch_cluster_health_unassigned_shards > 0",
-          "for": "5m",
-          "labels": {
-            "severity": "critical"
           }
         },
         {

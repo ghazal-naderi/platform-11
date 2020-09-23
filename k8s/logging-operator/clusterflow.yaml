@@ -8,6 +8,10 @@ spec:
     - select: {}
   filters:
     - tag_normaliser: {}
+    - record_modifier:
+        prepare_value: "require 'socket'; @hostname = Socket.gethostname"
+        records:
+         - logHost: "${@hostname}"
     - parser:
         key_name: log
         reserve_time: true

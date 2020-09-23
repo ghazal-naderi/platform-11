@@ -1985,15 +1985,6 @@ spec:
       for: 5m
       labels:
         severity: critical
-    - alert: ElasticsearchClusterYellow
-      annotations:
-        description: 'Elastic Cluster Yellow status   VALUE = {{ $value }}   LABELS:
-          {{ $labels }}'
-        summary: Elasticsearch Cluster Yellow (instance {{ $labels.instance }})
-      expr: elasticsearch_cluster_health_status{color="yellow"} == 1
-      for: 5m
-      labels:
-        severity: warning
     - alert: ElasticsearchHealthyNodes
       annotations:
         description: 'Number Healthy Nodes less then number_of_nodes   VALUE = {{
@@ -2030,15 +2021,6 @@ spec:
       for: 5m
       labels:
         severity: warning
-    - alert: ElasticsearchUnassignedShards
-      annotations:
-        description: 'Number of unassigned shards for 2 min   VALUE = {{ $value }}   LABELS:
-          {{ $labels }}'
-        summary: Elasticsearch unassigned shards (instance {{ $labels.instance }})
-      expr: elasticsearch_cluster_health_unassigned_shards > 0
-      for: 5m
-      labels:
-        severity: critical
     - alert: ElasticsearchPendingTasks
       annotations:
         description: 'Number of pending tasks for 10 min. Cluster works slowly.   VALUE
@@ -2234,14 +2216,6 @@ spec:
         message: |
           All `zookeeper` containers in the Zookeeper pods have been down or in CrashLookBackOff status for 3 minutes
       expr: absent(container_last_seen{container="zookeeper",pod=~".+-zookeeper-[0-9]+"})
-      for: 3m
-      labels:
-        severity: major
-    - alert: ZookeeperTlsSidecarContainersDown
-      annotations:
-        message: |
-          All `tls-sidecar` containers in the Zookeeper pods have been down or in CrashLookBackOff status for 3 minutes
-      expr: absent(container_last_seen{container="tls-sidecar",pod=~".+-zookeeper-[0-9]+"})
       for: 3m
       labels:
         severity: major

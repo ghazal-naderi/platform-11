@@ -210,19 +210,7 @@ local percentErrsWithTotal(metric_errs, metric_total) = '100 * sum(rate(%(metric
                 All `zookeeper` containers in the Zookeeper pods have been down or in CrashLookBackOff status for 3 minutes
             |||,
           },
-        }, {
-          alert: 'ZookeeperTlsSidecarContainersDown',
-          expr: 'absent(container_last_seen{container="tls-sidecar",pod=~".+-zookeeper-[0-9]+"})',
-          'for': '3m',
-          labels: {
-            severity: 'major',
-          },
-          annotations: {
-            message: |||
-                All `tls-sidecar` containers in the Zookeeper pods have been down or in CrashLookBackOff status for 3 minutes
-            |||,
-          },
-        }, 
+        },
       ],
       },
       {

@@ -6,6 +6,8 @@ spec:
   controlNamespace: logging-operator
   enableRecreateWorkloadOnImmutableFieldChange: true
   fluentbit:
+    filterKubernetes:
+      K8S-Logging.Parser: "On"
     resources:
       requests:
         cpu: 200m
