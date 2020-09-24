@@ -1,0 +1,25 @@
+name: Build & Push 
+on:
+  push:
+    paths:
+      - 'components/infra-tester/Dockerfile'
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Login to gcloud registry
+      id: gcloud
+      uses: elgohr/gcloud-login-action@master
+      with:
+        account_key: ${{ secrets.GCLOUD_KEY }}
+    - uses: actions/checkout@v1
+    - run: docker build --tag project-peach-development/infra-tester components/infra-tester
+    - name: Publish to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: project-peach-development/infra-tester
+        username: ${{ steps.gcloud.outputs.username }}
+        password: ${{ steps.gcloud.outputs.password }}
+        registry: us.gcr.io 
