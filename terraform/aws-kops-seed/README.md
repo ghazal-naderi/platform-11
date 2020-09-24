@@ -1,7 +1,7 @@
-# kops-seed
+# aws-kops-seed
 This Terraform module will create the most basic components required for a `kops` cluster.
 
-When creating the cluster, ensure that you set `KOPS_STATE_STORE=${s3_bucket}` and use parameters `--state=s3://${s3_bucket} --out=. --target=terraform` with `${s3_bucket}` being the bucket creted by this module.
+When creating the cluster, ensure that you set `KOPS_STATE_STORE=${s3_bucket}` with `${s3_bucket}` being the bucket creted by this module.
 
 ```
 export KOPS_STATE_STORE=s3://fakebank-stage-state
@@ -53,9 +53,9 @@ kubelet:
 ```
 For RBAC, we should add:
 ```
-authorization:
-  rbac: {}
-kubeAPIServer:
+  authorization:
+    rbac: {}
+  kubeAPIServer:
     authorizationMode: RBAC
     oidcClientID: dex-k8s-authenticator
     oidcGroupsClaim: groups
