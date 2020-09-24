@@ -27,4 +27,3 @@ RUN chmod +x /usr/local/bin/tfsec /usr/local/bin/kube-score && \
 VOLUME ["/workspace"]
 WORKDIR /workspace
 ENTRYPOINT ["/bin/ash","/workspace/build.sh"]
-

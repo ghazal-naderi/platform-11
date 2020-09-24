@@ -6,7 +6,6 @@ LABEL maintainer="Calum Lacroix <calum.lacroix@11fs.com>" \
       documentation="https://github.com/sonatype-nexus-community/nexus-kubernetes-openshift/blob/master/README.md"
 
 ARG PLUGIN_VERSION=0.2.8
-
 USER root
 RUN curl -L https://github.com/sonatype-nexus-community/nexus-kubernetes-openshift/releases/download/v${PLUGIN_VERSION}/nexus-openshift-plugin-${PLUGIN_VERSION}.jar -o /opt/sonatype/nexus/deploy/nexus-openshift-plugin.jar
 RUN chown root:root /opt -R \
