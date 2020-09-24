@@ -9,7 +9,7 @@
 - `admin:repo_hook`
 - `user:email`
 
-Save the PAT with a nice name. This will be used for automation.
+Save the PAT with a nice name. This will be used for automation - remember to add it to 1Password.
 
 3. Setup the secrets `AWS_PLATFORM_ECR_ACCESS_KEY_ID`, `AWS_PLATFORM_ECR_SECRET_ACCESS_KEY` & `GH_BOT_SECRET_TOKEN` on the repository. `GH_BOT_SECRET_TOKEN` is your aforementioned bot's PAT and the AWS keys must have ECR image pull permissions on `platform/infra-tester` built via [11FSConsulting/platform](https://github.com/11FSConsulting/platform/blob/master/.github/workflows/build_image.yml).
 

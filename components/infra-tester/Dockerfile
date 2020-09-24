@@ -3,7 +3,8 @@ LABEL maintainer="calum.lacroix@11fs.com"
 ENV KUBERNETES_VERSION="v1.18.8" TERRAFORM_VERSION="0.13.3" HELM_VERSION="v3.3.0" \
     SHELLCHECK_VERSION="v0.7.1" TFLINT_VERSION="v0.20.1" TFSEC_VERSION="v0.25.0" \
     KUBEVAL_VERSION="0.15.0" KUBESCORE_VERSION="1.8.1" KUSTOMIZE_VERSION="v3.8.1" \
-    AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1"
+    AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1" GOOGLE_REGION="us-central1" \
+    GOOGLE_ZONE="us-central1-c"
 ADD https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz /tmp/shellcheck.tar.xz
 ADD https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip /tmp/tflint.zip
 ADD https://github.com/liamg/tfsec/releases/download/${TFSEC_VERSION}/tfsec-linux-amd64 /usr/local/bin/tfsec

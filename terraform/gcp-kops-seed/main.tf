@@ -29,6 +29,17 @@ resource "google_storage_bucket_iam_member" "viewer" {
   member = "serviceAccount:${google_service_account.service_account.email}"
 }
 
+resource "google_storage_bucket_iam_member" "editor" {
+  bucket = google_container_registry.registry.id
+  role = "roles/storage.admin"
+  member = "serviceAccount:${google_service_account.service_gcr_account.email}"
+}
+
+resource "google_service_account" "service_gcr_account" {
+  account_id   = "${var.region}-${var.environment}-${var.project}-gcr"
+  display_name = "${var.project} GCR bot Service account for ${var.environment} in ${var.region}"
+}
+
 resource "google_service_account" "service_account" {
   account_id   = "${var.region}-${var.environment}-${var.project}-k8s"
   display_name = "${var.project} Kops Node Service account for ${var.environment} in ${var.region}"

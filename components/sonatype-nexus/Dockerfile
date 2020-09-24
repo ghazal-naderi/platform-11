@@ -1,5 +1,5 @@
 FROM sonatype/nexus3:3.27.0
-LABEL maintainer="Deven Phillips <deven.phillips@redhat.com>" \
+LABEL maintainer="Calum Lacroix <calum.lacroix@11fs.com>" \
       vendor="Red Hat" \
       description="Sonatype Nexus repository manager with Kubernetes/OpenShift Config plugin" \
       source="https://github.com/sonatype-nexus-community/nexus-kubernetes-openshift" \
