@@ -20,8 +20,8 @@ variable "zone_name" {
 }
 
 resource "aws_iam_user" "kops" {
-   name = "${var.region}-${var.environment}-${var.project}-kops"
-   path = "/system/${var.region}/${var.environment}/${var.project}/"
+  name = "${var.region}-${var.environment}-${var.project}-kops"
+  path = "/system/${var.region}/${var.environment}/${var.project}/"
 }
 
 resource "aws_iam_access_key" "kops" {

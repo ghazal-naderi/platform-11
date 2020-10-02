@@ -27,7 +27,51 @@ resource "aws_cloudtrail" "audit" {
 resource "aws_kms_key" "audit" {
   description             = "This key is used to encrypt the audit bucket"
   deletion_window_in_days = 30
+  policy                  = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Enable IAM User Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        ]
+      },
+      "Action": "kms:*",
+      "Resource": "*"
+    },
+    {
+      "Sid": "Allow CloudTrail to encrypt logs",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudtrail.amazonaws.com"
+      },
+      "Action": "kms:GenerateDataKey*",
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "kms:EncryptionContext:aws:cloudtrail:arn": [
+            "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "Allow Describe Key access",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": ["cloudtrail.amazonaws.com"]
+      },
+      "Action": "kms:DescribeKey",
+      "Resource": "*"
+    }
+  ]
 }
+POLICY
+}
+
 
 resource "aws_s3_bucket_public_access_block" "audit-block" {
   bucket = aws_s3_bucket.audit.id
@@ -75,7 +119,7 @@ POLICY
 resource "aws_s3_bucket" "audit" {
   bucket        = "${var.project}-audit-trail"
   force_destroy = false
-  acl = "private"
+  acl           = "private"
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {

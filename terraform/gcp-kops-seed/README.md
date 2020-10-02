@@ -36,6 +36,8 @@ kops create cluster ${KOPS_DOMAIN} \
 ```
 Note that there's currently no need for `--bastion` or `--private` as private GCP is not currently supported on Kops as per [kops#9832](https://github.com/kubernetes/kops/pull/9832). This simply means that all nodes will receive a public IP address by default, make sure that you adjust firewall rules in order to protect them.
 
+Note that the GCP default images come with limitations - all volumes are mounted as `noexec` obstensibly for security, this can return `permission denied` errors when attempting to run standard images from structs (most notably Tekton and Elasticsearch). In order to get around this limitation, use the CentOS images (eg. `centos-cloud/centos-8-v20200910`) by editing the kops instance groups (eg. `kops edit ig nodes-us-central1-{a,b,c}`) for nodes. The core Kubernetes stack runs just fine with these limitations and we don't expect to run arbitrary workloads on masters so they do not require this change.
+
 For DNS, we should edit with `kops edit cluster` in order to add:
 
 ```

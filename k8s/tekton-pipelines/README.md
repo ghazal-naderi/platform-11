@@ -134,7 +134,7 @@ spec:
           servicePort: 9097
 ``` 
 
-- Override the TaskRun like so, changing the path to your own environment's
+- Override the TaskRun and Pipeline like so, changing the path and URLs to your own environments'
 ```
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
@@ -157,6 +157,49 @@ spec:
     value: infra-updater.sandbox.11fs-structs.com
   timeout: 1000s
   serviceAccountName: tekton-triggers-createwebhook
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: infra-cd
+  namespace: tekton-pipelines
+spec:
+  params:
+  - default: k8s/sandbox
+    description: The path to the kustomize dir we're applying, relative to repo root
+    name: kustomizeDir
+  - default: https://github.com/11fsconsulting/infra.git
+    description: The path to the Github repository we should apply
+    name: git-url
+  - default: master
+    description: The revision or tag to apply
+    name: git-revision
+  tasks:
+  - name: fetch-from-git
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: $(params.git-revision)
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: git-source
+  - name: apply-k8s
+    params:
+    - name: kustomizeDir
+      value: "$(params.kustomizeDir)"
+    runAfter:
+    - fetch-from-git
+    taskRef:
+      kind: ClusterTask
+      name: kustomize-apply
+    workspaces:
+    - name: source
+      workspace: git-source
+  workspaces:
+  - name: git-source
 ```
 
 - Override the webhook Ingress like so, changing the URL to your own environment's

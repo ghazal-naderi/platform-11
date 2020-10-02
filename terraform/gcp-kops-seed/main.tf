@@ -8,7 +8,7 @@ variable "environment" {
   default = "dev"
 }
 
-variable "project" { 
+variable "project" {
   default = "project"
 }
 
@@ -25,13 +25,13 @@ resource "google_container_registry" "registry" {
 
 resource "google_storage_bucket_iam_member" "viewer" {
   bucket = google_container_registry.registry.id
-  role = "roles/storage.admin"
+  role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 resource "google_storage_bucket_iam_member" "editor" {
   bucket = google_container_registry.registry.id
-  role = "roles/storage.admin"
+  role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.service_gcr_account.email}"
 }
 
@@ -47,13 +47,18 @@ resource "google_service_account" "service_account" {
 
 resource "google_storage_bucket_iam_member" "member" {
   bucket = google_storage_bucket.kops-state.name
-  role = "roles/storage.objectAdmin"
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+resource "google_project_iam_member" "view-secrets" {
+  role   = "roles/secretmanager.secretAccessor"
   member = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 resource "google_project_iam_member" "editor" {
-  role    = "roles/editor"
-  member  = "serviceAccount:${google_service_account.service_account.email}"
+  role   = "roles/editor"
+  member = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 resource "google_dns_managed_zone" "infra-zone" {
@@ -93,7 +98,7 @@ resource "google_kms_crypto_key_iam_binding" "binding" {
 
 
 resource "google_storage_bucket" "kops-state" {
-  name          = "${var.region}-${var.environment}-${var.project}-state"
+  name = "${var.region}-${var.environment}-${var.project}-state"
   encryption {
     default_kms_key_name = google_kms_crypto_key.gcs.id
   }
