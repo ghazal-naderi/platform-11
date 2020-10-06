@@ -1,6 +1,7 @@
 #!/bin/bash
 LINT="${LINT:=yes}"
 RELEASE="${RELEASE:=platform}" # safe default
+KUBEVAL_API_VERSION="${KUBEVAL_API_VERSION:-1.18.0}"
 
 set -eu -o pipefail
 
@@ -24,8 +25,8 @@ for folder in k8s/*/; do
         kustomize build "${folder}" > "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s Kustomize passes"
     fi
     if [[ "${LINT}" == 'yes' ]]; then
-      # KubEval check - we need to use git directly as @garethr hasn't updated the site yet
-      kubeval -v "${KUBERNETES_VERSION#?}" --ignore-missing-schemas -s "https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/" "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s kubeval passes"
+      echo "INFO: Validating schemas against Kubernetes API: ${KUBEVAL_API_VERSION}"
+      kubeval --kubernetes-version "${KUBEVAL_API_VERSION}" --ignore-missing-schemas "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s kubeval passes"
       # Kube-score checks - we need to ignore the securityContext test as we're not using SELinux. We may add more to this.s
       kube-score score --ignore-test container-security-context "pkg/k8s/${file_name}.yaml" && echo "✅ ${file_name}: k8s kube-score passes"
     fi
