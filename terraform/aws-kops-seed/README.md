@@ -28,6 +28,13 @@ spec:
   kubeDNS:
     provider: CoreDNS
 ```
+For autoscaling, we should add:
+```
+clusterAutoscaler:
+  enabled: true
+  skipNodesWithLocalStorage: true
+  skipNodesWithSystemPods: true
+```
 For networking observability, we should add (requires latest `kops`):
 ```
   networking:
