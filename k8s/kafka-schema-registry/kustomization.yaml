@@ -1,0 +1,4 @@
+---
+namespace: kafka
+resources:
+- kafka-schema-registry.yaml 
