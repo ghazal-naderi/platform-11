@@ -143,7 +143,7 @@ local kp =
           jobLabel: 'job',
           endpoints: [
             {
-              port: 'prometheus',
+              port: 'tcp-prometheus',
             },
           ],
           selector: {

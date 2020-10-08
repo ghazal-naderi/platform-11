@@ -5,7 +5,7 @@ metadata:
   namespace: kafka
 spec:
   endpoints:
-  - port: prometheus
+  - port: tcp-prometheus
   jobLabel: job
   selector:
     matchLabels:
