@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: istiocontrolplane
+spec:
+  profile: default
+  values:
+    global:
+      tracer:
+        zipkin:
+          address: stream-collector.jaeger.svc.cluster.local:9411

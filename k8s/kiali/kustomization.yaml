@@ -1,0 +1,4 @@
+resources:
+  - kiali.yaml
+  - namespace.yaml
+  - chart/crds/crds.yaml

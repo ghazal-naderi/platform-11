@@ -1,0 +1,13 @@
+---
+resources:
+- istio.yaml
+- addons-prometheus.yaml
+- namespace.yaml
+- istio-init.yaml
+- auth-policy.yaml
+- servicemonitor.yaml
+- dashboard-control-plane.yaml
+- dashboard-mesh.yaml
+- dashboard-performance.yaml
+- dashboard-service.yaml
+- dashboard-workload.yaml

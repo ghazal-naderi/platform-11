@@ -58,12 +58,20 @@ kubelet:
     authenticationTokenWebhook: true
     authorizationMode: Webhook
 ```
-For RBAC, we should add:
+For RBAC and Istio, we should add:
 ```
   authorization:
     rbac: {}
   kubeAPIServer:
+    anonymousAuth: false
+    apiAudiences:
+    - api
+    - istio-ca
     authorizationMode: RBAC
+    serviceAccountIssuer: kubernetes.default.svc
+    serviceAccountKeyFile:
+    - /srv/kubernetes/server.key
+    serviceAccountSigningKeyFile: /srv/kubernetes/server.key
     oidcClientID: dex-k8s-authenticator
     oidcGroupsClaim: groups
     oidcIssuerURL: https://dex.<cluster url>
