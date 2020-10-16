@@ -88,8 +88,8 @@ For RBAC and Istio, we should add:
     authorizationMode: RBAC
     serviceAccountIssuer: kubernetes.default.svc
     serviceAccountKeyFile:
-    - /srv/kubernetes/server.key
-    serviceAccountSigningKeyFile: /srv/kubernetes/server.key
+    - /srv/kubernetes/service-account.key
+    serviceAccountSigningKeyFile: /srv/kubernetes/service-account.key
     oidcClientID: dex-k8s-authenticator
     oidcGroupsClaim: groups
     oidcIssuerURL: https://dex.<cluster url>
