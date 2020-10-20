@@ -1,0 +1,4 @@
+---
+resources:
+- metabase.yaml
+- namespace.yaml
