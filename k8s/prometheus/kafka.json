@@ -2,7 +2,7 @@
   "_comment": "Based on https://grafana.com/grafana/dashboards/7589",
   "__inputs": [
     {
-      "name": "metrics",
+      "name": "prometheus",
       "label": "prometheus",
       "description": "",
       "type": "datasource",
@@ -74,6 +74,7 @@
         "y": 0
       },
       "id": 27,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -155,6 +156,7 @@
         "y": 0
       },
       "id": 28,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -236,6 +238,7 @@
         "y": 0
       },
       "id": 29,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -317,6 +320,7 @@
         "y": 0
       },
       "id": 30,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -398,6 +402,7 @@
         "y": 0
       },
       "id": 31,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -480,6 +485,7 @@
         "y": 0
       },
       "id": 33,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -562,6 +568,7 @@
         "y": 0
       },
       "id": 34,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -643,6 +650,7 @@
         "y": 0
       },
       "id": 32,
+      "datasource": "prometheus",
       "interval": null,
       "links": [],
       "mappingType": 1,
@@ -705,7 +713,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "metrics",
+      "datasource": "prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -714,6 +722,7 @@
         "y": 4
       },
       "id": 14,
+      "datasource": "prometheus",
       "legend": {
         "alignAsTable": true,
         "avg": false,
@@ -796,7 +805,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "metrics",
+      "datasource": "prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -805,6 +814,7 @@
         "y": 4
       },
       "id": 18,
+      "datasource": "prometheus",
       "legend": {
         "alignAsTable": true,
         "avg": false,
@@ -887,7 +897,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "metrics",
+      "datasource": "prometheus",
       "fill": 0,
       "gridPos": {
         "h": 10,
@@ -896,6 +906,7 @@
         "y": 4
       },
       "id": 12,
+      "datasource": "prometheus",
       "legend": {
         "alignAsTable": true,
         "avg": false,
@@ -985,6 +996,7 @@
       },
       "hideTimeOverride": true,
       "id": 24,
+      "datasource": "prometheus",
       "links": [],
       "pageSize": 10,
       "scroll": true,
@@ -1058,6 +1070,7 @@
       },
       "hideTimeOverride": true,
       "id": 25,
+      "datasource": "prometheus",
       "links": [],
       "pageSize": 10,
       "scroll": true,
@@ -1131,6 +1144,7 @@
       },
       "hideTimeOverride": true,
       "id": 20,
+      "datasource": "prometheus",
       "links": [],
       "pageSize": null,
       "scroll": true,
@@ -1204,6 +1218,7 @@
       },
       "hideTimeOverride": true,
       "id": 22,
+      "datasource": "prometheus",
       "links": [],
       "pageSize": 10,
       "scroll": true,
@@ -1277,6 +1292,7 @@
       },
       "hideTimeOverride": true,
       "id": 23,
+      "datasource": "prometheus",
       "links": [],
       "pageSize": 10,
       "scroll": true,
@@ -1353,7 +1369,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "metrics",
+        "datasource": "prometheus",
         "definition": "",
         "hide": 0,
         "includeAll": false,
@@ -1375,7 +1391,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "metrics",
+        "datasource": "prometheus",
         "definition": "",
         "hide": 0,
         "includeAll": false,
@@ -1402,7 +1418,7 @@
             "$__all"
           ]
         },
-        "datasource": "metrics",
+        "datasource": "prometheus",
         "definition": "label_values(kafka_consumergroup_current_offset{namespace=\"$kubernetes_namespace\",strimzi_io_cluster=\"$strimzi_cluster_name\"}, consumergroup)",
         "hide": 0,
         "includeAll": true,
@@ -1429,7 +1445,7 @@
             "$__all"
           ]
         },
-        "datasource": "metrics",
+        "datasource": "prometheus",
         "definition": "label_values(kafka_topic_partition_current_offset{namespace=\"$kubernetes_namespace\",strimzi_io_cluster=\"$strimzi_cluster_name\"}, topic)",
         "hide": 0,
         "includeAll": true,

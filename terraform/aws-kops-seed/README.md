@@ -57,6 +57,14 @@ For metrics monitoring, we should edit in order to add:
 kubelet:
     authenticationTokenWebhook: true
     authorizationMode: Webhook
+kubeControllerManager:
+  authorizationAlwaysAllowPaths: 
+  - /metrics
+  - /healthz
+kubeScheduler:
+  authorizationAlwaysAllowPaths: 
+  - /metrics
+  - /healthz
 ```
 For RBAC and Istio, we should add:
 ```

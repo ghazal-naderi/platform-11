@@ -1,22 +1,25 @@
-local jaegerAlerts = (import 'jaeger-mixin/alerts.libsonnet').prometheusAlerts;
-local lokiAlerts = (import 'loki-mixin/alerts.libsonnet').prometheusAlerts;
+local utils = import 'mixin-utils/utils.libsonnet';
+local jaegerAlerts = (import 'github.com/jaegertracing/jaeger/monitoring/jaeger-mixin/alerts.libsonnet').prometheusAlerts;
+local lokiAlerts = (import 'github.com/grafana/loki/production/loki-mixin/alerts.libsonnet').prometheusAlerts;
 local kafkaAlerts = (import 'kafka-alerts.libsonnet').prometheusAlerts;
 local elasticsearchAlerts = (import 'elasticsearch-alerts.libsonnet').prometheusAlerts;
-local jaegerDashboard = (import 'jaeger-mixin/mixin.libsonnet').grafanaDashboards;
-local lokiDashboard = (import 'loki-mixin/dashboards.libsonnet').grafanaDashboards;
-local lokiRules = (import 'loki-mixin/recording_rules.libsonnet').prometheusRules;
+local lokiAlerts = (import 'github.com/grafana/loki/production/loki-mixin/mixin.libsonnet').prometheusAlerts;
+local jaegerDashboard = (import 'github.com/jaegertracing/jaeger/monitoring/jaeger-mixin/mixin.libsonnet').grafanaDashboards;
+local lokiDashboard = (import 'github.com/grafana/loki/production/loki-mixin/mixin.libsonnet') { showMultiCluster:: false, matchers:: [utils.selector.eq('job', 'platform-loki-headless')], }.grafanaDashboards;
+local lokiRules = (import 'github.com/grafana/loki/production/loki-mixin/mixin.libsonnet').prometheusRules;
+
 local kp =
-  (import 'kube-prometheus/kube-prometheus.libsonnet') +
-  (import 'kube-prometheus/kube-prometheus-kops.libsonnet') +
-  (import 'kube-prometheus/kube-prometheus-kops-coredns.libsonnet') +
+  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus.libsonnet') +
+  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kops.libsonnet') +
+  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kops-coredns.libsonnet') +
   // or
-  // (import 'kube-prometheus/kube-prometheus-kube-aws.libsonnet')
+  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kube-aws.libsonnet')
   // Uncomment the following imports to enable its patches
-  // (import 'kube-prometheus/kube-prometheus-anti-affinity.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-node-ports.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-static-etcd.libsonnet') +
-  // (import 'kube-prometheus/kube-prometheus-thanos-sidecar.libsonnet') +
+  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-anti-affinity.libsonnet') +
+  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
+  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-node-ports.libsonnet') +
+  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-static-etcd.libsonnet') +
+  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-thanos-sidecar.libsonnet') +
   {
     _config+:: {
       namespace: 'monitoring',
@@ -67,9 +70,8 @@ local kp =
         // FIXME: Loki dashboards below are strangely integrated as they are too large to import normally
         rawDashboards+:: {
           'kafka.json': (importstr 'kafka.json'),
-          'elasticsearch-logs.json': (importstr 'elasticsearch-logs.json'),
-          'loki-operational.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboard-loki-operational.json'),
-          'loki-logs.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboard-loki-logs.json'),
+          'loki-operational.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboards/dashboard-loki-operational.json'),
+          'loki-logs.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboards/dashboard-loki-logs.json'),
         },
         config: { // http://docs.grafana.org/installation/configuration/
           sections: {

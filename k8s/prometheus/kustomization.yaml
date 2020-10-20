@@ -7,9 +7,11 @@ resources:
 - manifests/setup/prometheus-operator-0servicemonitorCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-service.yaml
 - manifests/setup/prometheus-operator-0podmonitorCustomResourceDefinition.yaml
+- manifests/setup/prometheus-operator-0thanosrulerCustomResourceDefinition.yaml
 - manifests/setup/0namespace-namespace.yaml
 - manifests/setup/prometheus-operator-clusterRoleBinding.yaml
 - manifests/setup/prometheus-operator-clusterRole.yaml
+- manifests/setup/prometheus-operator-0probeCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-serviceAccount.yaml
 - manifests/prometheus-adapter-deployment.yaml
 - manifests/prometheus-clusterRole.yaml
@@ -31,11 +33,11 @@ resources:
 - manifests/grafana-dashboardDatasources.yaml
 - manifests/node-exporter-serviceMonitor.yaml
 - manifests/grafana-config.yaml
-- manifests/kube-state-metrics-role.yaml
 - manifests/prometheus-kubeSchedulerPrometheusDiscoveryService.yaml
 - manifests/grafana-dashboardSources.yaml
 - manifests/grafana-serviceAccount.yaml
 - manifests/node-exporter-clusterRoleBinding.yaml
+- manifests/prometheus-adapter-serviceMonitor.yaml
 - manifests/alertmanager-serviceAccount.yaml
 - manifests/prometheus-serviceMonitorApiserver.yaml
 - manifests/prometheus-adapter-clusterRoleBindingDelegator.yaml
@@ -65,7 +67,6 @@ resources:
 - manifests/prometheus-serviceMonitorKafka.yaml
 - manifests/alertmanager-serviceMonitor.yaml
 - manifests/prometheus-rules.yaml
-- manifests/kube-state-metrics-roleBinding.yaml
 - manifests/prometheus-serviceMonitorKubeScheduler.yaml
 - manifests/node-exporter-serviceAccount.yaml
 - manifests/prometheus-serviceMonitorKubelet.yaml

@@ -124,9 +124,6 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/workload-total
           name: grafana-dashboard-workload-total
           readOnly: false
-        - mountPath: /grafana-dashboard-definitions/0/elasticsearch-logs
-          name: grafana-dashboard-elasticsearch-logs
-          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/kafka
           name: grafana-dashboard-kafka
           readOnly: false
@@ -235,9 +232,6 @@ spec:
       - configMap:
           name: grafana-dashboard-workload-total
         name: grafana-dashboard-workload-total
-      - configMap:
-          name: grafana-dashboard-elasticsearch-logs
-        name: grafana-dashboard-elasticsearch-logs
       - configMap:
           name: grafana-dashboard-kafka
         name: grafana-dashboard-kafka
