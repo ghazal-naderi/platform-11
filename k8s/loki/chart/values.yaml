@@ -149,12 +149,12 @@ readinessProbe:
     port: http-metrics
   initialDelaySeconds: 45
 
-replicas: 3
+replicas: 1 
 
 resources:
   limits:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 1
+    memory: 1024Mi
   requests:
     cpu: 100m
     memory: 128Mi
