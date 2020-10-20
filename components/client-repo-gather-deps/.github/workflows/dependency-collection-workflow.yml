@@ -1,8 +1,16 @@
 name: Gather dependencies
 on:
   pull_request:
-    branches:
-      - master
+    types:
+    - opened
+    - reopened
+    - labeled
+    - synchronize
+    - edited
+    - ready_for_review
+    - unlocked
+    paths:
+    - manifest.yaml
 jobs:
   gather:
     runs-on: ubuntu-latest

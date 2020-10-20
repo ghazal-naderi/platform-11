@@ -16,11 +16,10 @@ jobs:
      steps:
       - uses: actions/checkout@v2
         with:
-         ref: ${{ github.event.pull_request.base.ref }}
+         ref: master 
       - name: Check QA team approval
         env:
-          GITHUB_USER: fakeci
-          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           ORG: ${{ github.event.pull_request.head.user.login }}
           TEAM: qa 
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -39,9 +38,11 @@ jobs:
          contains('fakeci', github.event.pull_request.user.login)
      steps:
      - uses: actions/checkout@v2
-       with:
-         ref: ${{ github.event.pull_request.base.ref }}
-     - uses: geertvdc/setup-hub@master
+     - run: jq '.' "$GITHUB_EVENT_PATH"
+     - run: |
+        .github/workflows/rebase.sh
+       env:
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
      - uses: imranismail/setup-kustomize@master
        with:
          kustomize-version: "3.6.1"
@@ -49,19 +50,21 @@ jobs:
        uses: actions/setup-ruby@v1
        with:
          ruby-version: 2.6.x
-     - name: Prepare release 
+     - name: Prepare release
        env:
          GITHUB_USER: fakeci
-         GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
-         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
          HEAD_REF: ${{ github.event.pull_request.head.ref }}
          BASE_REF: ${{ github.event.pull_request.base.ref }}
-         QA_PR_NUMBER: ${{ github.event.pull_request.number }}
+         IN_PR_NUMBER: ${{ github.event.pull_request.number }}
          GITHUB_REPO: ${{ github.repository }}
+         IN_PR_ENV: qa
+         OUT_PR_ENV: prod
        run: |
          gem install octocam
          curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
-         .github/workflows/qa-pr.sh
+         .github/workflows/pr-wrangler.sh
      # Let's tell slack how this whole thing turned out.
      - name: Notify slack
        uses: innocarpe/actions-slack@v1
@@ -73,4 +76,4 @@ jobs:
          cancelled_text: '✋ *cancelled* pre-release checks'
        env:
          GITHUB_TOKEN: ${{ github.token }}
-         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_QA }}

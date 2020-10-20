@@ -8,14 +8,10 @@ on:
     - opened
     - reopened
     - edited
-    - synchronize
     - ready_for_review
     - unlocked
     - labeled
     - unlabeled
-  pull_request_review:
-    types:
-    - submitted
 jobs:
   automerge:
     if: contains(github.event.pull_request.labels.*.name, 'release/int') &&
@@ -23,8 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.base.ref }}
+    - run: jq '.' "$GITHUB_EVENT_PATH" 
+    - run: |
+        .github/workflows/rebase.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     - uses: geertvdc/setup-hub@master
     - uses: imranismail/setup-kustomize@master
       with:
@@ -36,23 +35,25 @@ jobs:
     - name: Merge PR
       env:
         GITHUB_USER: fakeci
-        GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
-        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         BASE_REF: ${{ github.event.pull_request.base.ref }}
-        INT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        IN_PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_REPO: ${{ github.repository }}
+        IN_PR_ENV: int
+        OUT_PR_ENV: qa
       run: |
         gem install octocam
         curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq 
-        .github/workflows/int-pr.sh
+        .github/workflows/pr-wrangler.sh
     - name: Notify slack
       uses: innocarpe/actions-slack@v1
       if: always()
       with:
         status: ${{ job.status }}
-        success_text: '💯 *successfully* raised/updated PR for `qa`'
-        failure_text: '☠️ *failed* PR for `qa`'
-        cancelled_text: '✋ *cancelled* PR for `qa`'
+        success_text: '💯 *successfully* raised/updated PR for `int`'
+        failure_text: '☠️ *failed* PR for `int`'
+        cancelled_text: '✋ *cancelled* PR for `int`'
       env:
         GITHUB_TOKEN: ${{ github.token }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_INT }}

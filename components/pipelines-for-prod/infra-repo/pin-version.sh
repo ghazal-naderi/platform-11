@@ -15,7 +15,7 @@ case $GITHUB_LABELS in
         ;;
 esac
 echo "env: $ENVIRONMENT"
-BRANCH="release-${ENVIRONMENT}/rolling"
+BRANCH=$(hub pr show "${PR_NUMBER}" -f "%H")
 IMAGE_VERSION="${COMMENT#/pin }"
 regex='.*\/.* .*-.*'
 

@@ -1,4 +1,4 @@
-# This will react to a prod PR being approved by development leads and QA. It will cut a production release.
+# This will react to a prod PR being approved by engineering and QA. It will cut a production release.
 name: Production prep workflow 
 on:
   pull_request_review:
@@ -16,13 +16,12 @@ jobs:
     steps:
      - uses: actions/checkout@v2
        with:
-        ref: ${{ github.event.pull_request.base.ref }}
-     - name: Check leadership team approval
+        ref: master 
+     - name: Check BE engineering team approval
        env:
-         GITHUB_USER: fakeci
-         GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
          ORG: ${{ github.event.pull_request.head.user.login }}
-         TEAM: development-leads
+         TEAM: back-end
          PR_NUMBER: ${{ github.event.pull_request.number }}
        run: |
            if ./.github/workflows/approved-by-team.sh; then
@@ -34,8 +33,7 @@ jobs:
            fi
      - name: Check QA team approval
        env:
-         GITHUB_USER: fakeci
-         GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: qa
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -52,14 +50,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.base.ref }}
+    - run: jq '.' "$GITHUB_EVENT_PATH"
+    - run: |
+        .github/workflows/rebase.sh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     - uses: geertvdc/setup-hub@master
     - name: Squash, merge and version
       id: version
       run: |
         hub config --global user.email "developers+ci@fakebank.com"
         hub config --global user.name "FakeBank Bot"
+        git checkout "${BASE_REF}"
         if [[ ! -z "$(hub pr show ${PROD_PR_NUMBER} -f '%mt')" ]]; then # already merged!
           git pull
         else
@@ -74,7 +76,7 @@ jobs:
       env:
           GITHUB_LABELS: ${{ toJson(github.event.pull_request.labels) }}
           GITHUB_USER: fakeci
-          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           PROD_PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -86,7 +88,7 @@ jobs:
       id: create_release
       uses: actions/create-release@latest
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }} 
       with:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Production pre-release
@@ -99,12 +101,12 @@ jobs:
         GITHUB_REF: ${{ github.ref }}
         NEW_VERSION: ${{ steps.version.outputs.version }}
       run: |
-        cd k8s/production
+        cd k8s/prod
         echo "# production release, version ${NEW_VERSION}" > ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
         echo "# from ${GITHUB_REF} on $(date)" >> ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
         kustomize build . >> ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
     - name: Upload release to Github
-      id: uploadgh
+      id: uploadghm
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -123,4 +125,4 @@ jobs:
         cancelled_text: '✋ *cancelled* drafted release for `prod`'
       env:
         GITHUB_TOKEN: ${{ github.token }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_PROD }}
