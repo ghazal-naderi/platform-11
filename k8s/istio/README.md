@@ -75,15 +75,15 @@ spec:
             name: grafana-dashboard-istio-control-plane
           name: grafana-dashboard-istio-control-plane
         - configMap:
-            name: grafana-dashboard-istio-mesh
-          name: grafana-dashboard-istio-mesh
+            name: grafana-dashboard-mesh
+          name: grafana-dashboard-mesh
         - configMap:
-            name: grafana-dashboard-istio-performance
-          name: grafana-dashboard-istio-performance
+            name: grafana-dashboard-performance
+          name: grafana-dashboard-performance
         - configMap:
-            name: grafana-dashboard-istio-service
-          name: grafana-dashboard-istio-service
+            name: grafana-dashboard-service
+          name: grafana-dashboard-service
         - configMap:
-            name: grafana-dashboard-istio-workload
-          name: grafana-dashboard-istio-workload
+            name: grafana-dashboard-workload
+          name: grafana-dashboard-workload
 ```

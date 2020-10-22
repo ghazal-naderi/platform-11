@@ -10,6 +10,7 @@ local lokiRules = (import 'github.com/grafana/loki/production/loki-mixin/mixin.l
 
 local kp =
   (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus.libsonnet') +
+  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-all-namespaces.libsonnet') +
   (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kops.libsonnet') +
   (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kops-coredns.libsonnet') +
   // or
@@ -24,7 +25,7 @@ local kp =
     _config+:: {
       namespace: 'monitoring',
       prometheus+:: {
-        namespaces+: ['jaeger', 'kafka', 'loki', 'logging-operator', 'eck', 'tekton-pipelines', 'external-dns', 'ingress-nginx', 'cert-manager', 'auth' ],
+        namespaces+: [], # all namespaces, as above
       },
       alertmanager+: {
         config: (importstr 'alertmanager.config.yaml'),
