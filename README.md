@@ -1,6 +1,6 @@
 # platform
 ## introduction
-This repository contains the reusable components for the Consulting Kubernetes-based platform, see [11FSConsulting/infra](https://github.com/11fsconsulting/infra) for our 'golden' baseline configuration from which new Platforms can be created. 
+This repository contains the reusable components for the Consulting Kubernetes-based platform, see [11FSConsulting/infra](https://github.com/11fsconsulting/infra) for our 'golden' baseline configuration from which new Platforms can be created and [docs/references.md](docs/references.md) for a list of technologies we use and links to their documentation. 
 
 ![Application, Platform, Infrastructure](docs/api.png)
 
@@ -15,7 +15,7 @@ In order to make our lives easier in Consulting and save our engineers time we h
 We have chosen **Kubernetes** as the interface for the Application -> Platform connection. Out of the box, we provide automated pipelines in order to:
 * Automatically [gather](https://github.com/11FSConsulting/platform/tree/master/components/client-repo-gather-deps) and update structs from this repository into a user-defined configuration (though it is suggested that a new Platform uses a copy of [11FSConsulting/infra](https://github.com/11FSConsulting/infra/blob/master/manifest.yaml), our sandbox cluster, as a starting point).
 * Automatically deploy and update the configured platform using [Tekton](https://github.com/11FSConsulting/platform/tree/master/k8s/tekton-pipelines), keeping the state in line with the configuration contained in the platform instance's GitHub repository.
-* Automatically deploy and update application components from their own GitHub repositories and manage the software application lifecycle via GitHub Actions across multiple environments. FIXME: This isn't pushed yet, TODO push it!
+* Automatically deploy and update application components from their own GitHub repositories and manage the software application lifecycle via GitHub Actions across multiple environments. 
 
 This means that from the perspective of a developer, day to day application changes can be conducted with no dependency or requirements on Platform changes. Of course, occasional adjustments are still required on the Platform and can be made via 1..m layers of overlay configurations using `Kustomize` and `Helm` as code that is visible, auditable and managed within Git repositories. 
 
@@ -23,9 +23,9 @@ This means that from the perspective of a developer, day to day application chan
 So far, we've deployed our Platform using [**Amazon Web Services**](https://github.com/11FSConsulting/platform/blob/master/docs/AWS-newCluster.md) via `kops` and [**Oracle Cloud Infrastructure**](https://www.terraform.io/docs/providers/oci/r/containerengine_cluster.html) via Terraform with the ability to create new environments within **1 day** and have ready-made templates and processes for both platforms. That said, there are no particular barriers to adding the capabiity to run on any other Infrastructure - we have built the Platform with this in mind. Any dependencies on particular cloud resources are indicated by a prefix (eg. aws-) and though we assume AWS in some cases, upstream documentation generally provides a way to adapt configuration in order to serve other platforms. If it runs Kubernetes, we can deploy this Platform on it!
 
 ## how do I use this?
-The best starting point is the [AWS new cluster tutorial](https://github.com/11FSConsulting/platform/blob/master/docs/AWS-newCluster.md) and to use the [sandbox cluster](https://github.com/11fsconsulting/infra) as a reference - it's a repository template, easy to make a copy of. Note that our primary audience is still Platform Engineers - we're working to make this more accessible and will do our best in order to improve current documentation and to keep it up to date. In the mean time, you can reach out to any of the Platform team on Slack at #team-consulting-eng-platform with any questions or comments. 
+The best starting point is the [AWS new cluster tutorial](https://github.com/11FSConsulting/platform/blob/master/docs/AWS-newCluster.md) and to use the [sandbox cluster](https://github.com/11fsconsulting/infra) as a reference - it's a repository template, easy to make a copy of. Note that our primary audience is still Platform Engineers - we're working to make this more accessible and will do our best in order to improve current documentation and to keep it up to date. In the mean time, you can reach out to any of the Platform team on Slack at #team-consulting-eng-platform with any questions or comments or raise a GitHub issue against this repository. 
 
-More information on structs and their usage can be found [here](https://github.com/11FSConsulting/platform/blob/master/docs/structs.md).
+More information on structs and their usage can be found [here](https://github.com/11FSConsulting/platform/blob/master/docs/structs.md), more information on the current structs [here](docs/references.md).
 
 ## how do I find what I need here?
 * `.github/workflows` contains our validation workflow, incorporating the code that builds our Platform Docker image that validates, tests and renders components on client repositories.
