@@ -35,6 +35,24 @@ spec:
       kind: TriggerBinding
     template:
       name: infra-cd
+  - name: terraform-cd
+    interceptors:
+    - github:
+        secretRef:
+          secretName: git-webhook
+          secretKey: secret-string
+        eventTypes:
+        - push
+    - cel: 
+        filter: >-
+          (header.match('X-GitHub-Event', 'push') &&
+           body.repository.name == 'infra') &&
+           body.ref.startsWith('refs/heads/master')
+    bindings:
+    - ref: infra-cd
+      kind: TriggerBinding
+    template:
+      name: terraform-cd
 ---
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun

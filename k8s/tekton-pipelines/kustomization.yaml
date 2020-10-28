@@ -8,5 +8,6 @@ resources:
 - dashboard-ingress.yaml
 - webhook.yaml
 - pipeline-kustomize.yaml 
+- pipeline-terraform.yaml
 - git-clone.yaml
 - tekton-cleaner.yaml

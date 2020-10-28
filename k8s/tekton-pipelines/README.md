@@ -1,6 +1,6 @@
 # tekton-pipelines
 ## introduction
-This struct provides the core of our CI/CD pipeline for Kubernetes - it includes all the CRDs and code necessary to automatically render and deploy Kustomize YAML to Kubernetes clusters.
+This struct provides the core of our CI/CD pipeline for Kubernetes - it includes all the CRDs and code necessary to automatically render and deploy Terraform HCL and Kustomize YAML to Kubernetes clusters.
 ## updates
 *pipeline:* `v0.16.2`
 *triggers:* `v0.8.1`
@@ -36,7 +36,15 @@ git-ssh-key:
   ssh-privatekey: <private PEM added to github account>
 ```
 
-- Create `ExternalSecrets` for `git-ssh-key` and `git-web-key` like so:
+- Add one or more secret environment variables for Terraform in your secret management system to be read into the runner's environment, eg.
+```
+{ "AWS_ACCESS_KEY_ID": "ABCDEF",
+"AWS_SECRET_ACCESS_KEY": "/o/o/o/o/"
+"AWS_DEFAULT_REGION": "us-east-1",
+"GOOGLE_CLOUD_CREDENTIALS": "FFFFFFFFFFFAAAAAAAAAXM"}
+```
+
+- Create `ExternalSecrets` for `terraform-secrets`, `git-ssh-key` and `git-web-key` like so:
 ```
 ---
 apiVersion: 'kubernetes-client.io/v1'
@@ -85,6 +93,16 @@ secretDescriptor:
   backendType: secretsManager
   dataFrom:
     - git-webhook
+---
+apiVersion: 'kubernetes-client.io/v1'
+kind: ExternalSecret
+metadata:
+  name: terraform-secrets
+  namespace: tekton-pipelines
+secretDescriptor:
+  backendType: secretsManager
+  dataFrom:
+    - terraform-secrets
 ```
 
 - Create `tekton-custom.yaml` for your own cluster like so, replacing the URLs as appropriate:
@@ -134,7 +152,7 @@ spec:
           servicePort: 9097
 ``` 
 
-- Override the TaskRun and Pipeline like so, changing the path and URLs to your own environments'
+- Override the TaskRun and Pipelines like so, changing the path and URLs to your own environments'
 ```
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun
@@ -200,6 +218,47 @@ spec:
       workspace: git-source
   workspaces:
   - name: git-source
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: terraform-cd
+spec:
+  params:
+  - name: terraformDir
+    description: The path to the terraform dir we're applying, relative to repo root
+    default: terraform/sandbox
+  - name: git-url
+    description: The path to the Github repository we should apply
+    default: https://github.com/11fsconsulting/infra.git
+  - name: git-revision
+    description: The revision or tag to apply
+    default: master
+  workspaces:
+    - name: git-source
+  tasks:
+  - name: fetch-from-git
+    taskRef:
+      name: git-clone
+    params:
+      - name: url
+        value: $(params.git-url)
+      - name: revision
+        value: $(params.git-revision)
+    workspaces:
+      - name: output
+        workspace: git-source
+  - name: apply-tf
+    runAfter: [fetch-from-git]
+    taskRef:
+      name: terraform-apply
+      kind: ClusterTask
+    params:
+    - name: terraformDir
+      value: "$(params.terraformDir)"
+    workspaces:
+      - name: source
+        workspace: git-source
 ```
 
 - Override the webhook Ingress like so, changing the URL to your own environment's
