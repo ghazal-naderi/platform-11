@@ -11,3 +11,4 @@ resources:
 - pipeline-terraform.yaml
 - git-clone.yaml
 - tekton-cleaner.yaml
+- servicemonitor.yaml

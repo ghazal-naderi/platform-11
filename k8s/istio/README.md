@@ -87,3 +87,83 @@ spec:
             name: grafana-dashboard-workload
           name: grafana-dashboard-workload
 ```
+
+For ExternalDNS, be sure to add Istio Gateways and/or VirtualServices:
+```
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+  namespace: external-dns
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: external-dns
+  template:
+    metadata:
+      labels:
+        app: external-dns
+    spec:
+      serviceAccountName: external-dns
+      containers:
+      - name: external-dns
+        image: registry.opensource.zalan.do/teapot/external-dns:latest
+        args:
+        - --source=service
+        - --source=ingress
+        - --source=istio-gateway
+        - --source=istio-virtualservice
+        - --provider=aws
+        - --domain-filter=cluster.fakebank.com
+        - --aws-zone-type=public # only look at public hosted zones (valid values are public, private or no value for both)
+        - --registry=txt
+        - --txt-owner-id=my-hostedzone-identifier
+      securityContext:
+        fsGroup: 65534 # For ExternalDNS to be able to read Kubernetes and AWS token files
+```
+- Also add the appropriate permissions to the RBAC ClusterRole
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-dns
+  namespace: external-dns
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - watch
+- apiGroups: 
+  - networking.istio.io
+  resources: 
+  - gateways
+  - virtualservices
+  verbs:
+  - get
+  - watch
+  - list
+```

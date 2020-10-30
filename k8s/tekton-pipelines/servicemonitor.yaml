@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tekton-pipelines
+  namespace: tekton-pipelines
+  labels:
+    app: tekton-pipelines-controller
+spec:
+  selector:
+    matchLabels:
+      app: tekton-pipelines-controller
+  endpoints:
+  - port: http-metrics
+    interval: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tekton-triggers
+  namespace: tekton-pipelines
+  labels:
+    app: tekton-triggers-controller
+spec:
+  selector:
+    matchLabels:
+      app: tekton-triggers-controller
+  endpoints:
+  - port: http-metrics
+    interval: 10s
