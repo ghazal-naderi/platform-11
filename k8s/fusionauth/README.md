@@ -57,5 +57,18 @@ data:
   DB_PASSWORD: asdhjaljkasldjaskljdaiouoiuaiosudasd==
   DB_USER: lsdfksdkfljsdf
 ```
+##Secret Configuration
+A secret needs tobe added as part of the configuration, e.g.
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fusionauth
+  namespace: fusionauth
+type: Opaque
+data:
+  DB_PASSWORD: REPLACE_THE_PASSWORD
+  DB_USER: REPLACE_THE_USER
+
 
 That's about enough over-rides to get it up and running
