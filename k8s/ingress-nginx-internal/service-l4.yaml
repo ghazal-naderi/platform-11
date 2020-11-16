@@ -1,0 +1,22 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ingress-nginx-internal
+  namespace: ingress-nginx-internal
+  labels:
+    app.kubernetes.io/name: ingress-nginx-internal
+    app.kubernetes.io/part-of: ingress-nginx-internal
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: ingress-nginx-internal
+    app.kubernetes.io/part-of: ingress-nginx-internal
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
