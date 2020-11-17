@@ -1,4 +1,6 @@
 # ECK struct
+`all-in-one.yaml`: version: `1.3.0` from [elastic.co](https://download.elastic.co/downloads/eck/1.3.0/all-in-one.yaml)
+
 ## Setup
 This includes a user/role for `jaeger` struct.
 
