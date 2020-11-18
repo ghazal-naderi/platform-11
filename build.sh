@@ -51,8 +51,8 @@ for folder in workflows/*/; do
        find "${folder}.github/workflows" -type f -iname \*.yaml -exec ash -c "yq r {} -jel && echo \"✅ {}: passes lint\"" \;
        find "${folder}.github/workflows" -type f -iname \*.sh -exec ash -c "shellcheck -S error {} && echo \"✅ {}: passes lint\"" \;
    fi
-   mkdir -p "pkg/${folder}"
-   cp -r "${cwd}/${folder}" "pkg/${folder}"
+   mkdir -p "pkg/${folder}.github/"
+   cp -r "${cwd}/${folder}.github/workflows/" "pkg/${folder}.github/workflows/"
 done
 
 echo "✅ pkg/ wrapped and verified"
