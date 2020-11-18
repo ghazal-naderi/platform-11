@@ -40,14 +40,26 @@ module "ses" {
 }
 ````
 
+## Anatomy of a Workflow struct
+Workflow structs can be found in ```/workflows``` inside this repository.
+
+A struct is a complete, workable GitHub Action workflow that can be used either as-is or bootstrapped as a template for further configuration. Simply specify the `path` as `.github/workflows` and direct the `name` to the struct directory, eg.
+
+```
+packages:
+  - name: workflows/all-gather-deps
+    path: .github/workflows
+    ref: v0.0.2
+```
+
 ## Using a struct in a project
-Once you have completed a struct, you are ready to inflict it on a client. Lucky them! In every client project that uses the structs, you should find a file called ```manifest.yaml``` - if it doesn't exist yet, this may mean that you need to install [a GitHub Actions workflow](https://github.com/11FSConsulting/platform/tree/master/components/client-repo-gather-deps)! The manifest lists all structs in use, where they are sourced from, and which version to pull in. This is essentially a form of vendoring back to this repository. Let's take a look at an example:
+Once you have completed a struct, you are ready to inflict it on a client. Lucky them! In every client project that uses the structs, you should find a file called ```manifest.yaml``` - if it doesn't exist yet, this may mean that you need to install [a GitHub Actions workflow](https://github.com/11FSConsulting/platform/tree/master/workflows/all-gather-deps)! The manifest lists all structs in use, where they are sourced from, and which version to pull in. This is essentially a form of vendoring back to this repository. Let's take a look at an example:
 
 ```
 packages:
  - name: k8s/external-dns
- path: k8s/oke/structs/external-dns
- ref: v0.0.2
+   path: k8s/oke/structs/external-dns
+   ref: v0.0.2
 ```
 
 First thing - the ```manifest.yaml``` starts with a ```packages:``` key. If that's missing, amusing errors will ensue. After that comes a list of packages. Each package contains three keys, a ```name```, ```path``` and ```ref```. The name should be the path in this repo to find the struct. So if you have created a new struct called 'shinyCool' in the k8s directory then the name would be ```k8s/shinycool```. The path is where to place the struct in the _clients_ project repository. In our example, if we had a path of: ```k8s/clientco/structs/shinyCool``` then that's where the the struct will be placed. Finally, the ```ref``` is either a Github SHA or tag. 
@@ -58,11 +70,12 @@ Using these three tags will do the following when the client project is built:
 - Check it in
 
 *TLDR;* 
-- Requires: [client-repo-gather-deps](https://github.com/11FSConsulting/platform/tree/master/components/client-repo-gather-deps)
+- Requires: [all-gather-deps](https://github.com/11FSConsulting/platform/tree/master/workflows/all-gather-deps)
 - Every client project needs a ```manifest.yaml``` in the root of the project
 - The manifest.yaml needs to start with a ```packages:``` key
 - Each package has a ```name```, ```path``` and ```ref``` key
 - The ```name``` is the path to struct in this repo. 
 - The ```path``` is where it is placed in the client repo
 - The ```ref``` is the git sha or tag to pull
+- Optionally, the ```release``` tag can be configured for certain Helm-rendered k8s structs to adjust the release prefix (default is `platform`)
 - The build process copies the struct at the right version from the platform repo to the target client repo

@@ -24,7 +24,6 @@ jobs:
         .github/workflows/rebase.sh
       env:
         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-    - uses: geertvdc/setup-hub@master
     - uses: imranismail/setup-kustomize@master
       with:
         kustomize-version: "3.6.1"

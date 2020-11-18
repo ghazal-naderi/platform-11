@@ -4,7 +4,7 @@ ENV KUBERNETES_VERSION="v1.19.4" TERRAFORM_VERSION="0.13.5" KOPS_VERSION="v1.19.
     SHELLCHECK_VERSION="v0.7.1" TFLINT_VERSION="v0.20.3" TFSEC_VERSION="v0.36.6" \
     KUBEVAL_VERSION="0.15.0" KUBESCORE_VERSION="1.10.0" KUSTOMIZE_VERSION="v3.8.7" \
     HELM_VERSION="v3.4.1" AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1" \
-    GOOGLE_REGION="us-central1" GOOGLE_ZONE="us-central1-c"
+    GOOGLE_REGION="us-central1" GOOGLE_ZONE="us-central1-c" YQ_VERSION="3.4.1"
 ADD https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz /tmp/shellcheck.tar.xz
 ADD https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64 /usr/local/bin/kops
 ADD https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip /tmp/tflint.zip
@@ -15,8 +15,9 @@ ADD https://github.com/zegl/kube-score/releases/download/v${KUBESCORE_VERSION}/k
 ADD https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip /tmp/terraform.zip
 ADD https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz /tmp/kustomize.tgz
 ADD https://dl.k8s.io/${KUBERNETES_VERSION}/kubernetes-client-linux-amd64.tar.gz /tmp/kubernetes.tgz
+ADD https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 /usr/local/bin/yq
 RUN apk add jq
-RUN chmod +x /usr/local/bin/tfsec /usr/local/bin/kube-score /usr/local/bin/kops && \
+RUN chmod +x /usr/local/bin/tfsec /usr/local/bin/kube-score /usr/local/bin/kops /usr/local/bin/yq && \
     tar -C /tmp/ -xf /tmp/shellcheck.tar.xz && \
     mv /tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck /usr/local/bin && chmod +x /usr/local/bin/shellcheck && \
     unzip -q -d /tmp/ /tmp/tflint.zip && mv /tmp/tflint /usr/local/bin/tflint && chmod +x /usr/local/bin/tflint && \

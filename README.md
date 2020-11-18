@@ -13,7 +13,7 @@ In order to make our lives easier in Consulting and save our engineers time we h
 
 ## application-platform interface
 We have chosen **Kubernetes** as the interface for the Application -> Platform connection. Out of the box, we provide automated pipelines in order to:
-* Automatically [gather](https://github.com/11FSConsulting/platform/tree/master/components/client-repo-gather-deps) and update structs from this repository into a user-defined configuration (though it is suggested that a new Platform uses a copy of [11FSConsulting/infra](https://github.com/11FSConsulting/infra/blob/master/manifest.yaml), our sandbox cluster, as a starting point).
+* Automatically [gather](https://github.com/11FSConsulting/platform/tree/master/workflows/all-gather-deps) and update structs from this repository into a user-defined configuration (though it is suggested that a new Platform uses a copy of [11FSConsulting/infra](https://github.com/11FSConsulting/infra/blob/master/manifest.yaml), our sandbox cluster, as a starting point).
 * Automatically deploy and update the configured platform using [Tekton](https://github.com/11FSConsulting/platform/tree/master/k8s/tekton-pipelines), keeping the state in line with the configuration contained in the platform instance's GitHub repository.
 * Automatically deploy and update application components from their own GitHub repositories and manage the software application lifecycle via GitHub Actions across multiple environments. 
 
@@ -32,10 +32,11 @@ Note that our primary audience is still Platform Engineers - we're working to ma
 More information on structs and their usage can be found [here](https://github.com/11FSConsulting/platform/blob/master/docs/structs.md), more information on the current structs [here](docs/references.md).
 
 ## how do I find what I need here?
-* `.github/workflows` contains our validation workflow, incorporating the code that builds our Platform Docker image that validates, tests and renders components on client repositories.
-* `components` contains several re-usable components that don't fit in elsewhere, eg. `client-repo-gather-deps` is the CI code that automatically pulls in changes to this repository on client repositories, `sonatype-nexus` is our custom base image for the repository management system and `infra-tester` is the base code for the Platform Docker image mentioned above.
+* `.github/workflows` contains our validation workflow, incorporating the code that builds our Platform Docker image that validates, tests and renders components on client and infra repositories.
+* `images` contains Docker images: eg. `sonatype-nexus` is our custom base image for the repository management system and `infra-tester` is the base code for the Platform Docker image mentioned above.
 * `k8s` contains all of our Kubernetes Platform components. Examples would be `loki` for serving logs, `prometheus` for Kubernetes monitoring and `kafka` for our Kubernetes-managed Kafka solution using Strimzi's Kafka distribution and operator.
 * `terraform` contains all of our reusable Terraform modules. Examples would be `aws-cloudtrail` that enforces a logging trail on AWS accounts, `aws-ses` that creates an AWS Simple Email Service for sending out email notifications to users or `oci-mailer` that creates noreply type mailers in Oracle Cloud.
+* `workflows` contains our shared GitHub workflows for GitHub Actions, split by target repository (or not, for generic ones). eg. `all-gather-deps` is the CI code that automatically pulls in changes to this repository on any repositories and `all-lint-workflows` can automatically lint all workflow files in repository when they are changed via PR.
 * `build.sh` is the code that validates and renders all code that enters this repository. It is run on the client repository side whenever an update is made to their platform code in order to pull any required updates in from this repository.
 
 ## versioning

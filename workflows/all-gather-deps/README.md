@@ -1,5 +1,5 @@
 # client-repo-gather-deps
-This repo includes a GitHub Action and manifest.yml file that together can be used to initialize a new client `infra` repository with the necessary code to automatically obtain and vendor dependencies from this `platform` repository. 
+This repo includes a GitHub Action and manifest.yml file that together can be used to initialize a new client or `infra` repository with the necessary code to automatically obtain and vendor dependencies from this `platform` repository. 
 
 * Copy `.github` directory into `$project/infra`
 * Add the secrets `AWS_PLATFORM_ECR_ACCESS_KEY_ID` and `AWS_PLATFORM_ECR_SECRET_ACCESS_KEY` to `$project/infra` with the AWS account that only has access to read the `platform/infra-tester` image from ECR (see `terraform/aws-ecr`)

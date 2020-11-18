@@ -2,7 +2,7 @@ name: Build & Push
 on:
   push:
     paths:
-    - 'components/sonatype-nexus/Dockerfile'
+    - 'images/sonatype-nexus/Dockerfile'
     branches:
       - nexus_image
 jobs:
@@ -26,4 +26,4 @@ jobs:
           password: ${{ secrets.OCR_PASSWORD }}
           registry: jed.ocir.io
           tags: "latest"
-          workdir: components/sonatype-nexus
+          workdir: images/sonatype-nexus

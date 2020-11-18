@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set 'REPOSITORY_NAME'
-      run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") 
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
       shell: bash
     - shell: bash
       name: Set the output 'extract-branch.branch'
@@ -58,7 +58,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set the env var 'REPOSITORY_NAME' 
-      run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
       shell: bash
     - name: Add jdk-8
       uses: actions/setup-java@v1
@@ -110,7 +110,7 @@ jobs:
       with:
         path: source
     - name: Set the env var 'REPOSITORY_NAME'
-      run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
       shell: bash
     - name: Checkout infra repo
       uses: actions/checkout@v2
@@ -151,7 +151,6 @@ jobs:
     - uses: imranismail/setup-kustomize@master
       with:
         kustomize-version: "2.0.3"
-    - uses: geertvdc/setup-hub@master
     - name: Create PR
       env:
         GITHUB_USER: fakeci

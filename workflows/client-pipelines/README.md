@@ -1,4 +1,5 @@
-# pipelines-for-prod
+# pipelines-for-prod (client component)
+Use this with the infra component (infra/pipelines)
 ## requirements
 - `tekton` for non-final environments (to be updated in code)
 - `tekton-prod` for final environments (to be updated by release)

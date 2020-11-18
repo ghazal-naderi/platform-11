@@ -20,6 +20,11 @@ render_package() {
                 mkdir -p "$(echo "${path}" | rev | cut -d'/' -f2- | rev)"  || echo "mkdir failed"
                 cp "temp/${pname}/pkg/${pname}.yaml" "${path}.yaml"
                 git add "${path}.yaml"
+            elif [[ "${path}" == .github/workflows ]]; then
+                for f in "temp/${pname}/pkg/${pname}/.github/workflows/"*; do 
+                    cp "$f" ".github/workflows/"
+                done
+                git add .github/workflows/
             else
               git rm -r -f "${path}" || mkdir -p "${path}"
               cp -r "temp/${pname}/pkg/${pname}/" "${path}"

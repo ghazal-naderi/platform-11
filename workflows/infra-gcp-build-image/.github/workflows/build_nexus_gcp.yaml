@@ -2,7 +2,7 @@ name: Build & Push
 on:
   push:
     paths:
-      - 'components/sonatype-nexus/Dockerfile'
+      - 'images/sonatype-nexus/Dockerfile'
       - '.github/workflows/build_nexus_gcp.yaml'
     branches:
       - master
@@ -23,4 +23,4 @@ jobs:
         username: ${{ steps.gcloud.outputs.username }}
         password: ${{ steps.gcloud.outputs.password }}
         registry: us.gcr.io 
-        workdir: components/sonatype-nexus
+        workdir: images/sonatype-nexus

@@ -6,7 +6,7 @@ resource "oci_identity_user" "this" {
 }
 
 module "iam_capabilities_management" {
-  source                       = "../../structs/iam-user-management"
+  source                       = "../iam-user-management"
   user_ids                     = oci_identity_user.this.*.id
   can_use_api_keys             = "false"
   can_use_auth_tokens          = "false"

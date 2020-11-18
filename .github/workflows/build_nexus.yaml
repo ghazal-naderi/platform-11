@@ -2,7 +2,7 @@ name: Build & Push
 on:
   push:
     paths:
-      - 'components/sonatype-nexus/Dockerfile'
+      - 'images/sonatype-nexus/Dockerfile'
     branches:
       - master
 jobs:
@@ -16,7 +16,7 @@ jobs:
           secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
           region: eu-west-2
       - uses: actions/checkout@v1
-      - run: docker build --tag sonatype-nexus components/sonatype-nexus
+      - run: docker build --tag sonatype-nexus images/sonatype-nexus
       - name: Push to ECR
         uses: jwalton/gh-ecr-push@v1
         with:

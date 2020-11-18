@@ -2,7 +2,7 @@ name: Build & Push
 on:
   push:
     paths:
-    - 'components/infra-tester/Dockerfile'
+    - 'images/infra-tester/Dockerfile'
     branches:
       - master
 jobs:
@@ -26,4 +26,4 @@ jobs:
           password: ${{ secrets.OCR_PASSWORD }}
           registry: jed.ocir.io
           tags: "latest"
-          workdir: components/infra-tester
+          workdir: images/infra-tester

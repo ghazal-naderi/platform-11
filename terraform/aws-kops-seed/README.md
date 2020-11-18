@@ -21,6 +21,9 @@ kops create cluster fakebank.stage.env.fake.com \
     --master-size t3a.large
 ```
 
+For Encryption, we should edit with `kops edit cluster` and add `encryptedVolume: true` to each `etcd` volume.
+Additionally, we should edit each instancegroup with `kops edit ig` and add `rootVolumeEncryption: true` to each instancegroup.
+
 For DNS, we should edit with `kops edit cluster` in order to add:
 
 ```

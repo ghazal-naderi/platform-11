@@ -2,7 +2,7 @@ name: Build & Push
 on:
   push:
     paths:
-      - 'components/infra-tester/Dockerfile'
+      - 'images/infra-tester/Dockerfile'
       - '.github/workflows/build_image_gcp.yaml'
     branches:
       - master
@@ -23,4 +23,4 @@ jobs:
         username: ${{ steps.gcloud.outputs.username }}
         password: ${{ steps.gcloud.outputs.password }}
         registry: us.gcr.io 
-        workdir: components/infra-tester
+        workdir: images/infra-tester
