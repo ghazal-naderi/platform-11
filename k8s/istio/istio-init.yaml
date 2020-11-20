@@ -5,8 +5,12 @@ metadata:
   name: istiocontrolplane
 spec:
   profile: default
-  values:
-    global:
-      tracer:
-        zipkin:
-          address: stream-collector.jaeger.svc.cluster.local:9411
+  meshConfig:
+    accessLogFile: /dev/stdout
+    outboundTrafficPolicy:
+      mode: ALLOW_ANY # REGISTRY_ONLY to block traffic
+#  values:
+#    global:
+#      tracer: # enable for tracing, do not enable if you trace apps directly
+#        zipkin:
+#          address: stream-collector.jaeger.svc.cluster.local:9411

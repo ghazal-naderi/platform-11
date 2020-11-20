@@ -39,6 +39,7 @@ This will create an example Istio control plane using the `default` profile.
 
 For dashboards, kustomize the Grafana deployment as below:
 ```
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -87,6 +88,8 @@ spec:
             name: grafana-dashboard-workload
           name: grafana-dashboard-workload
 ```
+
+Also, make sure to add a `Prometheus` datasource for `istio-prometheus` with address `http://prometheus.istio-system.svc:9090` - you can do this by overriding `datasources.yaml` for Grafana or by tying it to an `ExternalSecret` as documented in the `prometheus` struct.  
 
 For ExternalDNS, be sure to add Istio Gateways and/or VirtualServices:
 ```
