@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repo: quay.io/kiali/kiali-operator 
-  tag: v1.25 
+  tag: v1.27
   pullPolicy: Always
   pullSecrets: []
 
@@ -42,7 +42,7 @@ onlyViewOnlyMode: false
 # For what a Kiali CR spec can look like, see:
 # https://github.com/kiali/kiali-operator/blob/master/deploy/kiali/kiali_cr.yaml
 cr:
-  create: true 
+  create: true
   name: kiali
   # If you elect to create a Kiali CR (--set cr.create=true)
   # and the operator is watching all namespaces (--set watchNamespace="")

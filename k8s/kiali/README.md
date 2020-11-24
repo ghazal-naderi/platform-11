@@ -1,5 +1,5 @@
 # kiali
-Version: `1.25.0` from [here](https://github.com/kiali/helm-charts)
+Version: `1.27.0` from [here](https://github.com/kiali/helm-charts)
 
 ## requirements
 - `istio`
