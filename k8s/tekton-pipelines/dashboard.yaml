@@ -396,11 +396,11 @@ spec:
         - --logout-url=
         - --pipelines-namespace=tekton-pipelines
         - --triggers-namespace=tekton-pipelines
-        - --read-only=false
+        - --read-only=true
         - --csrf-secure-cookie=false
         - --log-level=info
         - --log-format=json
-        - --namespace=
+        - --namespace=tekton-pipelines
         - --openshift=false
         - --stream-logs=false
         - --external-logs=

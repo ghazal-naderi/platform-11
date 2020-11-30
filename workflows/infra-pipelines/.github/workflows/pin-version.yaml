@@ -19,7 +19,7 @@ jobs:
       - name: Pin version
         env:
           GITHUB_USER: fakeci
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
           GITHUB_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
           COMMENT: ${{ github.event.comment.body }}
           PR_NUMBER: ${{ github.event.issue.number }}

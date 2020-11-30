@@ -11,7 +11,7 @@ It makes the following assumptions:
 - A bot user is configured with access to all relevant repositories
 - Kotlin services each have their own repository and are compiled with maven
 - An `infra` repository contains the declaration for each environment as in the template 11FSConsulting/infra
-- In this example implementation, there are 3 Kubernetes environments - `int` for integration testing, `qa` for QA/UAT approval and `production` for end-user facing services with Tekton installed and configured as per the included struct.
+- In this example implementation, there are 3 environments - `int` for integration testing, `qa` for QA/UAT approval and `production` for end-user facing services with Tekton installed and configured as per the included struct.
 - In this example implementation, there are GitHub teams `qa` and `back-end` containing appropriate users to approve changes to production
 
 It has a lot of configurability and you may rename or re-order the environments or approval teams as required. `pr-wrangler.sh` doesn't have any particular knowledge of the chain of environments, only that there is an incoming (eg. int) environment and an outgoing (eg. qa) environmnet. You may create copies of these workflow yamls and arrange them in whatever way makes sense for your implementation.
@@ -27,7 +27,7 @@ It provides the means to automatically:
 You must change:
 - Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere. 
 - `AWS_REGION` in client workflows to match your own ECR's region in AWS.
-- Secret `GH_PAT` to reflect your GitHub bot's secret access token.
+- Secret `GH_BOT_SECRET_TOKEN` to reflect your GitHub bot's secret access token.
 - Git `user.name` and `user.email` in bash scripts to your own preferred Git username/user email for commits.
 - `fakeci` in workflows to your GitHub bot's username.
 - `fakebank` in workflows to your GitHub org name.

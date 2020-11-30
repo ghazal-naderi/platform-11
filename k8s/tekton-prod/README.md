@@ -3,14 +3,46 @@ This is a similar configuration to `tekton-pipelines` but made for production de
 
 It will:
 - Create a webhook to listen to GitHub release publish events
-- Apply the latest full release after validating syntax (only validation for pre-release and drafts)
+- Apply the latest full release after validating syntax (ending at the validation step for pre-release and drafts)
 
 It assumes:
-- You include a fully rendered kustomize in each of your releases named `prod-release-${version}.yaml`, with `${version}` being the tag and version of your release. 
+- You include one or all of the following files in your release with `${version}` being the tag and version of your release:
+1. `terraform-${version}.tgz`
+2. `kops-cluster-${version}.yaml`
+3. `kubernetes-${version}.yaml` 
 
-This means that you can either make manual releases via publishing GitHub releases and including the rendered kustomize file or automatically release via the `components/pipelines-for-prod` struct. 
+This means that you can either make manual releases via publishing GitHub releases and including the appropriate deployment files or automatically release via the `components/pipelines-for-prod` struct. 
 
 ## usage
+
+Create a secret called `terraform-secrets` in your environment. A few variables should be set:
+```
+{ 
+"AWS_ACCESS_KEY_ID": "",
+"AWS_SECRET_ACCESS_KEY": "",
+"AWS_REGION": "",
+"KOPS_CLUSTER_NAME": "",
+"KOPS_STATE_STORE": "",
+"TERRAFORM_DIR": "",
+}
+```
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_REGION` are used for `terraform apply`
+- `TERRAFORM_DIR` identifies which terraform directory to apply
+- `KOPS_CLUSTER_NAME` and `KOPS_STATE_STORE` are used for `kops update`
+
+You must also have `access-token` defined in your `github-webhook` secret, see `tekton-pipelines` struct for an example.
+
+```
+ apiVersion: 'kubernetes-client.io/v1'
+ kind: ExternalSecret
+ metadata:
+   name: terraform-secrets
+   namespace: tekton-pipelines
+ secretDescriptor:
+   backendType: secretsManager
+   dataFrom:
+     - terraform-secrets
+```
 
 Overlay as follows, replacing the values with your own:
 
@@ -22,24 +54,24 @@ metadata:
   name: infra-cd-prod-webhook-run
   namespace: tekton-pipelines
 spec:
+  params:
+  - name: GitHubOrg
+    value: fakebank
+  - name: GitHubUser
+    value: fakeci
+  - name: GitHubRepo
+    value: infra
+  - name: GitHubSecretName
+    value: git-webhook
+  - name: ExternalDomain
+    value: infra-cd-prod.sandbox.11fs-structs.com
+  - name: WebhookEvents
+    value: '[\"release\"]'
+  serviceAccountName: tekton-triggers-createwebhook
   taskRef:
     name: create-prod-webhook
-  inputs:
-    params:
-    - name: GitHubOrg
-      value: "fakebank"
-    - name: GitHubUser
-      value: "fakeci"
-    - name: GitHubRepo
-      value: "infra"
-    - name: GitHubSecretName
-      value: git-webhook
-    - name: ExternalDomain
-      value: infra-cd-prod.fakebank.com
-    - name: WebhookEvents
-      value: '[\"release\"]'
+    kind: Task
   timeout: 1000s
-  serviceAccountName: tekton-triggers-createwebhook
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress

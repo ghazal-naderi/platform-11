@@ -17,24 +17,6 @@ metadata:
 spec:
   serviceAccountName: tekton-triggers-admin
   triggers:
-  - name: infra-cd
-    interceptors:
-    - github:
-        secretRef:
-          secretName: git-webhook
-          secretKey: secret-string
-        eventTypes:
-        - push
-    - cel: 
-        filter: >-
-          (header.match('X-GitHub-Event', 'push') &&
-           body.repository.name == 'infra') &&
-           body.ref.startsWith('refs/heads/master')
-    bindings:
-    - ref: infra-cd
-      kind: TriggerBinding
-    template:
-      name: infra-cd
   - name: terraform-cd
     interceptors:
     - github:
@@ -53,6 +35,42 @@ spec:
       kind: TriggerBinding
     template:
       name: terraform-cd
+  - name: kops-cd
+    interceptors:
+    - github:
+        secretRef:
+          secretName: git-webhook
+          secretKey: secret-string
+        eventTypes:
+        - push
+    - cel: 
+        filter: >-
+          (header.match('X-GitHub-Event', 'push') &&
+           body.repository.name == 'infra') &&
+           body.ref.startsWith('refs/heads/master')
+    bindings:
+    - ref: infra-cd
+      kind: TriggerBinding
+    template:
+      name: kops-cd
+  - name: infra-cd
+    interceptors:
+    - github:
+        secretRef:
+          secretName: git-webhook
+          secretKey: secret-string
+        eventTypes:
+        - push
+    - cel: 
+        filter: >-
+          (header.match('X-GitHub-Event', 'push') &&
+           body.repository.name == 'infra') &&
+           body.ref.startsWith('refs/heads/master')
+    bindings:
+    - ref: infra-cd
+      kind: TriggerBinding
+    template:
+      name: infra-cd
 ---
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun

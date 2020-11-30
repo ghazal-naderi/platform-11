@@ -19,7 +19,7 @@ jobs:
          ref: master 
       - name: Check QA team approval
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
           ORG: ${{ github.event.pull_request.head.user.login }}
           TEAM: qa 
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -42,7 +42,7 @@ jobs:
      - run: |
         .github/workflows/rebase.sh
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
      - uses: imranismail/setup-kustomize@master
        with:
          kustomize-version: "3.6.1"
@@ -53,8 +53,8 @@ jobs:
      - name: Prepare release
        env:
          GITHUB_USER: fakeci
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          HEAD_REF: ${{ github.event.pull_request.head.ref }}
          BASE_REF: ${{ github.event.pull_request.base.ref }}
          IN_PR_NUMBER: ${{ github.event.pull_request.number }}

@@ -1,36 +1,35 @@
 ---
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
   name: create-prod-webhook
   namespace: tekton-pipelines
 spec:
-  inputs:
-    params:
-    - description: The external domain for the EventListener e.g. `$(inputs.params.EventListenerName).<PROXYIP>.nip.io`
-      name: ExternalDomain
-      type: string
-    - description: The GitHub user
-      name: GitHubUser
-      type: string
-    - description: The GitHub repo where the webhook will be created
-      name: GitHubRepo
-      type: string
-    - description: The GitHub organization where the webhook will be created
-      name: GitHubOrg
-      type: string
-    - description: The Secret name for GitHub access token and string. Must contain
-        keys 'access-token' and  'secret-string'
-      name: GitHubSecretName
-      type: string
-    - default: github.com
-      description: The GitHub domain. Override for GitHub Enterprise
-      name: GitHubDomain
-      type: string
-    - default: '[\"push\"]'
-      description: List of events the webhook will send notifications for
-      name: WebhookEvents
-      type: string
+  params:
+  - description: The external domain for the EventListener e.g. `$(inputs.params.EventListenerName).<PROXYIP>.nip.io`
+    name: ExternalDomain
+    type: string
+  - description: The GitHub user
+    name: GitHubUser
+    type: string
+  - description: The GitHub repo where the webhook will be created
+    name: GitHubRepo
+    type: string
+  - description: The GitHub organization where the webhook will be created
+    name: GitHubOrg
+    type: string
+  - description: The Secret name for GitHub access token and string. Must contain
+      keys 'access-token' and  'secret-string'
+    name: GitHubSecretName
+    type: string
+  - default: github.com
+    description: The GitHub domain. Override for GitHub Enterprise
+    name: GitHubDomain
+    type: string
+  - default: '[\"release\"]'
+    description: List of events the webhook will send notifications for
+    name: WebhookEvents
+    type: string
   steps:
   - args:
     - -ce
@@ -54,7 +53,7 @@ spec:
     secret:
       secretName: $(inputs.params.GitHubSecretName)
 ---
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: infra-cd-prod
@@ -62,50 +61,56 @@ metadata:
 spec:
   params:
   - name: version
-    description: The release version to apply 
+    description: The release version to apply
   - name: prerelease
     description: Whether this is a prerelease
+  - name: assetsurl
+    description: URL to asssets
   - name: draft
     description: Whether this is a draft 
-  - name: gitrepositoryurl
+  - name: gitrepository
     description: The repository from which this release was obtained
   tasks:
-  - name: apply-k8s-prod
+  - name: apply-infra-prod
     taskRef:
-      name: kustomize-apply-release
+      name: apply-infra-release
       kind: ClusterTask
     params:
     - name: version
       value: $(params.version)
     - name: prerelease
       value: $(params.prerelease)
+    - name: assetsurl
+      value: $(params.assetsurl)
     - name: draft
       value: $(params.draft)
-    - name: gitrepositoryurl
-      value: $(params.gitrepositoryurl)
+    - name: gitrepository
+      value: $(params.gitrepository)
 ---
-apiVersion: tekton.dev/v1alpha1
+apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
-  name: kustomize-apply-release
+  name: apply-infra-release
 spec:
-  inputs:
-    params:
-      - name: version
-        type: string
-        description: The release version to apply
-      - name: prerelease
-        type: string
-        description: Whether this is a prerelease
-      - name: draft
-        type: string
-        description: Whether this is a draft 
-      - name: gitrepositoryurl
-        type: string
-        description: The repository from which this release was obtained
+  params:
+    - name: version
+      type: string
+      description: The release version to apply
+    - name: prerelease
+      type: string
+      description: Whether this is a prerelease
+    - name: assetsurl
+      type: string
+      description: URL to assets
+    - name: draft
+      type: string
+      description: Whether this is a draft 
+    - name: gitrepository
+      type: string
+      description: The repository from which this release was obtained
   steps:
-    - name: k8s-dry-run
-      image: lachlanevenson/k8s-kubectl:v1.17.2
+    - name: dry-run
+      image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
       workingDir: /workspace/releases
       env:
         - name: GITHUB_OAUTH_TOKEN
@@ -113,23 +118,91 @@ spec:
             secretKeyRef:
               name: git-webhook
               key: access-token
+      envFrom:
+        - secretRef:
+            name: terraform-secrets
       script: |-
           #!/usr/bin/env ash
-          set -ex
-          # Fetch from gruntwork helps to grab releases from Github
-          wget https://github.com/gruntwork-io/fetch/releases/download/v0.3.9/fetch_linux_amd64 -O fetch
-          chmod +x fetch
-          ./fetch --repo="$(inputs.params.gitrepositoryurl)" --tag="$(inputs.params.version)" --release-asset="prod-release-$(inputs.params.version)" . 
-          echo "checking release validity with a dry-run"
-          kubectl apply -f "prod-release-$(inputs.params.version).yaml" --dry-run
+          set -e
+          ASSETS="$(wget -q --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl) -O-)"
+          # Terraform
+          TF_ASSET_URL=$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url') 
+          if [[ "$TF_ASSET_URL" != "" ]]; then
+      wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${TF_ASSET_URL} -O terraform-$(inputs.params.version).tgz
+            tar xvf terraform-$(inputs.params.version).tgz
+            cd terraform/$TERRAFORM_DIR
+            echo "Testing Terraform..."
+            terraform init -input=false
+            terraform plan -input=false
+          fi 
+          # Kops
+          KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url')"
+          if [[ "$KOPS_ASSET_URL" != "" ]]; then
+            wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${KOPS_ASSET_URL} -O kops-cluster-$(inputs.params.version).yaml
+            echo "Testing Kops..."
+            kops get cluster -o yaml > kops-cluster-prev.yaml
+            kops replace cluster -f kops-cluster-$(inputs.params.version).yaml
+            kops update cluster
+            kops replace cluster -f kops-cluster-prev.yaml
+          fi 
+          # Kubernetes
+          KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url')" 
+          if [[ "$KUBE_ASSET_URL" != "" ]]; then
+            wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${KUBE_ASSET_URL} -O kubernetes-$(inputs.params.version).yaml
+            echo "Applying Kubernetes..."
+            kubectl apply -f "kubernetes-$(inputs.params.version).yaml" --dry-run=server
+          fi 
+    - name: apply 
+      image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
+      workingDir: /workspace/releases
+      env:
+        - name: GITHUB_OAUTH_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: git-webhook
+              key: access-token
+      envFrom:
+        - secretRef:
+            name: terraform-secrets
+      script: |-
+          #!/usr/bin/env ash
+          set -e
+          ASSETS="$(wget -q --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl) -O-)"
           if ([[ "$(inputs.params.draft)" == 'false' ]] && [[ "$(inputs.params.prerelease)" == 'false' ]]); then
             echo 'this is not a prerelease or draft, we will apply it'
-            kubectl apply -f "prod-release-$(inputs.params.version).yaml"
+             # Terraform
+             TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url')" 
+             if [[ "$TF_ASSET_URL" != "" ]]; then
+               wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${TF_ASSET_URL} -O terraform-$(inputs.params.version).tgz
+               tar xvf terraform-$(inputs.params.version).tgz
+               cd terraform/$TERRAFORM_DIR
+               echo "Applying Terraform..."
+               terraform init -input=false
+               terraform apply -auto-approve -input=false
+             fi 
+             # Kops
+             KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url')" 
+             if [[ "$KOPS_ASSET_URL" != "" ]]; then
+               wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${KOPS_ASSET_URL} -O kops-cluster-$(inputs.params.version).yaml
+               echo "Applying Kops..."
+               kops export kubecfg --admin
+               kops replace cluster -f kops-cluster-$(inputs.params.version).yaml
+               kops update cluster --yes
+               kops rolling-update cluster --yes
+             fi 
+             # Kubernetes
+             KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url')" 
+             if [[ "$KUBE_ASSET_URL" != "" ]]; then
+               wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${KUBE_ASSET_URL} -O kubernetes-$(inputs.params.version).yaml
+               echo "Applying Kubernetes..."
+               kubectl apply -f "kubernetes-$(inputs.params.version).yaml"
+               echo "{\"kind\":\"ConfigMap\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"infra-version\",\"namespace\":\"tekton-pipelines\",\"creationTimestamp\":null},\"data\":{\"version\":\"$(inputs.params.version)\"}}" | kubectl apply -f -
+             fi 
           else
             echo 'this is a prerelease or draft, no further action required'
           fi
 ---
-apiVersion: tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: infra-cd-prod
@@ -142,13 +215,15 @@ spec:
     description: Whether the release is a draft or not
   - name: prerelease
     description: Whether the release is a prerelease or not
-  - name: gitrepositoryurl
+  - name: assetsurl
+    description: URL to assets
+  - name: gitrepository
     description: The github repo from which to obtain releases
   resourcetemplates:
-  - apiVersion: tekton.dev/v1alpha1
+  - apiVersion: tekton.dev/v1beta1
     kind: PipelineRun
     metadata:
-      name: infra-cd-prod-$(uid)
+      generateName: infra-cd-prod-
       namespace: tekton-pipelines
     spec:
       serviceAccountName: infra-build-bot
@@ -156,15 +231,17 @@ spec:
         name: infra-cd-prod
       params:
       - name: version
-        value: "$(params.version)"
+        value: "$(tt.params.version)"
       - name: draft
-        value: "$(params.draft)"
+        value: "$(tt.params.draft)"
       - name: prerelease
-        value: "$(params.prerelease)"
-      - name: gitrepositoryurl
-        value: "$(params.gitrepositoryurl)"
+        value: "$(tt.params.prerelease)"
+      - name: assetsurl
+        value: "$(tt.params.assetsurl)"
+      - name: gitrepository
+        value: "$(tt.params.gitrepository)"
 ---
-apiVersion: tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: infra-cd-prod
@@ -177,10 +254,12 @@ spec:
     value: "$(body.release.draft)"
   - name: prerelease
     value: "$(body.release.prerelease)"
-  - name: gitrepositoryurl
-    value: "https://github.com/$(body.repository.full_name)"
+  - name: assetsurl
+    value: "$(body.release.assets_url)"
+  - name: gitrepository
+    value: "$(body.repository.full_name)"
 ---
-apiVersion: tekton.dev/v1alpha1
+apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: infra-cd-prod
@@ -189,6 +268,11 @@ spec:
   serviceAccountName: tekton-triggers-admin
   triggers:
   - name: infra-cd-prod
+    bindings:
+    - ref: infra-cd-prod
+      kind: TriggerBinding
+    template:
+      name: infra-cd-prod
     interceptors:
     - github:
         secretRef:
@@ -196,10 +280,11 @@ spec:
           secretKey: secret-string 
         eventTypes:
         - release
-    bindings:
-    - name: infra-cd-prod
-    template:
-      name: infra-cd-prod
+    - cel: 
+        filter: >-
+          (header.match('X-GitHub-Event', 'release') &&
+           body.repository.name == 'infra' &&
+           body.action == 'released')
 ---
 apiVersion: tekton.dev/v1alpha1
 kind: TaskRun
@@ -209,20 +294,20 @@ metadata:
 spec:
   taskRef:
     name: create-prod-webhook
-  inputs:
-    params:
-    - name: GitHubOrg
-      value: "fakebank"
-    - name: GitHubUser
-      value: "fakeci"
-    - name: GitHubRepo
-      value: "infra"
-    - name: GitHubSecretName
-      value: git-webhook
-    - name: ExternalDomain
-      value: infra-cd-prod.fakebank.com
-    - name: WebhookEvents
-      value: '[\"release\"]'
+    kind: Task
+  params:
+  - name: GitHubOrg
+    value: "fakebank"
+  - name: GitHubUser
+    value: "fakeci"
+  - name: GitHubRepo
+    value: "infra"
+  - name: GitHubSecretName
+    value: git-webhook
+  - name: ExternalDomain
+    value: infra-cd-prod.fakebank.com
+  - name: WebhookEvents
+    value: '[\"release\"]'
   timeout: 1000s
   serviceAccountName: tekton-triggers-createwebhook
 ---

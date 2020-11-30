@@ -30,7 +30,7 @@ jobs:
         ref: master 
      - name: Check BE engineering team approval
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: back-end
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -44,7 +44,7 @@ jobs:
            fi
      - name: Check QA team approval
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: qa
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -65,7 +65,7 @@ jobs:
     - run: |
         .github/workflows/rebase.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
     - name: Squash, merge and version
       id: version
       run: |
@@ -78,7 +78,7 @@ jobs:
           hub api -XPUT "repos/${GITHUB_REPO}/pulls/${PROD_PR_NUMBER}/merge" -f merge_method="squash" -f commit _title="#${PROD_PR_NUMBER}: rolling \`prod\` release"
           git pull
         fi
-        git fetch --depth=1 origin +refs/tags/*:refs/tags/* # need to fetch tags for versioning
+        git fetch --depth=1 origin +refs/tags/*:refs/tags/* || echo "there are no tags yet" # need to fetch tags for versioning
         VERSION_NUMBER=$(date "+%y.%m") # CalVer
         git tag "v${VERSION_NUMBER}-${GITHUB_RUN_NUMBER}"
         git push origin --tags
@@ -86,44 +86,79 @@ jobs:
       env:
           GITHUB_LABELS: ${{ toJson(github.event.pull_request.labels) }}
           GITHUB_USER: fakeci
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           PROD_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPO: ${{ github.repository }}
-    - uses: imranismail/setup-kustomize@master
-      with:
-        kustomize-version: "3.6.1"
+    - name: Prep release artifacts
+      env:
+        KOPS_VERSION: v1.19.0-beta.1
+        KUSTOMIZE_VERSION: v3.8.7
+        TERRAFORM_VERSION: 0.13.5
+        GITHUB_REF: ${{ github.ref }}
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+        KOPS_CLUSTER_NAME: sandbox.11fs-structs.com 
+        KOPS_STATE_STORE: "s3://eu-west-2-sandbox-structs-state"
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_READONLY_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_READONLY_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_READONLY_REGION }}
+        PR_BODY: ${{ github.event.pull_request.body }}
+        TERRAFORM_DIR: sandbox
+        KUBERNETES_DIR: sandbox
+      run: |
+        # Install Kops
+        sudo curl -Lo /usr/local/bin/kops "https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64" && sudo chmod +x /usr/local/bin/kops
+        # Install Kustomize
+        sudo curl -Lo /tmp/kustomize.tgz "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"  && sudo tar -C /usr/local/bin -xf /tmp/kustomize.tgz && sudo chmod +x /usr/local/bin/kustomize
+        # Install Terraform
+        sudo curl -Lo /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"  && sudo unzip -q -d /tmp/ /tmp/terraform.zip && sudo mv /tmp/terraform /usr/local/bin/terraform && sudo chmod +x /usr/local/bin/terraform
+        # Terraform HCL plan
+        (cd terraform/${TERRAFORM_DIR} && echo "## terraform changes in ${GITHUB_REF} for ${TERRAFORM_DIR}" > ${GITHUB_WORKSPACE}/terraform_changes.md && terraform init -input=false && terraform plan -no-color >> ${GITHUB_WORKSPACE}/terraform_changes.md) && tar -czf ${GITHUB_WORKSPACE}/terraform.tgz terraform/*
+        # Kops YAML dry-update
+        (cd k8s && echo "## kops changes in ${GITHUB_REF} for ${KOPS_CLUSTER_NAME}" > ${GITHUB_WORKSPACE}/kops_changes.md && kops get cluster -o yaml > ${GITHUB_WORKSPACE}/kops-cluster-prev.yaml && kops replace cluster -f ${KUBERNETES_DIR}.yaml && cp ${KUBERNETES_DIR}.yaml ${GITHUB_WORKSPACE}/cluster.yaml && kops update cluster >> ${GITHUB_WORKSPACE}/kops_changes.md && kops replace cluster -f ${GITHUB_WORKSPACE}/kops-cluster-prev.yaml)
+        # Kubernetes YAML build
+        (cd k8s/${KUBERNETES_DIR} && echo "# Kubernetes release for ${KOPS_CLUSTER_NAME}, version ${NEW_VERSION}\n# from ${GITHUB_REF} on $(date)" > ${GITHUB_WORKSPACE}/release-${NEW_VERSION}.yaml && kustomize build . >> ${GITHUB_WORKSPACE}/release-${NEW_VERSION}.yaml)
+        cat ${GITHUB_WORKSPACE}/terraform_changes.md ${GITHUB_WORKSPACE}/kops_changes.md >> ${GITHUB_WORKSPACE}/release.md
+        echo "${PR_BODY}" >> ${GITHUB_WORKSPACE}/release.md
     - name: Create Release
       id: create_release
       uses: actions/create-release@latest
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }} 
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }} 
       with:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Production pre-release
-        body: |
-            ${{ github.event.pull_request.body }}
+        body_path: ${{ github.workspace }}/release.md
         draft: true
         prerelease: false
-    - name: Prep release artifacts
+    - name: Upload Terraform HCL tgz to Github
+      uses: actions/upload-release-asset@v1
       env:
-        GITHUB_REF: ${{ github.ref }}
-        NEW_VERSION: ${{ steps.version.outputs.version }}
-      run: |
-        cd k8s/prod
-        echo "# production release, version ${NEW_VERSION}" > ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
-        echo "# from ${GITHUB_REF} on $(date)" >> ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
-        kustomize build . >> ${GITHUB_WORKSPACE}/prod-release-${NEW_VERSION}.yaml
-    - name: Upload release to Github
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with: 
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/terraform.tgz
+        asset_name: terraform-${{ steps.version.outputs.version }}.tgz
+        asset_content_type: 'application/gzip'
+    - name: Upload Kops cluster YAML to Github
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with: 
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/cluster.yaml
+        asset_name: kops-cluster-${{ steps.version.outputs.version }}.yaml
+        asset_content_type: 'text/yaml'
+    - name: Upload Kubernetes YAML to Github
       id: uploadghm
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with: 
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ github.workspace }}/prod-release-${{ steps.version.outputs.version }}.yaml
-        asset_name: prod-release-${{ steps.version.outputs.version }}.yaml
+        asset_path: ${{ github.workspace }}/release-${{ steps.version.outputs.version }}.yaml
+        asset_name: kubernetes-${{ steps.version.outputs.version }}.yaml
         asset_content_type: 'text/yaml'
     - name: Notify slack
       uses: innocarpe/actions-slack@v1

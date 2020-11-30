@@ -2,7 +2,7 @@
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: terraform-cd
+  name: kops-cd
 spec:
   params:
   - name: git-revision
@@ -14,11 +14,11 @@ spec:
   - apiVersion: tekton.dev/v1beta1
     kind: PipelineRun
     metadata:
-      generateName: terraform-cd-
+      generateName: kops-cd-
     spec:
       serviceAccountName: build-bot
       pipelineRef:
-        name: terraform-cd
+        name: kops-cd
       params:
       - name: git-url
         value: $(tt.params.git-url)
@@ -37,12 +37,12 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: terraform-cd
+  name: kops-cd
 spec:
   params:
-  - name: terraformDir
-    description: The path to the terraform dir we're applying, relative to repo root
-    default: terraform/sandbox
+  - name: kopsFile
+    description: The path to the kops file we're applying, relative to repo root
+    default: k8s/sandbox.yaml
   - name: git-url
     description: The path to the Github repository we should apply
     default: https://github.com/11fsconsulting/infra.git
@@ -63,14 +63,14 @@ spec:
     workspaces:
       - name: output
         workspace: git-source
-  - name: apply-tf
+  - name: apply-kops
     runAfter: [fetch-from-git]
     taskRef:
-      name: terraform-apply
+      name: kops-apply
       kind: ClusterTask
     params:
-    - name: terraformDir
-      value: "$(params.terraformDir)"
+    - name: kopsFile
+      value: "$(params.kopsFile)"
     - name: git-revision
       value: "$(tasks.fetch-from-git.results.commit)" 
     workspaces:
@@ -80,36 +80,36 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: ClusterTask
 metadata:
-  name: terraform-apply
+  name: kops-apply
 spec:
   workspaces:
     - name: source
   params:
-    - name: terraformDir
+    - name: kopsFile
       type: string
-      description: Path to the terraform dir to apply relative to repo root
-      default: terraform/sandbox
+      description: Path to the kops dir to apply relative to repo root
+      default: kops/sandbox
     - name: git-revision
       type: string
       description: Git ref or tag to apply
   steps:
-    - name: tf-dry-run
+    - name: kops-dry-run
       image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest
       workingDir: $(workspaces.source.path) 
       command: ["/bin/ash"]
       envFrom:
         - secretRef:
-            name: terraform-secrets
+            name: kops-secrets
       args:
         - "-c"
-        - "cd $(inputs.params.terraformDir) && terraform init && terraform validate && tflint --module --deep --loglevel=info && terraform plan"
-    - name: tf-apply
+        - "kops get cluster -o yaml > kops-cluster-prev.yaml && kops replace cluster -f $(inputs.params.kopsFile) && kops update cluster; kops replace cluster -f kops-cluster-prev.yaml"
+    - name: kops-apply
       image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
       workingDir: $(workspaces.source.path)
       command: ["/bin/ash"]
       envFrom:
         - secretRef:
-            name: terraform-secrets
+            name: kops-secrets
       args:
         - "-c"
-        - "cd $(inputs.params.terraformDir) && terraform init && terraform apply -auto-approve"
+        - "kops export kubecfg --admin && kops replace cluster -f $(inputs.params.kopsFile) && kops update cluster --yes && kops rolling-update cluster --yes"

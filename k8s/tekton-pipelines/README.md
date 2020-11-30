@@ -1,10 +1,10 @@
 # tekton-pipelines
 ## introduction
-This struct provides the core of our CI/CD pipeline for Kubernetes - it includes all the CRDs and code necessary to automatically render and deploy Terraform HCL and Kustomize YAML to Kubernetes clusters.
+This struct provides the core of our CI/CD pipeline for Kubernetes - it includes all the CRDs and code necessary to automatically render and deploy Terraform HCL, Kops YAML and Kustomize YAML to Kubernetes clusters and clouds.
 ## updates
 *pipeline:* `v0.16.2`
 *triggers:* `v0.8.1`
-*dashboard:* `v0.9.0`
+*dashboard:* `v0.9.0` with `read-only=true` and `namespace=tekton-pipelines` as container parameters
 *git-clone:* `0.2-88bc2b5`
 
 To update this struct, simply:
@@ -12,6 +12,7 @@ To update this struct, simply:
 curl -Lo pipelines.yaml https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
 curl -Lo triggers.yaml https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
 curl -Lo dashboard.yaml https://storage.googleapis.com/tekton-releases/dashboard/latest/tekton-dashboard-release.yaml
+sed -i dashboard.yaml -e 's/--read-only=false/--read-only=true/' -e 's/--namespace=/--namespace=tekton-pipelines/'
 curl -Lo git-clone.yaml https://raw.githubusercontent.com/tektoncd/catalog/master/task/git-clone/0.2/git-clone.yaml
 ```
 
@@ -108,24 +109,6 @@ secretDescriptor:
 - Create `tekton-custom.yaml` for your own cluster like so, replacing the URLs as appropriate:
 ```
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: build-bot
-  namespace: tekton-pipelines
-secrets:
-- name: git-ssh-key
-- name: git-web-key
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: infra-build-bot
-  namespace: tekton-pipelines
-secrets:
-- name: git-ssh-key
-- name: git-web-key
----
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -179,50 +162,41 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: infra-cd
+  name: kops-cd
   namespace: tekton-pipelines
 spec:
   params:
-  - default: k8s/sandbox
-    description: The path to the kustomize dir we're applying, relative to repo root
-    name: kustomizeDir
-  - default: https://github.com/11fsconsulting/infra.git
+  - name: kopsFile
+    description: The path to the kops file we're applying, relative to repo root
+    default: k8s/sandbox.yaml
+  - name: git-url
     description: The path to the Github repository we should apply
-    name: git-url
-  - default: master
+    default: https://github.com/11fsconsulting/infra.git
+  - name: git-revision
     description: The revision or tag to apply
-    name: git-revision
-  tasks:
-  - name: fetch-from-git
-    params:
-    - name: url
-      value: $(params.git-url)
-    - name: revision
-      value: $(params.git-revision)
-    taskRef:
-      name: git-clone
-    workspaces:
-    - name: output
-      workspace: git-source
-  - name: apply-k8s
-    params:
-    - name: kustomizeDir
-      value: "$(params.kustomizeDir)"
-    runAfter:
-    - fetch-from-git
-    taskRef:
-      kind: ClusterTask
-      name: kustomize-apply
-    workspaces:
-    - name: source
-      workspace: git-source
-  workspaces:
-  - name: git-source
+    default: master
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: infra-cd
+spec:
+  params:
+  - name: kustomizeDir
+    description: The path to the kustomize dir we're applying, relative to repo root
+    default: k8s/sandbox
+  - name: git-url
+    description: The path to the Github repository we should apply
+    default: https://github.com/11fsconsulting/infra.git
+  - name: git-revision
+    description: The revision or tag to apply
+    default: master
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: terraform-cd
+  namespace: tekton-pipelines
 spec:
   params:
   - name: terraformDir
@@ -234,31 +208,7 @@ spec:
   - name: git-revision
     description: The revision or tag to apply
     default: master
-  workspaces:
-    - name: git-source
-  tasks:
-  - name: fetch-from-git
-    taskRef:
-      name: git-clone
-    params:
-      - name: url
-        value: $(params.git-url)
-      - name: revision
-        value: $(params.git-revision)
-    workspaces:
-      - name: output
-        workspace: git-source
-  - name: apply-tf
-    runAfter: [fetch-from-git]
-    taskRef:
-      name: terraform-apply
-      kind: ClusterTask
-    params:
-    - name: terraformDir
-      value: "$(params.terraformDir)"
-    workspaces:
-      - name: source
-        workspace: git-source
+---
 ```
 
 - Override the webhook Ingress like so, changing the URL to your own environment's

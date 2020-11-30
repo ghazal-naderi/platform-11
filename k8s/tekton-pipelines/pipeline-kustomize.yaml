@@ -16,14 +16,14 @@ spec:
     metadata:
       generateName: infra-cd-
     spec:
-      serviceAccountName: infra-build-bot
+      serviceAccountName: build-bot
       pipelineRef:
         name: infra-cd
       params:
       - name: git-url
         value: $(tt.params.git-url) 
       - name: git-revision
-        value: $(tt.params.git-revision)
+        value: $(tt.params.git-revision) 
       workspaces:
         - name: git-source
           volumeClaimTemplate:
@@ -69,6 +69,8 @@ spec:
       name: kustomize-apply
       kind: ClusterTask
     params:
+    - name: git-revision
+      value: "$(tasks.fetch-from-git.results.commit)"
     - name: kustomizeDir
       value: "$(params.kustomizeDir)"
     workspaces:
@@ -87,18 +89,22 @@ spec:
       type: string
       description: Path to the kustomize dir to apply relative to repo root
       default: k8s/dev
+    - name: git-revision
+      type: string
+      description: Revision to be deployed
+      default: master
   steps:
     - name: k8s-dry-run
       image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest
       workingDir: $(workspaces.source.path) 
-      command: ["/bin/ash"]
-      args:
-        - "-c"
-        - "kustomize build $(inputs.params.kustomizeDir) | kubectl apply -f - --dry-run"
+      script: |-
+        #!/usr/bin/env ash
+        set -e
+        kustomize build $(inputs.params.kustomizeDir) | kubectl apply -f - --dry-run
     - name: k8s-apply
       image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
       workingDir: $(workspaces.source.path)
-      command: ["/bin/ash"]
-      args:
-        - "-c"
-        - "kustomize build $(inputs.params.kustomizeDir) | kubectl apply -f -"
+      script: |-
+        #!/usr/bin/env ash
+        kustomize build $(inputs.params.kustomizeDir) | kubectl apply -f -
+        echo "{\"kind\":\"ConfigMap\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"infra-version\",\"namespace\":\"tekton-pipelines\"},\"data\":{\"version\":\"$(inputs.params.git-revision)\"}}" | kubectl apply -f -

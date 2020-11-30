@@ -23,7 +23,7 @@ jobs:
     - run: |
         .github/workflows/rebase.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
     - uses: imranismail/setup-kustomize@master
       with:
         kustomize-version: "3.6.1"
@@ -34,8 +34,8 @@ jobs:
     - name: Merge PR
       env:
         GITHUB_USER: fakeci
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
         BASE_REF: ${{ github.event.pull_request.base.ref }}
         IN_PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_REPO: ${{ github.repository }}

@@ -6,23 +6,16 @@ metadata:
   namespace: tekton-pipelines
 secrets:
   - name: git-ssh-key
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: infra-build-bot
-  namespace: tekton-pipelines
-secrets:
-  - name: git-ssh-key
+  - name: git-web-key
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
- name: infra-build-bot
+ name: build-bot
  namespace: tekton-pipelines
 subjects:
 - kind: ServiceAccount
-  name: infra-build-bot
+  name: build-bot
   namespace: tekton-pipelines
 roleRef:
  kind: ClusterRole
