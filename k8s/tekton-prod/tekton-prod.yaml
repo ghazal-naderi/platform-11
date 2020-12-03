@@ -128,7 +128,7 @@ spec:
           # Terraform
           TF_ASSET_URL=$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url') 
           if [[ "$TF_ASSET_URL" != "" ]]; then
-      wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${TF_ASSET_URL} -O terraform-$(inputs.params.version).tgz
+            wget -q --header "Accept: application/octet-stream" --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" ${TF_ASSET_URL} -O terraform-$(inputs.params.version).tgz
             tar xvf terraform-$(inputs.params.version).tgz
             cd terraform/$TERRAFORM_DIR
             echo "Testing Terraform..."
