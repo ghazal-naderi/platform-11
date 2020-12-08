@@ -126,9 +126,9 @@ spec:
           set -e
           ASSETS="$(wget -q --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl) -O-)"
           # Terraform
-          TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url'|sed -e "s%https://%https://${GITHUB_OAUTH_TOKEN}:%g")"
+          TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url')"
           if [[ "$TF_ASSET_URL" != "" ]]; then
-            wget -q --header "Accept: application/octet-stream" --auth-no-challenge ${TF_ASSET_URL} -O terraform-$(inputs.params.version).tgz
+            wget -q --header "Accept: application/octet-stream" ${TF_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O terraform-$(inputs.params.version).tgz
             tar xvf terraform-$(inputs.params.version).tgz
             cd terraform/$TERRAFORM_DIR
             echo "Testing Terraform..."
@@ -136,9 +136,9 @@ spec:
             terraform plan -input=false
           fi 
           # Kops
-          KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url'|sed -e "s%https://%https://${GITHUB_OAUTH_TOKEN}:%g")"
+          KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url')"
           if [[ "$KOPS_ASSET_URL" != "" ]]; then
-            wget -q --header "Accept: application/octet-stream" --auth-no-challenge ${KOPS_ASSET_URL} -O kops-cluster-$(inputs.params.version).yaml
+            wget -q --header "Accept: application/octet-stream" ${KOPS_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kops-cluster-$(inputs.params.version).yaml
             echo "Testing Kops..."
             kops get cluster -o yaml > kops-cluster-prev.yaml
             kops replace cluster -f kops-cluster-$(inputs.params.version).yaml
@@ -146,9 +146,9 @@ spec:
             kops replace cluster -f kops-cluster-prev.yaml
           fi 
           # Kubernetes
-          KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url'|sed -e "s%https://%https://${GITHUB_OAUTH_TOKEN}:%g")"
+          KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url')"
           if [[ "$KUBE_ASSET_URL" != "" ]]; then
-            wget -q --header "Accept: application/octet-stream" --auth-no-challenge ${KUBE_ASSET_URL} -O kubernetes-$(inputs.params.version).yaml
+            wget -q --header "Accept: application/octet-stream" ${KUBE_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kubernetes-$(inputs.params.version).yaml
             echo "Applying Kubernetes..."
             kubectl apply -f "kubernetes-$(inputs.params.version).yaml" --dry-run=server
           fi 
@@ -171,9 +171,9 @@ spec:
           if ([[ "$(inputs.params.draft)" == 'false' ]] && [[ "$(inputs.params.prerelease)" == 'false' ]]); then
             echo 'this is not a prerelease or draft, we will apply it'
              # Terraform
-             TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url'|sed -e "s%https://%https://${GITHUB_OAUTH_TOKEN}:%g")" 
+             TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url')" 
              if [[ "$TF_ASSET_URL" != "" ]]; then
-               wget -q --header "Accept: application/octet-stream" --auth-no-challenge ${TF_ASSET_URL} -O terraform-$(inputs.params.version).tgz
+               wget -q --header "Accept: application/octet-stream" ${TF_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O terraform-$(inputs.params.version).tgz
                tar xvf terraform-$(inputs.params.version).tgz
                cd terraform/$TERRAFORM_DIR
                echo "Applying Terraform..."
@@ -181,9 +181,9 @@ spec:
                terraform apply -auto-approve -input=false
              fi 
              # Kops
-             KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url'|sed -e "s%https://%https://${GITHUB_OAUTH_TOKEN}:%g")" 
+             KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url')" 
              if [[ "$KOPS_ASSET_URL" != "" ]]; then
-               wget -q --header "Accept: application/octet-stream" --auth-no-challenge ${KOPS_ASSET_URL} -O kops-cluster-$(inputs.params.version).yaml
+               wget -q --header "Accept: application/octet-stream" ${KOPS_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kops-cluster-$(inputs.params.version).yaml
                echo "Applying Kops..."
                kops export kubecfg --admin
                kops replace cluster -f kops-cluster-$(inputs.params.version).yaml
@@ -191,9 +191,9 @@ spec:
                kops rolling-update cluster --yes
              fi 
              # Kubernetes
-             KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url'|sed -e "s%https://%https://${GITHUB_OAUTH_TOKEN}:%g")" 
+             KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url')" 
              if [[ "$KUBE_ASSET_URL" != "" ]]; then
-               wget -q --header "Accept: application/octet-stream" --auth-no-challenge ${KUBE_ASSET_URL} -O kubernetes-$(inputs.params.version).yaml
+               wget -q --header "Accept: application/octet-stream" ${KUBE_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kubernetes-$(inputs.params.version).yaml
                echo "Applying Kubernetes..."
                kubectl apply -f "kubernetes-$(inputs.params.version).yaml"
                echo "{\"kind\":\"ConfigMap\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"infra-version\",\"namespace\":\"tekton-pipelines\",\"creationTimestamp\":null},\"data\":{\"version\":\"$(inputs.params.version)\"}}" | kubectl apply -f -
