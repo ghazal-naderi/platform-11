@@ -31,6 +31,7 @@ jobs:
      - name: Check BE engineering team approval
        env:
          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: back-end
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -45,6 +46,7 @@ jobs:
      - name: Check QA team approval
        env:
          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: qa
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -62,16 +64,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: jq '.' "$GITHUB_EVENT_PATH"
-    - run: |
-        .github/workflows/rebase.sh
+    - run: .github/workflows/rebase.sh
       env:
         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
     - name: Squash, merge and version
       id: version
       run: |
         git checkout "${BASE_REF}"
-        hub config --global user.email "developers+ci@fakebank.com"
-        hub config --global user.name "FakeBank Bot"
+        hub config --global user.email "${GITHUB_EMAIL}"
+        hub config --global user.name "${GITHUB_USER}"
         if [[ ! -z "$(hub pr show ${PROD_PR_NUMBER} -f '%mt')" ]]; then # already merged!
           git pull
         else
@@ -85,7 +86,8 @@ jobs:
         echo ::set-output name=version::$(echo "v${VERSION_NUMBER}-${GITHUB_RUN_NUMBER}")
       env:
           GITHUB_LABELS: ${{ toJson(github.event.pull_request.labels) }}
-          GITHUB_USER: fakeci
+          GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
+          GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
           GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}

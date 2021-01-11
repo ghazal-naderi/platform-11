@@ -11,16 +11,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set 'REPOSITORY_NAME'
-      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
       shell: bash
     - shell: bash
       name: Set the output 'extract-branch.branch'
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})" 
       id: extract-branch
-    - name: Add jdk-8
+    - name: Add JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 8
+        java-version: ${{ secrets.JDK_VERSION }}
     - uses: actions/cache@v1
       with:
         path: ~/.m2/repository
@@ -29,6 +29,7 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Run the tests
       env:
+        NEXUS_URL: ${{ secrets.NEXUS_URL }}
         NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         NEXUS_USERNAME: developer
         MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
@@ -58,12 +59,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set the env var 'REPOSITORY_NAME' 
-      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
       shell: bash
-    - name: Add jdk-8
+    - name: Add JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 8
+        java-version: ${{ secrets.JDK_VERSION }}
     - uses: actions/cache@v1
       with:
         path: ~/.m2/repository
@@ -80,6 +81,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Build and push
       env:
+        NEXUS_URL: ${{ secrets.NEXUS_URL }}
         NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         NEXUS_USERNAME: developer
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -110,21 +112,22 @@ jobs:
       with:
         path: source
     - name: Set the env var 'REPOSITORY_NAME'
-      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
       shell: bash
     - name: Checkout infra repo
       uses: actions/checkout@v2
       with:
-        repository: fakebank/infra
+        repository: ${{ github.repository_owner }}/infra
         path: infra
         token: ${{ secrets.GH_PAT }}
-    - name: Add jdk-8
+    - name: Add JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 8
+        java-version: ${{ secrets.JDK_VERSION }}
     - name: Get image tag
       id: image-tag
       env:
+        NEXUS_URL: ${{ secrets.NEXUS_URL }}
         NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         NEXUS_USERNAME: developer
         MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
@@ -135,30 +138,35 @@ jobs:
         [ -z "$IMAGE_TAG" ] && exit 1
 
         echo "##[set-output name=tag;]$IMAGE_TAG"
-    - uses: heinrichreimer/github-changelog-generator-action@v2.1.1
-      id: changelog
+    - name: Set up Ruby 2.6
+      uses: actions/setup-ruby@v1
       with:
-        pullRequests: true
-        prWoLabels: true
-        issues: true
-        issuesWoLabels: true
-        releaseBranch: ${{ steps.extract-branch.outputs.branch }}
-        author: true
-        unreleased: true
-        futureRelease: ${{ steps.image-tag.outputs.tag }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        output: CHANGELOG.md
+        ruby-version: 2.6.x
+    - name: Generate changelog
+      id: changelog
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        REPO_OWNER: ${{ github.repository_owner }}
+      working-directory: source
+      run: |
+        COMMIT_FROM=$(git rev-list --max-parents=0 HEAD)
+        PR_FROM=$(date -d "@$(git show -s --format=%ct $COMMIT_FROM)" --iso-8601=seconds)
+        PR_TO=$(date --iso-8601=seconds)
+        gem install octocam
+        octocam -o $REPO_OWNER -r $REPOSITORY_NAME -f $PR_FROM -t $PR_TO > ../CHANGELOG.md
     - uses: imranismail/setup-kustomize@master
       with:
         kustomize-version: "2.0.3"
     - name: Create PR
       env:
-        GITHUB_USER: fakeci
+        TARGET_ENV: ${{ secrets.CICD_TARGET_ENV }}
+        GITHUB_USERNAME: ${{ secrets.GH_BOT_UNAME }}
+        GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_BRANCH: ${{ steps.extract-branch.outputs.branch }}
         AWS_ECR_ACCOUNT_ID: ${{ secrets.AWS_ECR_ACCOUNT_ID }}
-        AWS_REGION: 'us-east-1'
         APP_VERSION: ${{ steps.image-tag.outputs.tag }}
       run: source/.github/workflows/raise-pr.sh
     # Let's tell slack if this fails. 
@@ -167,9 +175,9 @@ jobs:
       if: ( ! success() ) 
       with:
         status: ${{ job.status }}
-        success_text: '💯 *successfully* raised `infra` PR for `int` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
-        failure_text: '☠️ *failed* to raise `infra` PR for `int` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
-        cancelled_text: '✋ *cancelled* `infra` PR `int` overlay creation for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
+        success_text: '💯 *successfully* raised `infra` PR for `${{ secrets.CICD_TARGET_ENV }}` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
+        failure_text: '☠️ *failed* to raise `infra` PR for `${{ secrets.CICD_TARGET_ENV }}` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
+        cancelled_text: '✋ *cancelled* `infra` PR `${{ secrets.CICD_TARGET_ENV }}` overlay creation for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'
       env:
         GITHUB_TOKEN: ${{ github.token }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

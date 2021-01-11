@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 github_api() {
-    curl -sL -XGET --user "fakeci:${GITHUB_TOKEN}" "https://api.github.com/$1"
+    curl -sL -XGET --user "${GITHUB_USER}:${GITHUB_TOKEN}" "https://api.github.com/$1"
 }
 APPROVAL_IDS=($(github_api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" | jq -r ".[] | select(.state == \"APPROVED\") | .id"))
 ORG=$(echo "${GITHUB_REPOSITORY}" | cut -d'/' -f1)

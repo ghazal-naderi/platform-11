@@ -20,8 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: jq '.' "$GITHUB_EVENT_PATH" 
-    - run: |
-        .github/workflows/rebase.sh
+    - run: .github/workflows/rebase.sh
       env:
         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
     - uses: imranismail/setup-kustomize@master
@@ -33,7 +32,7 @@ jobs:
         ruby-version: 2.6.x
     - name: Merge PR
       env:
-        GITHUB_USER: fakeci
+        GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
         BASE_REF: ${{ github.event.pull_request.base.ref }}

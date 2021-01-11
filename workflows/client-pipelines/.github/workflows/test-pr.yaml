@@ -9,12 +9,12 @@ jobs:
     name: Test
     steps:
     - uses: actions/checkout@v2
-    - run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV 
+    - run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
       shell: bash
-    - name: Add jdk-8
+    - name: Add JDK
       uses: actions/setup-java@v1
       with:
-        java-version: 8
+        java-version: ${{ secrets.JDK_VERSION }}
     - uses: actions/cache@v1
       with:
         path: ~/.m2/repository
@@ -23,6 +23,7 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Run the tests
       env:
+        NEXUS_URL: ${{ secrets.NEXUS_URL }}
         NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         NEXUS_USERNAME: developer
         MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC

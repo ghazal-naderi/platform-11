@@ -27,10 +27,10 @@ It provides the means to automatically:
 You must change:
 - Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere. 
 - `AWS_REGION` in client workflows to match your own ECR's region in AWS.
-- Secret `GH_PAT` to reflect your GitHub bot's secret access token.
-- Git `user.name` and `user.email` in bash scripts to your own preferred Git username/user email for commits.
-- `fakeci` in workflows to your GitHub bot's username.
-- `fakebank` in workflows to your GitHub org name.
+- Secrets `GH_PAT`, `GH_BOT_UNAME` and `GH_BOT_EMAIL` to reflect your GitHub bot's secret access token, username and email address.
+- Secret `CICD_TARGET_ENV` to indicate your target environment for the first PR in the chain (Eg. `int`), this should map to a directory in `k8s`
+- Secret `JDK_VERSION` to indicate your preferred JDK version (Eg. `11`)
+- Secret `NEXUS_URL` and `NEXUS_PASSWORD` to your Sonatype Nexus 3 URL (minus trailing slash) and developer account password.
 
 Additionally, the GitHub teams requireed for approval at each phase can be changed in the YAML files. The order of environments is defined by the YAML files which can be copied and used as a template to scale to as many environments as required.
 

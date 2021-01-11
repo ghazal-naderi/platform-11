@@ -52,7 +52,7 @@ jobs:
          ruby-version: 2.6.x
      - name: Prepare release
        env:
-         GITHUB_USER: fakeci
+         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          HEAD_REF: ${{ github.event.pull_request.head.ref }}
