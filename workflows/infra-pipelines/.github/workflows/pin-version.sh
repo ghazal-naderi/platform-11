@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -x
-hub config --global user.email "developers+ci@fakebank.com"
-hub config --global user.name "FakeBank Bot"
+hub config --global user.email "${GITHUB_EMAIL}"
+hub config --global user.name "${GITHUB_USER}"
 ENVIRONMENT=""
 case $GITHUB_LABELS in
     *"release/qa"*)

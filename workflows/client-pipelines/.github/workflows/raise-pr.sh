@@ -10,8 +10,8 @@ OPEN_DEV_PR_NUMBER=$(hub pr list -h "release-${TARGET_ENV}/${REPOSITORY_NAME}" -
 if [[ -n "${OPEN_DEV_PR_NUMBER}" ]]; then # we already have an open PR for deploying this app, update it
   # Checkout the open PR we found
   hub pr checkout "${OPEN_DEV_PR_NUMBER}"
-  cd k8s/int
-  kustomize edit set image "${AWS_ECR_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${REPOSITORY_NAME}:${APP_VERSION}"
+  cd "k8s/${TARGET_ENV}"
+  kustomize edit set image "${IMAGE_REGISTRY}/${REPOSITORY_NAME}:${APP_VERSION}"
   hub commit -am "update: \`${REPOSITORY_NAME}\` to \`${APP_VERSION}\`"
   # Push changes to our int release branch and update the PR
   hub push -f -u origin "release-${TARGET_ENV}/${REPOSITORY_NAME}"
@@ -19,8 +19,8 @@ if [[ -n "${OPEN_DEV_PR_NUMBER}" ]]; then # we already have an open PR for deplo
 else # open a pr
   # Checkout a new branch for the PR
   hub checkout -b "release-${TARGET_ENV}/${REPOSITORY_NAME}"
-  cd k8s/int
-  kustomize edit set image "${AWS_ECR_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${REPOSITORY_NAME}:${APP_VERSION}"
+  cd "k8s/${TARGET_ENV}"
+  kustomize edit set image "${IMAGE_REGISTRY}/${REPOSITORY_NAME}:${APP_VERSION}"
   hub commit -am "update: \`${REPOSITORY_NAME}\` to \`${APP_VERSION}\`"
   # Push the changes up and raise a new PR
   hub push -f -u origin "release-${TARGET_ENV}/${REPOSITORY_NAME}"

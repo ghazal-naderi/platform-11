@@ -25,13 +25,16 @@ It provides the means to automatically:
 
 ## installation
 You must change:
-- Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere. 
-- `AWS_REGION` in client workflows to match your own ECR's region in AWS.
+- AWS: Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere.
+- AWS: `AWS_REGION` in client workflows to match your own ECR's region in AWS.
+- AWS: Enable the `aws` configuration block if using AWS
+- OCI: Enable the `oci` configuration block and adjust the values within  
+- Docker images promotion: Enable PROMOTE_IMAGE by setting it to "true" and set `IN_REGISTRY`, `IN_DOCKER_SERVER`, `IN_DOCKER_USER`, `IN_DOCKER_PASS`, `OUT_REGISTRY`, `OUT_DOCKER_SERVER`, `OUT_DOCKER_USER` and `OUT_DOCKER_PASS`. 
 - Secrets `GH_PAT`, `GH_BOT_UNAME` and `GH_BOT_EMAIL` to reflect your GitHub bot's secret access token, username and email address.
 - Secret `CICD_TARGET_ENV` to indicate your target environment for the first PR in the chain (Eg. `int`), this should map to a directory in `k8s`
 - Secret `JDK_VERSION` to indicate your preferred JDK version (Eg. `11`)
 - Secret `NEXUS_URL` and `NEXUS_PASSWORD` to your Sonatype Nexus 3 URL (minus trailing slash) and developer account password.
 
-Additionally, the GitHub teams requireed for approval at each phase can be changed in the YAML files. The order of environments is defined by the YAML files which can be copied and used as a template to scale to as many environments as required.
+Additionally, the GitHub teams required for approval at each phase can be changed in the YAML files. The order of environments is defined by the YAML files which can be copied and used as a template to scale to as many environments as required.
 
-The end effect of this is a full Continuous Deployment workflow with however many manual approval gates are required. 
+The end effect of this is a full Continuous Deployment workflow with however many manual approval gates are required.

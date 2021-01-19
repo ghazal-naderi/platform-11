@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -x
 FIRST_RUN="true"
-hub config --global user.email "developers+ci@fakebank.com"
-hub config --global user.name "FakeBank Bot"
+hub config --global user.email "${GITHUB_EMAIL}"
+hub config --global user.name "${GITHUB_USER}"
 
 # Set timezone
 sudo ln -sf /usr/share/zoneinfo/Europe/London /etc/localtime
@@ -18,12 +18,6 @@ IN_PR_ORG=$(echo "${GITHUB_REPO}" | cut -d '/' -f1)
 
 hub checkout "${BASE_REF}"
 
-# We never want to promote the test-capabilities service into production!!!
-if [[ "${IN_PR_APP}" == "mino-test-capabilities" && "${OUT_PR_ENV}" == "prod" ]]; then
-  echo "Skipping PR creating for mino-test-capabilities into prod"
-  exit
-fi
-
 # Check whether we are already merged, if not then merge
 if [[ -n "$(hub pr show "${IN_PR_NUMBER}" -f '%mt')" ]]; then # already merged!
   echo 'Already merged!'
@@ -31,6 +25,11 @@ if [[ -n "$(hub pr show "${IN_PR_NUMBER}" -f '%mt')" ]]; then # already merged!
 else
   hub api -XPUT "repos/${GITHUB_REPO}/pulls/${IN_PR_NUMBER}/merge" -f merge_method="squash" -f commit_title="update \`${IN_PR_APP}\` in \`${IN_PR_ENV}\` (#${IN_PR_NUMBER})"
   hub pull
+fi
+
+# If we don't have an outgoing env or it is empty, stop here
+if [[ -z "${OUT_PR_ENV}" ]]; then
+  exit 0
 fi
 
 # Now gather information required from output PR
@@ -51,7 +50,23 @@ IN_PR_APPURL=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -
 IN_PR_VERSION=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" )
 INT_PREV_COMMIT=$(/tmp/yq r "../${OUT_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" | cut -d'-' -f2)
 INT_CUR_COMMIT=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" | cut -d'-' -f2)
+
+# Registry transform if required
 IMAGE="${IN_PR_APPURL}:${IN_PR_VERSION}"
+if [ ! -z "${IN_REGISTRY}" ]; then
+   OUT_PR_APPURL=$(echo "${IN_PR_APPURL}" | sed -e "s%${IN_REGISTRY}%${OUT_REGISTRY}%")
+   IMAGE="${OUT_PR_APPURL}:${IN_PR_VERSION}"
+   # Promote images if required
+   if [[ "${PROMOTE_IMAGE}" == "true" ]]; then
+     mkdir -p "${HOME}/.docker"
+     docker login "${IN_DOCKER_SERVER}" -u "${IN_DOCKER_USER}" -p "${IN_DOCKER_PASS}"
+     docker pull "${IN_PR_APPURL}:${IN_PR_VERSION}"
+     docker tag "${IN_PR_APPURL}:${IN_PR_VERSION}" "${OUT_PR_APPURL}:${IN_PR_VERSION}"
+     docker login "${OUT_DOCKER_SERVER}" -u "${OUT_DOCKER_USER}" -p "${OUT_DOCKER_PASS}"
+     docker push "${OUT_PR_APPURL}:${IN_PR_VERSION}"
+   fi
+fi
+
 kustomize edit set image "${IMAGE}"
 if hub diff-index --name-only HEAD | grep "k8s/${OUT_PR_ENV}/kustomization.yaml"; then
   hub add kustomization.yaml

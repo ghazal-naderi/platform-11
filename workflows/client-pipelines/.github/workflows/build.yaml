@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches:
-      - master 
+      - master
       - noticket/pipeline
 jobs:
   test:
@@ -10,13 +10,6 @@ jobs:
     name: Test
     steps:
     - uses: actions/checkout@v2
-    - name: Set 'REPOSITORY_NAME'
-      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
-      shell: bash
-    - shell: bash
-      name: Set the output 'extract-branch.branch'
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})" 
-      id: extract-branch
     - name: Add JDK
       uses: actions/setup-java@v1
       with:
@@ -34,11 +27,6 @@ jobs:
         NEXUS_USERNAME: developer
         MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
       run: mvn -f pom.xml -s settings.xml verify -ntp -Dci=true -Djib.skip=true
-    - name: run debug
-      if: ( ! success() )
-      run: |
-        cat /home/runner/work/${REPOSITORY_NAME}/${REPOSITORY_NAME}/target/failsafe-reports/*-jvmRun*.dump
-        cat /home/runner/work/${REPOSITORY_NAME}/${REPOSITORY_NAME}/target/failsafe-reports/failsafe-summary.xml
     - name: Notify slack
       uses: innocarpe/actions-slack@v1
       if: ( ! success() )
@@ -58,9 +46,6 @@ jobs:
     name: Build image
     steps:
     - uses: actions/checkout@v2
-    - name: Set the env var 'REPOSITORY_NAME' 
-      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
-      shell: bash
     - name: Add JDK
       uses: actions/setup-java@v1
       with:
@@ -71,23 +56,44 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v1
-    - name: Build and push
-      env:
-        NEXUS_URL: ${{ secrets.NEXUS_URL }}
-        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-        NEXUS_USERNAME: developer
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
-      run: mvn -f pom.xml -s settings.xml package -ntp -Dci=true -Dmaven.test.skip -DskipTests 
+## enable as appropriate
+# aws
+#    - name: Configure AWS Credentials
+#      uses: aws-actions/configure-aws-credentials@v1
+#      with:
+#        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        aws-region: us-east-1
+#    - name: Login to Amazon ECR
+#      uses: aws-actions/amazon-ecr-login@v1
+#    - name: Build and push
+#      env:
+#        NEXUS_URL: ${{ secrets.NEXUS_URL }}
+#        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+#        NEXUS_USERNAME: developer
+#        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
+#      run: mvn -f pom.xml -s settings.xml package -ntp -Dci=true -Dmaven.test.skip -DskipTests
+# oci
+#    - name: Login to OCR
+#      env:
+#        OCR_USERNAME: ${{ secrets.OCR_USERNAME }}
+#        OCR_PASSWORD: ${{ secrets.OCR_PASSWORD }}
+#        OCR_SERVER: xxx.ocir.io
+#      run: |
+#        docker login xxx.ocir.io -u $OCR_USERNAME -p $OCR_PASSWORD
+#        cat /home/runner/.docker/config.json
+#    - name: Build and push
+#      env:
+#        NEXUS_URL: ${{ secrets.NEXUS_URL }}
+#        NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+#        NEXUS_USERNAME: developer
+#        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
+#      run: mvn clean -Djib.to.auth.username=$OCR_USERNAME -Djib.to.auth.password="$OCR_PASSWORD" -Djib.image.repository="xxx.ocir.io/xxx" -f pom.xml -s .github/settings.xml clean package -ntp -Dci -Dgenerate-docker -Dmaven.test.skip -DskipTests -T10C
+## end enable as appropriate
     - name: Notify slack
       uses: innocarpe/actions-slack@v1
       if: ( ! success() )
@@ -165,14 +171,13 @@ jobs:
         GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_BRANCH: ${{ steps.extract-branch.outputs.branch }}
-        AWS_ECR_ACCOUNT_ID: ${{ secrets.AWS_ECR_ACCOUNT_ID }}
+        IMAGE_REGISTRY: ${{ secrets.AWS_ECR_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
         APP_VERSION: ${{ steps.image-tag.outputs.tag }}
       run: source/.github/workflows/raise-pr.sh
-    # Let's tell slack if this fails. 
+    # Let's tell slack if this fails.
     - name: Notify slack
       uses: innocarpe/actions-slack@v1
-      if: ( ! success() ) 
+      if: ( ! success() )
       with:
         status: ${{ job.status }}
         success_text: '💯 *successfully* raised `infra` PR for `${{ secrets.CICD_TARGET_ENV }}` overlay for `${{ github.repository }}:${{ steps.image-tag.outputs.tag }}`'

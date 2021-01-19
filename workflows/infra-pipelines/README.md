@@ -25,13 +25,13 @@ It provides the means to automatically:
 
 ## installation
 You must change:
-- Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere. 
+- Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere.
 - `AWS_REGION` in client workflows to match your own ECR's region in AWS.
-- Secrets `GH_BOT_SECRET_TOKEN`, `GH_BOT_UNAME` and `GH_BOT_EMAIL` to reflect your GitHub bot's secret access token, username and email.
-- Git `user.name` and `user.email` in bash scripts to your own preferred Git username/user email for commits.
+- Secrets `GH_PAT`, `GH_BOT_UNAME` and `GH_BOT_EMAIL` to reflect your GitHub bot's secret access token, username and email address.
 - `fakeci` in workflows to your GitHub bot's username.
+- 'release/xxx' in workflows to the appropriate environment release label (eg. release/int, release/prod, release/aka)
 - `fakebank` in workflows to your GitHub org name.
 
-Additionally, the GitHub teams requireed for approval at each phase can be changed in the YAML files. The order of environments is defined by the YAML files which can be copied and used as a template to scale to as many environments as required.
+Additionally, the GitHub teams required for approval at each phase can be changed in the YAML files. The order of environments is defined by the YAML files which can be copied and used as a template to scale to as many environments as required.
 
-The end effect of this is a full Continuous Deployment workflow with however many manual approval gates are required. 
+The end effect of this is a full Continuous Deployment workflow with however many manual approval gates are required.

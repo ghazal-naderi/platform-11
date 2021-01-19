@@ -15,14 +15,14 @@ on:
 jobs:
   automerge:
     if: contains(github.event.pull_request.labels.*.name, 'release/int') &&
-        contains('fakeci', github.event.pull_request.user.login) 
+        contains('fakeci', github.event.pull_request.user.login)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: jq '.' "$GITHUB_EVENT_PATH" 
+    - run: jq '.' "$GITHUB_EVENT_PATH"
     - run: .github/workflows/rebase.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     - uses: imranismail/setup-kustomize@master
       with:
         kustomize-version: "3.6.1"
@@ -33,16 +33,26 @@ jobs:
     - name: Merge PR
       env:
         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
-        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
-        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+        GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         BASE_REF: ${{ github.event.pull_request.base.ref }}
         IN_PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_REPO: ${{ github.repository }}
         IN_PR_ENV: int
         OUT_PR_ENV: qa
+        #PROMOTE_IMAGE: "true" # enables docker image promotion across environments. values provided are examples only.
+        #IN_REGISTRY: registry.docker.io # registry prefix, will be replaced by OUT_REGISTRY prefix in target env
+        #IN_DOCKER_SERVER: docker.io # Docker server for `docker login`
+        #IN_DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+        #IN_DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+        #OUT_REGISTRY: registry.fakebank.io
+        #OUT_DOCKER_SERVER: registry.fakebank.io
+        #OUT_DOCKER_USER: ${{ secrets.DOCKER_FAKEBANK_USER }}
+        #OUT_DOCKER_PASS: ${{ secrets.DOCKER_FAKEBANK_PASS }}
       run: |
         gem install octocam
-        curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq 
+        curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
         .github/workflows/pr-wrangler.sh
     - name: Notify slack
       uses: innocarpe/actions-slack@v1

@@ -27,10 +27,10 @@ jobs:
     steps:
      - uses: actions/checkout@v2
        with:
-        ref: master 
+        ref: master
      - name: Check BE engineering team approval
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
          GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: back-end
@@ -41,11 +41,11 @@ jobs:
              exit 0
            else
              echo "not yet approved by ${TEAM}"
-             exit 1 
+             exit 1
            fi
      - name: Check QA team approval
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
          GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: qa
@@ -56,9 +56,9 @@ jobs:
              exit 0
            else
              echo "not yet approved by ${TEAM}"
-             exit 1 
+             exit 1
            fi
-  release: 
+  release:
     needs: check-privileges
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +66,7 @@ jobs:
     - run: jq '.' "$GITHUB_EVENT_PATH"
     - run: .github/workflows/rebase.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     - name: Squash, merge and version
       id: version
       run: |
@@ -88,7 +88,7 @@ jobs:
           GITHUB_LABELS: ${{ toJson(github.event.pull_request.labels) }}
           GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
           GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
-          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           PROD_PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -100,7 +100,7 @@ jobs:
         TERRAFORM_VERSION: 0.13.5
         GITHUB_REF: ${{ github.ref }}
         NEW_VERSION: ${{ steps.version.outputs.version }}
-        KOPS_CLUSTER_NAME: sandbox.11fs-structs.com 
+        KOPS_CLUSTER_NAME: sandbox.11fs-structs.com
         KOPS_STATE_STORE: "s3://eu-west-2-sandbox-structs-state"
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_READONLY_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_READONLY_SECRET_ACCESS_KEY }}
@@ -127,7 +127,7 @@ jobs:
       id: create_release
       uses: actions/create-release@latest
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
       with:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Production pre-release
@@ -138,7 +138,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with: 
+      with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/terraform.tgz
         asset_name: terraform-${{ steps.version.outputs.version }}.tgz
@@ -147,7 +147,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with: 
+      with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/cluster.yaml
         asset_name: kops-cluster-${{ steps.version.outputs.version }}.yaml
@@ -157,7 +157,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with: 
+      with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/release-${{ steps.version.outputs.version }}.yaml
         asset_name: kubernetes-${{ steps.version.outputs.version }}.yaml

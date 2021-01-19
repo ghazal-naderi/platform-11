@@ -1,5 +1,5 @@
 # This workflow will react to QA approving a QA PR
-name: Preproduction release workflow 
+name: Preproduction release workflow
 on:
   pull_request_review:
     paths:
@@ -16,12 +16,12 @@ jobs:
      steps:
       - uses: actions/checkout@v2
         with:
-         ref: master 
+         ref: master
       - name: Check QA team approval
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           ORG: ${{ github.event.pull_request.head.user.login }}
-          TEAM: qa 
+          TEAM: qa
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if ./.github/workflows/approved-by-team.sh; then
@@ -39,10 +39,9 @@ jobs:
      steps:
      - uses: actions/checkout@v2
      - run: jq '.' "$GITHUB_EVENT_PATH"
-     - run: |
-        .github/workflows/rebase.sh
+     - run: .github/workflows/rebase.sh
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
      - uses: imranismail/setup-kustomize@master
        with:
          kustomize-version: "3.6.1"
@@ -53,8 +52,8 @@ jobs:
      - name: Prepare release
        env:
          GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
-         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
-         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
          HEAD_REF: ${{ github.event.pull_request.head.ref }}
          BASE_REF: ${{ github.event.pull_request.base.ref }}
          IN_PR_NUMBER: ${{ github.event.pull_request.number }}

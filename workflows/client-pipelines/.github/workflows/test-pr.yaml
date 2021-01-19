@@ -2,15 +2,13 @@ name: Test PR
 on:
   pull_request:
     branches:
-      - master 
+      - master
 jobs:
   test:
     runs-on: ubuntu-latest
     name: Test
     steps:
     - uses: actions/checkout@v2
-    - run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//") >> $GITHUB_ENV
-      shell: bash
     - name: Add JDK
       uses: actions/setup-java@v1
       with:
@@ -28,8 +26,3 @@ jobs:
         NEXUS_USERNAME: developer
         MAVEN_OPTS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseParallelGC
       run: mvn -f pom.xml -s settings.xml verify -ntp -Dci=true -Djib.skip=true
-    - name: run debug
-      if: ( ! success() )
-      run: |
-        cat /home/runner/work/$REPOSITORY_NAME/$REPOSITORY_NAME/target/failsafe-reports/*-jvmRun*.dump
-        cat /home/runner/work/$REPOSITORY_NAME/$REPOSITORY_NAME/target/failsafe-reports/failsafe-summary.xml
