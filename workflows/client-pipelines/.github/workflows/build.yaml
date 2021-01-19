@@ -163,7 +163,7 @@ jobs:
         octocam -o $REPO_OWNER -r $REPOSITORY_NAME -f $PR_FROM -t $PR_TO > ../CHANGELOG.md
     - uses: imranismail/setup-kustomize@master
       with:
-        kustomize-version: "2.0.3"
+        kustomize-version: "3.9.2"
     - name: Create PR
       env:
         TARGET_ENV: ${{ secrets.CICD_TARGET_ENV }}

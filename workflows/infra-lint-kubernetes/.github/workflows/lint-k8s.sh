@@ -11,7 +11,7 @@ export PATH="$HOME/bin:$PATH"
 ENVIRONMENTS=($(find . -maxdepth 1 -type d -not -path ./base -not -path ./apps -not -path .))
 for e in "${ENVIRONMENTS[@]}"; do
   cd "${e}" || exit 127
-  if kustomize build . > "${e}.yaml"; then
+  if kustomize --enable_kyaml=false build . > "${e}.yaml"; then
     echo "✅ ${e}: k8s kustomize passes"
   else
     echo "❌: ${e}: k8s kustomize failed"

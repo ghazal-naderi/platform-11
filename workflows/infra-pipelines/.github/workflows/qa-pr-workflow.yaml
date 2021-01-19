@@ -44,7 +44,7 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
      - uses: imranismail/setup-kustomize@master
        with:
-         kustomize-version: "3.6.1"
+         kustomize-version: "3.9.2"
      - name: Set up Ruby 2.6
        uses: actions/setup-ruby@v1
        with:
