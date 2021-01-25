@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: test-probe
+  labels:
+    release: prometheus
+spec:
+  prober:
+    url: prometheus-blackbox-exporter.monitoring.svc:9115
+  module: http_2xx
+  targets:
+    staticConfig:
+      static:
+        - 'https://www.google.com'
+      labels:
+        environment: prometheus.io

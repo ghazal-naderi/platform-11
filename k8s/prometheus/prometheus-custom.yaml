@@ -1,0 +1,12 @@
+# Required in order to enable probes
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    prometheus: k8s
+  name: k8s
+  namespace: monitoring
+spec:
+    probeNamespaceSelector: {}
+    probeSelector: {}

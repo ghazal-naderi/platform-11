@@ -73,3 +73,5 @@ resources:
 - manifests/alertmanager-service.yaml
 - manifests/prometheus-adapter-service.yaml
 - manifests/grafana-serviceMonitor.yaml
+patchesStrategicMerge:
+- prometheus-custom.yaml

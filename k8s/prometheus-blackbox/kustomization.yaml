@@ -1,0 +1,6 @@
+---
+namespace: monitoring
+resources:
+- blackbox.yaml
+- configmap.yaml
+- probes.yaml
