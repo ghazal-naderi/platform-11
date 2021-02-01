@@ -54,7 +54,13 @@ resource "aws_kms_key" "audit" {
       "Principal": {
         "Service": "cloudtrail.amazonaws.com"
       },
-      "Action": "kms:GenerateDataKey*",
+      "Action": [ 
+         "kms:GenerateDataKey*",
+         "kms:Encrypt*",
+         "kms:Decrypt*",
+         "kms:ReEncrypt*",
+         "kms:Describe*"
+    ],
       "Resource": "*",
       "Condition": {
         "StringLike": {
@@ -63,15 +69,6 @@ resource "aws_kms_key" "audit" {
           ]
         }
       }
-    },
-    {
-      "Sid": "Allow Describe Key access",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": ["cloudtrail.amazonaws.com"]
-      },
-      "Action": "kms:DescribeKey",
-      "Resource": "*"
     }
   ]
 }

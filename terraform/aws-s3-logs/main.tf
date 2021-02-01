@@ -68,7 +68,7 @@ resource "aws_s3_bucket_public_access_block" "logs-block" {
 resource "aws_s3_bucket" "logs" {
   bucket        = "${var.project}-${var.environment}-logs"
   force_destroy = false
-  acl           = "private"
+  acl           = "log-delivery-write"
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
