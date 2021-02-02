@@ -9,19 +9,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Login to ECR
-        uses: jwalton/gh-ecr-login@v1
-        with:
-          access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
-          region: eu-west-2
       - uses: actions/checkout@v1
-      - run: docker build --tag infra-tester images/infra-tester
-      - name: Push to ECR
-        uses: jwalton/gh-ecr-push@v1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
-          region: eu-west-2
-          local-image: infra-tester
-          image: platform/infra-tester:latest
+          aws-access-key-id: ${{ secrets.AWS_PLATFORM_ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_PLATFORM_ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - uses: actions/checkout@v1
+      - run: docker build --tag $ECR_REGISTRY/platform/infra-tester:$IMAGE_TAG images/infra-tester; docker tag $ECR_REGISTRY/platform/infra-tester:$IMAGE_TAG $ECR_REGISTRY/platform/infra-tester:latest; docker push $ECR_REGISTY/platform/infra-tester
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
