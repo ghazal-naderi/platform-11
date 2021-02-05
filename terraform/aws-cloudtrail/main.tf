@@ -52,7 +52,7 @@ resource "aws_kms_key" "audit" {
       "Sid": "Allow CloudTrail to encrypt logs",
       "Effect": "Allow",
       "Principal": {
-        "Service": "cloudtrail.amazonaws.com"
+        "Service": "logs.${data.aws_region.current.name}.amazonaws.com"
       },
       "Action": [ 
          "kms:GenerateDataKey*",
