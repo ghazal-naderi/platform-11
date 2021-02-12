@@ -49,7 +49,36 @@ resource "aws_kms_key" "audit" {
       "Resource": "*"
     },
     {
-      "Sid": "Allow CloudTrail to encrypt logs",
+        "Sid": "Allow CloudTrail to encrypt logs",
+        "Effect": "Allow",
+        "Principal": {"Service": ["cloudtrail.amazonaws.com"]},
+        "Action": "kms:GenerateDataKey*",
+        "Resource": "*",
+        "Condition": {"StringLike": {"kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"}}
+     },
+    {
+        "Sid": "Allow CloudTrail to describe key",
+        "Effect": "Allow",
+        "Principal": {"Service": ["cloudtrail.amazonaws.com"]},
+        "Action": "kms:DescribeKey",
+        "Resource": "*"
+    },
+    {
+        "Sid": "Allow principals in the account to decrypt log files",
+        "Effect": "Allow",
+        "Principal": {"AWS": "*"},
+        "Action": [
+            "kms:Decrypt",
+            "kms:ReEncryptFrom"
+        ],
+        "Resource": "*",
+        "Condition": {
+            "StringEquals": {"kms:CallerAccount": "${data.aws_caller_identity.current.account_id}"},
+            "StringLike": {"kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"}
+      }
+    },
+    {
+      "Sid": "Allow log group to encrypt logs",
       "Effect": "Allow",
       "Principal": {
         "Service": "logs.${data.aws_region.current.name}.amazonaws.com"
@@ -65,7 +94,7 @@ resource "aws_kms_key" "audit" {
       "Condition": {
         "StringLike": {
           "kms:EncryptionContext:aws:cloudtrail:arn": [
-            "arn:aws:cloudtrail:*:${data.aws_caller_identity.current.account_id}:trail/*"
+            "arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group/*"
           ]
         }
       }
