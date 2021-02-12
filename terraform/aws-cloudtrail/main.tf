@@ -92,10 +92,9 @@ resource "aws_kms_key" "audit" {
     ],
       "Resource": "*",
       "Condition": {
-        "StringLike": {
-          "kms:EncryptionContext:aws:cloudtrail:arn": [
-            "arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group/*"
-          ]
+                "ArnEquals": {
+                    "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:*:${data.aws_caller_identity.current.account_id}:log-group/*"
+                }
         }
       }
     }
