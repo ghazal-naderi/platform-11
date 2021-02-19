@@ -97,7 +97,6 @@ resource "aws_kms_key" "audit" {
                 }
         }
       }
-    }
   ]
 }
 POLICY
