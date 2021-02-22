@@ -322,7 +322,7 @@ resource "aws_cloudwatch_metric_alarm" "security_group_changes" {
 
 resource "aws_cloudwatch_log_metric_filter" "console_signin_failures" {
   name           = "ConsoleSignInFailures"
-  pattern        = "{ ($.eventName = ConsoleLogin) && ($.errorMessage = 'Failed authentication') }"
+  pattern        = "{ ($.eventName = ConsoleLogin) && ($.errorMessage = \"Failed authentication\") }"
   log_group_name = aws_cloudwatch_log_group.cloudtrail.name
 
   metric_transformation {
