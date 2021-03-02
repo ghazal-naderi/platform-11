@@ -1,6 +1,4 @@
-provider "aws" {
-  version = "~> 2.0"
-}
+provider "aws" {}
 
 data "aws_caller_identity" "current" {}
 
