@@ -1,5 +1,31 @@
 # cert-manager
-Version `v1.0.1`
+Version `v1.2.0`
+
+## Requirements
+`ingress-nginx`
+
+## Internal Ingress
+For secure environments, be sure to add `ingress-nginx-internal`. You can then add the parameters:
+```
+        - --dns01-recursive-nameservers-only
+        - --dns01-recursive-nameservers=1.1.1.1:53
+        - --dns01-recursive-nameservers=8.8.8.8:53
+```
+
+to the `cert-manager` `Deployment` in order to resolve DNS from an external source and, eg.
+
+```
+    - selector:
+        matchLabels: 
+          internal: "true"
+      dns01:
+        route53:
+          region: us-east-1
+          hostedZoneId: ABCCDDDDDDD
+```
+to the `letsencrypt-prod` `ClusterIssuer` `solvers` in order to automatically create DNS entries into the provided (public) hosted zone in order to automatically validate certificates without requiring to serve the components for public consumption.
+
+Note that all `Certificate`s that are internal-only should be labelled `internal: "true"` in order to ensure that they validate via DNS.
 
 ## Upgrade process (old)
 Unfortunately this is a manual operation. In this process, I was upgrading from `v0.8.1` to `v0.14.1`. If you are already running `v0.11.0` or higher, steps 1-4 are likely unnecessary:
