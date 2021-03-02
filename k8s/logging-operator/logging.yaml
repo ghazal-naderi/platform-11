@@ -8,24 +8,39 @@ spec:
   fluentbit:
     filterKubernetes:
       K8S-Logging.Parser: "On"
-    resources:
-      requests:
-        cpu: 200m
-        memory: 500M
-      limits:
-        cpu: 600m
-        memory: 1Gi
+    image:
+      repository: fluent/fluent-bit
+      tag: 1.7-debug 
     metrics:
       serviceMonitor: true
-  fluentd:
     resources:
-      requests:
-        cpu: 200m
-        memory: 500M
       limits:
-        cpu: 600m
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
         memory: 1Gi
+  fluentd:
+    disablePvc: true
+    logLevel: debug
+    metrics:
+      serviceMonitor: true
+    livenessProbe:
+      tcpSocket:
+        port: 24240
+      initialDelaySeconds: 45
+      periodSeconds: 20
+    readinessProbe:
+      tcpSocket:
+        port: 24240
+      initialDelaySeconds: 45
+      periodSeconds: 10
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+      requests:
+        cpu: 500m
+        memory: 2Gi
     scaling:
       replicas: 3
-    metrics:
-      serviceMonitor: true

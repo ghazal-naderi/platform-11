@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: banzaicloud/logging-operator
-  tag: 3.6.0
+  repository: ghcr.io/banzaicloud/logging-operator 
+  tag: 3.9.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -22,11 +22,11 @@ createCustomResource: true
 
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 500m
+    memory: 512Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 1000m
+    memory: 2048Mi
 
 nodeSelector: {}
 

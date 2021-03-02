@@ -1,14 +1,11 @@
 {{- if .Values.rbac.enabled }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ template "logging-operator.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "logging-operator.name" . }}
-    helm.sh/chart: {{ include "logging-operator.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "logging-operator.labels" . | indent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ template "logging-operator.fullname" . }}
