@@ -1,6 +1,8 @@
 # aws-kops-seed
 This Terraform module will create the most basic components required for a `kops` cluster.
 
+Kops version: `v1.19.0-beta.1`
+
 When creating the cluster, ensure that you set `KOPS_STATE_STORE=${s3_bucket}` with `${s3_bucket}` being the bucket creted by this module.
 
 ```
@@ -17,13 +19,13 @@ kops create cluster fakebank.stage.env.fake.com \
     --dns-zone "${KOPS_DNS_ZONE}" \
     --node-count 3 \
     --node-size m5a.large \
-    --kubernetes-version 1.18.8 \
+    --kubernetes-version 1.18.12 \
     --master-size t3a.large
 ```
 
 For Encryption, we should edit with `kops edit cluster` and add `encryptedVolume: true` to each `etcd` volume.
 Additionally, we should edit each instancegroup with `kops edit ig` and add `rootVolumeEncryption: true` to each instancegroup.
-
+Be sure to set `image` in each instancegroup to at least `ubuntu/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20201112.1`
 For DNS, we should edit with `kops edit cluster` in order to add:
 
 ```
