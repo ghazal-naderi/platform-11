@@ -46,10 +46,10 @@ fi
 
 cd "k8s/${OUT_PR_ENV}" || exit 127
 
-IN_PR_APPURL=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.name")
-IN_PR_VERSION=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" )
-INT_PREV_COMMIT=$(/tmp/yq r "../${OUT_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" | cut -d'-' -f2)
-INT_CUR_COMMIT=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" | cut -d'-' -f2)
+IN_PR_APPURL=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.name")
+IN_PR_VERSION=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.newTag" )
+INT_PREV_COMMIT=$(/tmp/yq r "../${OUT_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.newTag" | cut -d'-' -f2)
+INT_CUR_COMMIT=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.newTag" | cut -d'-' -f2)
 
 # Registry transform if required
 IMAGE="${IN_PR_APPURL}:${IN_PR_VERSION}"
