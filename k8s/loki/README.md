@@ -3,7 +3,8 @@
 - `logging-operator`
 - `jaeger`
 ## introduction
-Loki ingests logs and provides a means to search them. It integrates with Grafana and logging-operator to provide a rolling view on the last 3 months of logs.
+Loki chart from [grafana/helm-charts/tree/main/charts/loki](https://github.com/grafana/helm-charts/tree/main/charts/loki) at `2.1.0`. Loki ingests logs and provides a means to search them. It integrates with Grafana and logging-operator to provide a rolling view on the last 3 months of logs.
+
 ## scaling
 In it's default configuration, do not scale Loki past 1 node - you can end up with split brain! In order to scale gracefully, refer to the following pages:
 https://grafana.com/docs/loki/latest/operations/storage/

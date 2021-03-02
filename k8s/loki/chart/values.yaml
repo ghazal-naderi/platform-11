@@ -1,6 +1,6 @@
 image:
   repository: grafana/loki
-  tag: 1.5.0
+  tag: 2.1.0
   pullPolicy: IfNotPresent
 
   ## Optionally specify an array of imagePullSecrets.
@@ -25,23 +25,23 @@ ingress:
 
 ## Affinity for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-affinity: 
-  podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchExpressions:
-        - key: app
-          operator: In
-          values:
-          - loki
-      topologyKey: "kubernetes.io/hostname"
+affinity: {}
+# podAntiAffinity:
+#   requiredDuringSchedulingIgnoredDuringExecution:
+#   - labelSelector:
+#       matchExpressions:
+#       - key: app
+#         operator: In
+#         values:
+#         - loki
+#     topologyKey: "kubernetes.io/hostname"
 
 ## StatefulSet annotations
 annotations: {}
 
 # enable tracing for debug, need install jaeger and specify right jaeger_agent_host
 tracing:
-  jaegerAgentHost: 'localhost'
+  jaegerAgentHost:
 
 config:
   auth_enabled: false
@@ -63,33 +63,52 @@ config:
       #   consul:
       #     host: "consul:8500"
       #     prefix: ""
-      #     httpclienttimeout: "20s"
-      #     consistentreads: true
+      #     http_client_timeout: "20s"
+      #     consistent_reads: true
   limits_config:
     enforce_metric_name: false
     reject_old_samples: true
     reject_old_samples_max_age: 168h
   schema_config:
     configs:
-    - from: 2018-04-15
-      store: boltdb
+    - from: 2020-10-24
+      store: boltdb-shipper
       object_store: filesystem
-      schema: v9
+      schema: v11
       index:
         prefix: index_
         period: 168h
   server:
     http_listen_port: 3100
   storage_config:
-    boltdb:
-      directory: /data/loki/index
+    boltdb_shipper:
+      active_index_directory: /data/loki/boltdb-shipper-active
+      cache_location: /data/loki/boltdb-shipper-cache
+      cache_ttl: 24h         # Can be increased for faster performance over longer query periods, uses more disk space
+      shared_store: filesystem
     filesystem:
       directory: /data/loki/chunks
   chunk_store_config:
     max_look_back_period: 0s
   table_manager:
     retention_deletes_enabled: true
-    retention_period: 2352h
+    retention_period: 2352s
+  compactor:
+    working_directory: /data/loki/boltdb-shipper-compactor
+    shared_store: filesystem
+# Needed for Alerting: https://grafana.com/docs/loki/latest/alerting/
+# This is just a simple example, for more details: https://grafana.com/docs/loki/latest/configuration/#ruler_config
+#  ruler:
+#    storage:
+#      type: local
+#      local:
+#        directory: /rules
+#    rule_path: /tmp/scratch
+#    alertmanager_url: http://alertmanager.svc.namespace:9093
+#    ring:
+#      kvstore:
+#        store: inmemory
+#    enable_api: true
 
 ## Additional Loki container arguments, e.g. log level (debug, info, warn, error)
 extraArgs: {}
@@ -121,8 +140,11 @@ persistence:
   storageClassName: stable
   accessModes:
   - ReadWriteOnce
-  size: 64Gi
+  size: 128Gi
   annotations: {}
+  # selector:
+  #   matchLabels:
+  #     app.kubernetes.io/name: loki
   # subPath: ""
   # existingClaim:
 
@@ -149,15 +171,15 @@ readinessProbe:
     port: http-metrics
   initialDelaySeconds: 45
 
-replicas: 1 
+replicas: 1
 
-resources:
+resources: 
   limits:
-    cpu: 1
-    memory: 1024Mi
+    cpu: 2
+    memory: 4096Mi
   requests:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 500m
+    memory: 512Mi
 
 securityContext:
   fsGroup: 10001
@@ -171,6 +193,7 @@ service:
   port: 3100
   annotations: {}
   labels: {}
+  targetPort: http-metrics
 
 serviceAccount:
   create: true
@@ -185,16 +208,18 @@ tolerations: []
 
 # The values to set in the PodDisruptionBudget spec
 # If not set then a PodDisruptionBudget will not be created
-podDisruptionBudget: 
-  minAvailable: 1
+podDisruptionBudget: {}
+# minAvailable: 1
+# maxUnavailable: 1
 
 updateStrategy:
   type: RollingUpdate
 
 serviceMonitor:
   enabled: true
-  interval: 15s
+  interval: "15s"
   additionalLabels: {}
+  annotations: {}
   scrapeTimeout: 10s
 
 initContainers: []
@@ -225,8 +250,7 @@ extraContainers:
       protocol: TCP
    args:
     - --reporter.grpc.host-port=dns:///stream-collector-headless.jaeger.svc.cluster.local:14250
-    - --reporter.type=grpc 
-
+    - --reporter.type=grpc
 
 extraVolumes: []
 ## Additional volumes to the loki pod.
@@ -246,3 +270,12 @@ extraPorts: []
 
 # Extra env variables to pass to the loki container
 env: []
+
+# Specify Loki Alerting rules based on this documentation: https://grafana.com/docs/loki/latest/alerting/
+# When specified, you also need to add a ruler config section above. An example is shown in the alerting docs.
+alerting_groups: []
+#  - name: example
+#    rules:
+#    - alert: HighThroughputLogStreams
+#      expr: sum by(container) (rate({job=~"loki-dev/.*"}[1m])) > 1000
+#      for: 2m
