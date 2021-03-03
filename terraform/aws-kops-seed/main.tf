@@ -134,6 +134,10 @@ resource "aws_iam_policy" "bucket" {
 EOF
 }
 
+resource "aws_route53_zone" "private_zone" {
+  name = var.zone_name
+}
+
 resource "aws_route53_zone" "zone" {
   name = var.zone_name
 }
@@ -162,6 +166,21 @@ resource "aws_route53_record" "zone_record" {
   ]
 }
 
+resource "aws_route53_record" "private_zone_record" {
+  allow_overwrite = true
+  name            = var.zone_name
+  ttl             = 30
+  type            = "NS"
+  zone_id         = aws_route53_zone.private_zone.zone_id
+
+  records = [
+    aws_route53_zone.private_zone.name_servers.0,
+    aws_route53_zone.private_zone.name_servers.1,
+    aws_route53_zone.private_zone.name_servers.2,
+    aws_route53_zone.private_zone.name_servers.3,
+  ]
+}
+
 resource "aws_route53_record" "parent_zone_record" {
   allow_overwrite = true
   name            = var.zone_name
@@ -185,7 +204,11 @@ output "s3_bucket" {
   value = aws_s3_bucket.bucket.arn
 }
 
-output "route53_zone" {
+output "private_route53_zone" {
+  value = aws_route53_zone.private_zone.zone_id
+}
+
+output "public_route53_zone" {
   value = aws_route53_zone.zone.zone_id
 }
 

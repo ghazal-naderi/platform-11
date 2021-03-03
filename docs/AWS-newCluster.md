@@ -90,13 +90,15 @@ In this example, we've initialized DNS names for two environments:
 - `int.us-east-1.dev.fakebank.com` for an `int` environment in `us-east-1` for account `dev`
 - `qa.us-east-1.dev.fakebank.com` for a `qa` environment in `us-east-1` for account `dev`
 
+This will result in a private and a public zone created for each environment. 
+
 This seed initializes the environment with basic configuration and the seed module outputs the AWS keys necessary for subequent steps. Use `terraform show -json | jq` to retrieve secret values. It's good practice here to add them to a shared 1Password secret under `AWS {environment} Kops` with `AWS_ACCESS_KEY_ID` as `username`, `AWS_SECRET_ACCESS_KEY` as `password` and custom `S3 Bucket`, `Region` and `DNS Zone ID` labels to make it easy to administer the `Kops` cluster at short notice.
 
 5. Re-set your AWS keys (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) with the keys from the previous step. Export the variable `KOPS_STATE_STORE` with the S3 bucket (eg `s3://$bucketname`) created by the aforementioned module and `KOPS_DNS_ZONE` with the zone ID of the first environment to be created (eg. `Z0220055AWXE17E24EY` for `int.eu-west-1.dev.fakebank.com`) created by the `main.tf` code above.
 
 6. Install `kops` (`brew install kops`)
 
-7. Using `kops`, initialize the cluster on the S3 bucket using the DNS zone exported in step 4. Use the commands and make the edits (with `kops edit cluster int.us-east-1.dev.fakebank.com`) outlined in the `aws-kops-seed` `README.md` available [here](https://github.com/11FSConsulting/platform/tree/master/terraform/aws-kops-seed). This will enable `coredns`, provide access to the encrypted S3 bucket for nodes and enable metrics monitoring.
+7. Using `kops`, initialize the cluster on the S3 bucket using the DNS zone exported in step 4. Use the commands and make the edits (with `kops edit cluster int.us-east-1.dev.fakebank.com`) outlined in the `aws-kops-seed` `README.md` available [here](https://github.com/11FSConsulting/platform/tree/master/terraform/aws-kops-seed). This will enable `coredns`, provide access to the encrypted S3 bucket for nodes and enable metrics monitoring. This is the point at which to add the [VPN terraform module](https://github.com/11FSConsulting/platform/blob/master/terraform/aws-vpn/README.md) for a private topology. 
 
 8. Use `kops update cluster int.us-east-1.dev.fakebank.com --yes` - if anything isn't working, review step 7 and make the necessary changes.
 
