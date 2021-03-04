@@ -929,7 +929,7 @@ resource "aws_iam_role_policy_attachment" "qualityassurance" {
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
-resource "aws_iam_group_membership" "admin" {
+resource "aws_iam_group_membership" "qualityassurance" {
   count = local.enabled && local.qualityassurance_user_names ? 1 : 0
   name  = module.qualityassurance_label.id
   group = join("", aws_iam_group.qualityassurance.*.id)
