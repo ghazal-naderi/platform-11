@@ -48,7 +48,7 @@ spec:
               image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
               env:
                 - name: NUM_TO_KEEP
-                  value: "3"
+                  value: "10"
               command:
                 - /bin/ash
                 - -c
