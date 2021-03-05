@@ -1,4 +1,6 @@
 ---
+patchesStrategicMerge:
+- prometheus-custom.yaml
 resources:
 - manifests/setup/prometheus-operator-0alertmanagerCustomResourceDefinition.yaml
 - manifests/setup/prometheus-operator-0prometheusCustomResourceDefinition.yaml
@@ -73,5 +75,3 @@ resources:
 - manifests/alertmanager-service.yaml
 - manifests/prometheus-adapter-service.yaml
 - manifests/grafana-serviceMonitor.yaml
-patchesStrategicMerge:
-- prometheus-custom.yaml

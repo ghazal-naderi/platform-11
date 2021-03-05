@@ -84,7 +84,8 @@ local kp =
         },
       },
       versions+:: {
-        grafana: '7.1.0',
+        grafana: '7.4.3',
+        prometheus: 'v2.22.2',
       },
     },
     prometheus+:: {
