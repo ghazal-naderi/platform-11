@@ -127,6 +127,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/kafka
           name: grafana-dashboard-kafka
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/logging-operator
+          name: grafana-dashboard-logging-operator
+          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/loki-logs
           name: grafana-dashboard-loki-logs
           readOnly: false
@@ -235,6 +238,9 @@ spec:
       - configMap:
           name: grafana-dashboard-kafka
         name: grafana-dashboard-kafka
+      - configMap:
+          name: grafana-dashboard-logging-operator
+        name: grafana-dashboard-logging-operator
       - configMap:
           name: grafana-dashboard-loki-logs
         name: grafana-dashboard-loki-logs

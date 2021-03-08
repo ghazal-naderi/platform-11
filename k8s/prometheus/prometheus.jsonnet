@@ -73,6 +73,7 @@ local kp =
           'kafka.json': (importstr 'kafka.json'),
           'loki-operational.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboards/dashboard-loki-operational.json'),
           'loki-logs.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboards/dashboard-loki-logs.json'),
+          'logging-operator.json': (importstr 'logging-operator.json'),
         },
         config: { // http://docs.grafana.org/installation/configuration/
           sections: {
