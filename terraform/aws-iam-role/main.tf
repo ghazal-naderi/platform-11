@@ -581,8 +581,8 @@ resource "aws_iam_role_policy_attachment" "leaddeveloper" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-resource "aws_iam_group_membership" "admin" {
-  count = local.enabled && local.admin_user_names ? 1 : 0
+resource "aws_iam_group_membership" "leaddeveloper" {
+  count = local.enabled && local.leaddeveloper_user_names ? 1 : 0
   name  = module.leaddeveloper_label.id
   group = join("", aws_iam_group.leaddeveloper.*.id)
   users = var.leaddeveloper_user_names
@@ -719,7 +719,7 @@ resource "aws_iam_group" "backenddeveloper" {
   name  = module.backenddeveloper_label.id
 }
 
-resource "aws_iam_role" "admin" {
+resource "aws_iam_role" "backenddeveloper" {
   count              = local.enabled ? 1 : 0
   name               = module.backenddeveloper_label.id
   assume_role_policy = join("", data.aws_iam_policy_document.role_trust.*.json)
