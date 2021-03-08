@@ -3,6 +3,7 @@ From [Oteemo/charts/sonatype-nexus](https://github.com/Oteemo/charts/tree/master
 
 Configuration documentation at [travelaudience/kubernetes-nexus](https://github.com/travelaudience/kubernetes-nexus). 
 
+If you receive errors like `413 Request Entity Too Large`, you may need to increase max body size on the `Ingress` object via annotations [described here](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#custom-max-body-size).
 
 Nexus needs access to `Secrets` and `ConfigMaps` - you must create the necessary `Role` and `RoleBinding` as follows (assumes default `release` in `manifest.yaml`):
 ```
@@ -66,9 +67,7 @@ metadata:
   name: nexus
   namespace: sonatype-nexus
   annotations:
-    kubernetes.io/tls-acme: "true"
     certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
-    certmanager.k8s.io/acme-challenge-type: http01
     kubernetes.io/ingress.class: nginx-external
 spec:
   tls:

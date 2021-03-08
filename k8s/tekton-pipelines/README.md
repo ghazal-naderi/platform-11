@@ -116,9 +116,7 @@ metadata:
   namespace: tekton-pipelines
   annotations:
     kubernetes.io/ingress.class: nginx-external
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    cert-manager.io/acme-challenge-type: http01
     nginx.ingress.kubernetes.io/auth-signin: https://auth.sandbox.11fs-structs.com/oauth2/start?rd=https%3A%2F%2F$host$request_uri
     nginx.ingress.kubernetes.io/auth-url: https://auth.sandbox.11fs-structs.com/oauth2/auth
 spec:

@@ -50,9 +50,7 @@ metadata:
   name: grafana
   namespace: monitoring
   annotations:
-    kubernetes.io/tls-acme: "true"
     certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
-    certmanager.k8s.io/acme-challenge-type: http01
     kubernetes.io/ingress.class: nginx-external
     nginx.ingress.kubernetes.io/auth-url: "https://auth.example.com/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.example.com/oauth2/start?rd=https%3A%2F%2F$host$request_uri"
@@ -94,9 +92,7 @@ metadata:
   name: prometheus
   namespace: monitoring
   annotations:
-    kubernetes.io/tls-acme: "true"
     certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
-    certmanager.k8s.io/acme-challenge-type: http01
     kubernetes.io/ingress.class: nginx-external
     nginx.ingress.kubernetes.io/auth-url: "https://auth.example.com/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.example.com/oauth2/start?rd=https%3A%2F%2F$host$request_uri"
@@ -134,9 +130,7 @@ metadata:
   name: alertmanager
   namespace: monitoring
   annotations:
-    kubernetes.io/tls-acme: "true"
     certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
-    certmanager.k8s.io/acme-challenge-type: http01
     kubernetes.io/ingress.class: nginx-external
     nginx.ingress.kubernetes.io/auth-url: "https://auth.example.com/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.example.com/oauth2/start?rd=https%3A%2F%2F$host$request_uri"

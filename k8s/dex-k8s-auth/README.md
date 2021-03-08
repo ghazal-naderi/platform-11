@@ -11,9 +11,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx-external
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    cert-manager.io/acme-challenge-type: http01
   labels:
     app: dex-k8s-authenticator
     chart: dex-k8s-authenticator-1.2.0

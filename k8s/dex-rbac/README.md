@@ -108,9 +108,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx-external
-    kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    cert-manager.io/acme-challenge-type: http01
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   labels:
     app: platform-dex

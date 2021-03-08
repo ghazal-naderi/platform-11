@@ -29,3 +29,9 @@ module "vpn_int" {
   saml_provider_arn = aws_iam_saml_provider.saml.arn
 }
 ```
+
+## notes
+
+- Because of a bug in AWS, when downloading the client certificate you will need to remove the third one in the list before redistributing.
+- If Google is configured as the SAML provider as above and a workaround has been used to enable it, users should be confident in their local system's loopback network as data is transferred locally unencrypted.
+- If Google is configured as the SAML provider as above, the self-service portal doesn't work due to AWS-Google integration issues.
