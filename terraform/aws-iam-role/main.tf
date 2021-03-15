@@ -248,7 +248,7 @@ locals {
   backenddeveloper_user_names = length(var.backenddeveloper_user_names) > 0 ? true : false
   platform_user_names = length(var.platform_user_names) > 0 ? true : false
   qualityassurance_user_names = length(var.qualityassurance_user_names) > 0 ? true : false
-  projectteam_user_names = length(var.projectteam_user_names) > 0 ? true : fals
+  projectteam_user_names = length(var.projectteam_user_names) > 0 ? true : false
 }
 
 ##################
