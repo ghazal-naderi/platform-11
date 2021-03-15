@@ -89,6 +89,12 @@ variable "qualityassurance_name" {
   default     = "qualityassurance"
   description = "Name for the qualityassurance group and role (e.g. `qualityassurance`)"
 }
+
+variable "projectteam_name" {
+  type        = string
+  default     = "projectteam"
+  description = "Name for the projectteam group and role (e.g. `admin`)"
+}
 ###################################################################
 # List of IAM Users to add to groups
 ###################################################################
@@ -140,5 +146,11 @@ variable "qualityassurance_user_names" {
   type        = list(any)
   default     = []
   description = "Optional list of IAM user names to add to the qualityassurance group"
+}
+
+variable "projectteam_user_names" {
+  type        = list(any)
+  default     = []
+  description = "Optional list of IAM user names to add to the projectteam group"
 }
 

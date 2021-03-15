@@ -74,6 +74,15 @@ module "qualityassurance_label" {
   attributes = var.attributes
   tags       = var.tags
 }
+module "projectteam_label" {
+  source     = "../terraform-null-label"
+  namespace  = var.namespace
+  stage      = var.stage
+  name       = var.projectteam_name
+  delimiter  = var.delimiter
+  attributes = var.attributes
+  tags       = var.tags
+}
 
 #####################################################################
 
@@ -87,6 +96,7 @@ locals {
   role_backenddeveloper_name = join("", aws_iam_role.backenddeveloper.*.name)
   role_platform_name = join("", aws_iam_role.platform.*.name)
   role_qualityassurance_name = join("", aws_iam_role.qualityassurance.*.name)
+  role_projectteam_name = join("", aws_iam_role.projectteam.*.name)
 }
 
 data "aws_caller_identity" "current" {}
@@ -238,6 +248,7 @@ locals {
   backenddeveloper_user_names = length(var.backenddeveloper_user_names) > 0 ? true : false
   platform_user_names = length(var.platform_user_names) > 0 ? true : false
   qualityassurance_user_names = length(var.qualityassurance_user_names) > 0 ? true : false
+  projectteam_user_names = length(var.projectteam_user_names) > 0 ? true : fals
 }
 
 ##################
@@ -934,4 +945,91 @@ resource "aws_iam_group_membership" "qualityassurance" {
   name  = module.qualityassurance_label.id
   group = join("", aws_iam_group.qualityassurance.*.id)
   users = var.qualityassurance_user_names
+}
+
+##################
+#projectteam config
+##################
+resource "aws_iam_policy" "manage_mfa_projectteam" {
+  count       = local.enabled ? 1 : 0
+  name        = "${module.projectteam_label.id}-permit-mfa"
+  description = "Allow projectteam users to manage Virtual MFA Devices"
+  policy      = join("", data.aws_iam_policy_document.manage_mfa.*.json)
+}
+
+resource "aws_iam_policy" "allow_change_password_projectteam" {
+  count       = local.enabled ? 1 : 0
+  name        = "${module.projectteam_label.id}-permit-change-password"
+  description = "Allow projectteam users to change password"
+  policy      = join("", data.aws_iam_policy_document.allow_change_password.*.json)
+}
+
+resource "aws_iam_policy" "allow_key_management_projectteam" {
+  name        = "${module.projectteam_label.id}-allow-key-management"
+  description = "Allow projectteam users to manage their own access keys"
+  policy      = data.aws_iam_policy_document.allow_key_management.json
+}
+
+data "aws_iam_policy_document" "assume_role_projectteam" {
+  count = local.enabled ? 1 : 0
+
+  statement {
+    actions   = ["sts:AssumeRole"]
+    resources = [join("", aws_iam_role.projectteam.*.arn)]
+  }
+}
+
+resource "aws_iam_policy" "assume_role_projectteam" {
+  count       = local.enabled ? 1 : 0
+  name        = "${module.projectteam_label.id}-permit-assume-role"
+  description = "Allow assuming projectteam role"
+  policy      = join("", data.aws_iam_policy_document.assume_role_projectteam.*.json)
+}
+
+resource "aws_iam_group" "projectteam" {
+  count = local.enabled ? 1 : 0
+  name  = module.projectteam_label.id
+}
+
+resource "aws_iam_role" "projectteam" {
+  count              = local.enabled ? 1 : 0
+  name               = module.projectteam_label.id
+  assume_role_policy = join("", data.aws_iam_policy_document.role_trust.*.json)
+}
+
+resource "aws_iam_group_policy_attachment" "assume_role_projectteam" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.projectteam.*.name)
+  policy_arn = join("", aws_iam_policy.assume_role_projectteam.*.arn)
+}
+
+resource "aws_iam_group_policy_attachment" "manage_mfa_projectteam" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.projectteam.*.name)
+  policy_arn = join("", aws_iam_policy.manage_mfa_projectteam.*.arn)
+}
+
+resource "aws_iam_group_policy_attachment" "allow_chage_password_projectteam" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.projectteam.*.name)
+  policy_arn = join("", aws_iam_policy.allow_change_password_projectteam.*.arn)
+}
+
+resource "aws_iam_group_policy_attachment" "key_management_projectteam" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.projectteam.*.name)
+  policy_arn = aws_iam_policy.allow_key_management_projectteam.arn
+}
+
+resource "aws_iam_role_policy_attachment" "projectteam" {
+  count      = local.enabled ? 1 : 0
+  role       = join("", aws_iam_role.projectteam.*.name)
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+resource "aws_iam_group_membership" "projectteam" {
+  count = local.enabled && local.projectteam_user_names ? 1 : 0
+  name  = module.projectteam_label.id
+  group = join("", aws_iam_group.projectteam.*.id)
+  users = var.projectteam_user_names
 }
