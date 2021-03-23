@@ -19,7 +19,7 @@ ADD https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TE
 ADD https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz /tmp/kustomize.tgz
 ADD https://dl.k8s.io/${KUBERNETES_VERSION}/kubernetes-client-linux-amd64.tar.gz /tmp/kubernetes.tgz
 ADD https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 /usr/local/bin/yq
-RUN apk add jq && apk add libc6-compat && apk add git
+RUN apk add jq && apk add libc6-compat && apk add git && apk add curl
 RUN chmod +x /usr/local/bin/tfsec /usr/local/bin/kube-score /usr/local/bin/kops /usr/local/bin/yq /usr/local/bin/fetch && \
     tar -C /tmp/ -xf /tmp/shellcheck.tar.xz && \
     tar -C /tmp/ -xf /tmp/hub.tgz && \
