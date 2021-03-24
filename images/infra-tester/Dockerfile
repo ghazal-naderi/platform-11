@@ -1,11 +1,11 @@
 FROM alpine:3.12.1
 LABEL maintainer="calum.lacroix@11fs.com"
-ENV KUBERNETES_VERSION="v1.19.4" TERRAFORM_VERSION="0.14.4" KOPS_VERSION="v1.19.0-beta.1" \
-    SHELLCHECK_VERSION="v0.7.1" TFLINT_VERSION="v0.20.3" TFSEC_VERSION="v0.36.6" \
-    KUBEVAL_VERSION="0.15.0" KUBESCORE_VERSION="1.10.0" KUSTOMIZE_VERSION="v3.9.2" \
-    HELM_VERSION="v3.4.1" AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1" \
-    GOOGLE_REGION="us-central1" GOOGLE_ZONE="us-central1-c" YQ_VERSION="3.4.1" \
-    FETCH_VERSION="0.3.11" HUB_VERSION="2.14.2"
+ENV KUBERNETES_VERSION="v1.20.0" TERRAFORM_VERSION="0.14.8" KOPS_VERSION="v1.20.0-beta.2" \
+    SHELLCHECK_VERSION="v0.7.1" TFLINT_VERSION="v0.25.0" TFSEC_VERSION="v0.39.10" \
+    KUBEVAL_VERSION="0.15.0" KUBESCORE_VERSION="1.10.1" KUSTOMIZE_VERSION="v4.0.5" \
+    HELM_VERSION="v3.5.3" AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1" \
+    GOOGLE_REGION="us-central1" GOOGLE_ZONE="us-central1-c" YQ_VERSION="v4.6.2" \
+    FETCH_VERSION="0.4.1" HUB_VERSION="2.14.2"
 ADD https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz /tmp/shellcheck.tar.xz
 ADD https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64 /usr/local/bin/kops
 ADD https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip /tmp/tflint.zip
@@ -31,6 +31,7 @@ RUN chmod +x /usr/local/bin/tfsec /usr/local/bin/kube-score /usr/local/bin/kops 
     unzip -q -d /tmp/ /tmp/terraform.zip && mv /tmp/terraform /usr/local/bin/terraform && chmod +x /usr/local/bin/terraform \
     && tar -C /tmp/ -xf /tmp/kubernetes.tgz && mv /tmp/kubernetes/client/bin/kubectl /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl && tar -C /usr/local/bin -xf /tmp/kustomize.tgz && chmod +x /usr/local/bin/kustomize
+
 VOLUME ["/workspace"]
 WORKDIR /workspace
 ENTRYPOINT ["/bin/ash","/workspace/build.sh"]
