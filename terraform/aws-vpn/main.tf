@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "~> 3.31.0"
+    }
+  }
+}
+
 variable "environment" { }
 data "aws_region" "current" {}
 variable "account" { }
@@ -5,16 +14,16 @@ variable "domain" { }
 variable "saml_provider_arn" { }
 
 resource "aws_cloudwatch_log_group" "vpn" {
-  name = "${var.environment}-VPN"
+  name = "${var.environment == "prod" ? "" : join("",[var.environment,"-"])}VPN"
 }
 
 resource "aws_cloudwatch_log_stream" "vpn" {
-  name           = "${var.environment}-VPN"
+  name           = "${var.environment == "prod" ? "" : join("",[var.environment,"-"])}VPN"
   log_group_name = aws_cloudwatch_log_group.vpn.name
 }
 
 resource "aws_ec2_client_vpn_endpoint" "vpn" {
-  description            = "${var.environment}-vpn"
+  description            = "${var.environment == "prod" ? "" : join("",[var.environment,"-"])}vpn"
   server_certificate_arn = aws_acm_certificate.cert.arn
   client_cidr_block      = "10.254.0.0/16"
   dns_servers            = [cidrhost(data.aws_vpc.vpc.cidr_block, 2)]
@@ -34,7 +43,7 @@ resource "aws_ec2_client_vpn_endpoint" "vpn" {
 }
 
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "vpn.${var.environment}.${data.aws_region.current.name}.${var.account}.${var.domain}"
+  domain_name       = "vpn.${var.environment == "prod" ? "" : join("",[var.environment,"."])}${data.aws_region.current.name}.${var.account}.${var.domain}"
   validation_method = "DNS"
 
   lifecycle {
@@ -44,7 +53,7 @@ resource "aws_acm_certificate" "cert" {
 
 
 data "aws_route53_zone" "env" {
-  name         = "${var.environment}.${data.aws_region.current.name}.${var.account}.${var.domain}"
+  name         = "${var.environment == "prod" ? "" : join("",[var.environment,"."])}${data.aws_region.current.name}.${var.account}.${var.domain}"
   private_zone = false
 }
 
@@ -72,7 +81,7 @@ resource "aws_acm_certificate_validation" "cert" {
 
 data "aws_vpc" "vpc" {
   tags = {
-    Name = "${var.environment}.${data.aws_region.current.name}.${var.account}.${var.domain}"
+    Name = "${var.environment == "prod" ? "" : join("",[var.environment,"."])}${data.aws_region.current.name}.${var.account}.${var.domain}"
   }
 }
 
@@ -99,4 +108,3 @@ resource "aws_ec2_client_vpn_authorization_rule" "vpn" {
   target_network_cidr    = data.aws_vpc.vpc.cidr_block
   authorize_all_groups   = true
 }
-
