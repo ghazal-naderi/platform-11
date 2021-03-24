@@ -64,7 +64,8 @@ For networking observability, we should add (requires latest `kops`):
         - port-distribution
         - tcp
       preallocateBPFMaps: true
-      version: v1.8.2
+      version: v1.8.8
+      enablePrometheusMetrics: true
 ```
 For metrics monitoring, we should edit in order to add:
 ```
