@@ -17,7 +17,7 @@ spec:
    path: logs/${tag}/%Y/%m/%d/
    buffer:
      timekey: 1m
-     timekey_wait: 10s
+     timekey_wait: 2m
      timekey_use_utc: true
 ```
 - Customize the ClusterFlow in order to add the new output
