@@ -257,34 +257,14 @@ additionalConfigMaps: # info at https://github.com/sonatype-nexus-community/nexu
       strictContentTypeValidation: 'true'
       versionPolicy: 'RELEASE'
       layoutPolicy: 'PERMISSIVE'
-  - name: jcenter
-    labels:
-      nexus-type: repository
-    data:
-      recipe: 'MavenProxy'
-      remoteUrl: 'https://jcenter.bintray.com/'
-      blobStoreName: 'proxied-cache'
-      strictContentTypeValidation: 'true'
-      versionPolicy: 'RELEASE'
-      layoutPolicy: 'PERMISSIVE'
-  - name: jcenter-snapshots
-    labels:
-      nexus-type: repository
-    data:
-      recipe: 'MavenProxy'
-      remoteUrl: 'http://oss.jfrog.org/artifactory/oss-snapshot-local/'
-      blobStoreName: 'proxied-cache'
-      strictContentTypeValidation: 'true'
-      versionPolicy: 'SNAPSHOT'
-      layoutPolicy: 'STRICT'
   - name: maven-central
     labels:
       nexus-type: repository
     data:
       recipe: 'MavenProxy'
-      remoteUrl: 'https://jcenter.bintray.com/'
+      remoteUrl: 'https://repo1.maven.org/maven2/'
       blobStoreName: 'proxied-cache'
-      strictContentTypeValidation: 'false'
+      strictContentTypeValidation: 'true'
       versionPolicy: 'RELEASE'
       layoutPolicy: 'PERMISSIVE'
   - name: maven-sandbox
@@ -313,7 +293,7 @@ additionalConfigMaps: # info at https://github.com/sonatype-nexus-community/nexu
     data:
       recipe: MavenGroup
       blobStoreName: 'proxied-cache'
-      members: "maven-releases,maven-snapshots,maven-central,maven-sandbox,jcenter,jcenter-snapshots,spring-milestone,apollo-bintray,confluent"
+      members: "maven-releases,maven-snapshots,maven-central,maven-sandbox,spring-milestone,apollo-bintray,confluent"
   - name: maven-releases
     labels:
       nexus-type: repository
