@@ -8,5 +8,13 @@ metadata:
   name: k8s
   namespace: monitoring
 spec:
-    probeNamespaceSelector: {}
-    probeSelector: {}
+  probeNamespaceSelector: {}
+  probeSelector: {}
+  retention: 2352h 
+  storage:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: stable
+        resources:
+          requests:
+            storage: 256Gi
