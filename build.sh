@@ -48,7 +48,7 @@ done
 for folder in workflows/*/; do
    cwd="$(pwd)"
    if [[ "${LINT}" == 'yes' ]]; then
-       find "${folder}.github/workflows" -type f -iname \*.yaml -exec ash -c "yq r {} -jel && echo \"✅ {}: passes lint\"" \;
+       find "${folder}.github/workflows" -type f -iname \*.yaml -exec ash -c "yq read {} -jel && echo \"✅ {}: passes lint\"" \;
        find "${folder}.github/workflows" -type f -iname \*.sh -exec ash -c "shellcheck -S error {} && echo \"✅ {}: passes lint\"" \;
    fi
    mkdir -p "pkg/${folder}.github/"

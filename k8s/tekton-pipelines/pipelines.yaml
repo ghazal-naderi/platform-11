@@ -144,32 +144,19 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
 rules:
-- # The webhook needs to be able to list and update customresourcedefinitions,
-  # mainly to update the webhook certificates.
-  apiGroups: ["apiextensions.k8s.io"]
+- apiGroups: ["apiextensions.k8s.io"]
   resources: ["customresourcedefinitions", "customresourcedefinitions/status"]
   verbs: ["get", "list", "update", "patch", "watch"]
 - apiGroups: ["admissionregistration.k8s.io"]
-  # The webhook performs a reconciliation on these two resources and continuously
-  # updates configuration.
   resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
-  # knative starts informers on these things, which is why we need get, list and watch.
   verbs: ["list", "watch"]
 - apiGroups: ["admissionregistration.k8s.io"]
   resources: ["mutatingwebhookconfigurations"]
-  # This mutating webhook is responsible for applying defaults to tekton objects
-  # as they are received.
   resourceNames: ["webhook.pipeline.tekton.dev"]
-  # When there are changes to the configs or secrets, knative updates the mutatingwebhook config
-  # with the updated certificates or the refreshed set of rules.
   verbs: ["get", "update"]
 - apiGroups: ["admissionregistration.k8s.io"]
   resources: ["validatingwebhookconfigurations"]
-  # validation.webhook.pipeline.tekton.dev performs schema validation when you, for example, create TaskRuns.
-  # config.webhook.pipeline.tekton.dev validates the logging configuration against knative's logging structure
   resourceNames: ["validation.webhook.pipeline.tekton.dev", "config.webhook.pipeline.tekton.dev"]
-  # When there are changes to the configs or secrets, knative updates the validatingwebhook config
-  # with the updated certificates or the refreshed set of rules.
   verbs: ["get", "update"]
 - apiGroups: ["policy"]
   resources: ["podsecuritypolicies"]
@@ -184,49 +171,49 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
 rules:
-- # We uses leases for leaderelection
-  apiGroups: ["coordination.k8s.io"]
+- apiGroups: ["coordination.k8s.io"]
   resources: ["leases"]
   verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
 
 ---
-# Copyright 2020 The Tekton Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: tekton-pipelines-controller
-  namespace: tekton-pipelines
-  labels:
+kind: Role
+metadata: 
+  labels: 
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-pipelines
-rules:
-- apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["list", "watch"]
-- # The controller needs access to these configmaps for logging information and runtime configuration.
-  apiGroups: [""]
-  resources: ["configmaps"]
-  verbs: ["get"]
-  resourceNames: ["config-logging", "config-observability", "config-artifact-bucket",
-    "config-artifact-pvc", "feature-flags", "config-leader-election"]
-- apiGroups: ["policy"]
-  resources: ["podsecuritypolicies"]
-  resourceNames: ["tekton-pipelines"]
-  verbs: ["use"]
+  name: tekton-pipelines-controller
+  namespace: tekton-pipelines
+rules: 
+  - apiGroups: 
+      - ""
+    resources: 
+      - configmaps
+    verbs: 
+      - list
+      - watch
+  - apiGroups: 
+      - ""
+    resourceNames: 
+      - config-logging
+      - config-observability
+      - config-artifact-bucket
+      - config-artifact-pvc
+      - feature-flags
+      - config-leader-election
+    resources: 
+      - configmaps
+    verbs: 
+      - get
+  - apiGroups: 
+      - policy
+    resourceNames: 
+      - tekton-pipelines
+    resources: 
+      - podsecuritypolicies
+    verbs: 
+      - use
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -241,18 +228,14 @@ rules:
 - apiGroups: [""]
   resources: ["configmaps"]
   verbs: ["list", "watch"]
-- # The webhook needs access to these configmaps for logging information.
-  apiGroups: [""]
+- apiGroups: [""]
   resources: ["configmaps"]
   verbs: ["get"]
   resourceNames: ["config-logging", "config-observability", "config-leader-election"]
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["list", "watch"]
-- # The webhook daemon makes a reconciliation loop on webhook-certs. Whenever
-  # the secret changes it updates the webhook configurations with the certificates
-  # stored in the secret.
-  apiGroups: [""]
+- apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "update"]
   resourceNames: ["webhook-certs"]
@@ -1582,10 +1565,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - # If you are changing these names, you will also need to update
-          # the controller's Role in 200-role.yaml to include the new
-          # values in the "configmaps" "get" rule.
-          name: CONFIG_DEFAULTS_NAME
+        - name: CONFIG_DEFAULTS_NAME
           value: config-defaults
         - name: CONFIG_LOGGING_NAME
           value: config-logging
@@ -1705,10 +1685,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - # If you are changing these names, you will also need to update
-          # the webhook's Role in 200-role.yaml to include the new
-          # values in the "configmaps" "get" rule.
-          name: CONFIG_LOGGING_NAME
+        - name: CONFIG_LOGGING_NAME
           value: config-logging
         - name: CONFIG_OBSERVABILITY_NAME
           value: config-observability
@@ -1760,8 +1737,7 @@ metadata:
   namespace: tekton-pipelines
 spec:
   ports:
-  - # Define metrics and profiling for them to be accessible within service meshes.
-    name: http-metrics
+  - name: http-metrics
     port: 9090
     targetPort: 9090
   - name: http-profiling
