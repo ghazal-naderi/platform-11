@@ -102,7 +102,7 @@ spec:
             name: terraform-secrets
       args:
         - "-c"
-        - "cd $(inputs.params.terraformDir) && terraform init && terraform validate && tflint --module --deep --loglevel=info && terraform plan"
+        - "cd $(inputs.params.terraformDir) && terraform init && terraform validate && tflint --module --loglevel=info && terraform plan"
     - name: tf-apply
       image: 140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest 
       workingDir: $(workspaces.source.path)
