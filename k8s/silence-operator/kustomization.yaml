@@ -1,0 +1,4 @@
+---
+resources:
+- silence-operator.yaml
+namespace: monitoring

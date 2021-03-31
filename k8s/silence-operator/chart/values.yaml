@@ -1,0 +1,30 @@
+image:
+  name: "giantswarm/silence-operator"
+  tag: v0.1.5 
+pod:
+  user:
+    id: 1000
+  group:
+    id: 1000
+project:
+  branch: "[[ .Branch ]]"
+  commit: "[[ .SHA ]]"
+
+sync:
+  repository: github.com/giantswarm/silences
+
+initContainer:
+  name: "giantswarm/alpinegit"
+  tag: "v2.26.2-giantswarm"
+
+Installation:
+  V1:
+    Name: ""
+    Provider:
+      Kind: ""
+    Registry:
+      Domain: quay.io
+    Secret:
+      SilenceOperator:
+        Github:
+          Token: ""
