@@ -22,11 +22,11 @@ createCustomResource: true
 
 resources:
   limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
     cpu: 1000m
     memory: 2048Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
 
 nodeSelector: {}
 

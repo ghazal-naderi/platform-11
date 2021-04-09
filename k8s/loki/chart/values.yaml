@@ -77,7 +77,7 @@ config:
       schema: v11
       index:
         prefix: index_
-        period: 168h
+        period: 24h
   server:
     http_listen_port: 3100
   storage_config:
