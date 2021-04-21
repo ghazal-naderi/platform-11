@@ -95,6 +95,12 @@ variable "projectteam_name" {
   default     = "projectteam"
   description = "Name for the projectteam group and role (e.g. `admin`)"
 }
+
+variable "developer_name" {
+  type        = string
+  default     = "developer"
+  description = "Name for the developer group and role (e.g. `admin`)"
+}
 ###################################################################
 # List of IAM Users to add to groups
 ###################################################################
@@ -154,3 +160,8 @@ variable "projectteam_user_names" {
   description = "Optional list of IAM user names to add to the projectteam group"
 }
 
+variable "developer_user_names" {
+  type        = list(any)
+  default     = []
+  description = "Optional list of IAM user names to add to the developer group"
+}

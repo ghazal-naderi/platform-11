@@ -43,6 +43,8 @@ No requirements.
 | readonly\_user\_names | Optional list of IAM user names to add to the readonly group | `list(any)` | `[]` | no |
 | security\_name | Name for the admin group and role (e.g. `security`) | `string` | `"security"` | no |
 | security\_user\_names | Optional list of IAM user names to add to the security group | `list(any)` | `[]` | no |
+| developer\_name | Name for the developer group and role (e.g. `developer`) | `string` | `"developer"` | no |
+| developer\_user\_names | Optional list of IAM user names to add to the developer group | `list(any)` | `[]` | no |
 | stage | Stage (e.g. `prod`, `dev`, `staging`) | `string` | n/a | yes |
 | switchrole\_url | URL to the IAM console to switch to a role | `string` | `"https://signin.aws.amazon.com/switchrole?account=%s&roleName=%s&displayName=%s"` | no |
 | tags | Additional tags (e.g. map(`BusinessUnit`,`XYZ`) | `map(any)` | `{}` | no |

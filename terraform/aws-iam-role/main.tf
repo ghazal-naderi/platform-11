@@ -83,7 +83,15 @@ module "projectteam_label" {
   attributes = var.attributes
   tags       = var.tags
 }
-
+module "developer_label" {
+  source     = "../terraform-null-label"
+  namespace  = var.namespace
+  stage      = var.stage
+  name       = var.developer_name
+  delimiter  = var.delimiter
+  attributes = var.attributes
+  tags       = var.tags
+}
 #####################################################################
 
 #####################################################################
@@ -97,6 +105,7 @@ locals {
   role_platform_name = join("", aws_iam_role.platform.*.name)
   role_qualityassurance_name = join("", aws_iam_role.qualityassurance.*.name)
   role_projectteam_name = join("", aws_iam_role.projectteam.*.name)
+  role_developer_name    = join("", aws_iam_role.developer.*.name)
 }
 
 data "aws_caller_identity" "current" {}
@@ -249,6 +258,7 @@ locals {
   platform_user_names = length(var.platform_user_names) > 0 ? true : false
   qualityassurance_user_names = length(var.qualityassurance_user_names) > 0 ? true : false
   projectteam_user_names = length(var.projectteam_user_names) > 0 ? true : false
+  developer_user_names    = length(var.developer_user_names) > 0 ? true : false
 }
 
 ##################
@@ -1032,4 +1042,90 @@ resource "aws_iam_group_membership" "projectteam" {
   name  = module.projectteam_label.id
   group = join("", aws_iam_group.projectteam.*.id)
   users = var.projectteam_user_names
+}
+
+##################
+#developer config
+##################
+resource "aws_iam_policy" "manage_mfa_developer" {
+  count       = local.enabled ? 1 : 0
+  name        = "${module.developer_label.id}-permit-mfa"
+  description = "Allow developer users to manage Virtual MFA Devices"
+  policy      = join("", data.aws_iam_policy_document.manage_mfa.*.json)
+}
+
+resource "aws_iam_policy" "allow_change_password_developer" {
+  count       = local.enabled ? 1 : 0
+  name        = "${module.developer_label.id}-permit-change-password"
+  description = "Allow developer users to change password"
+  policy      = join("", data.aws_iam_policy_document.allow_change_password.*.json)
+}
+
+resource "aws_iam_policy" "allow_key_management_developer" {
+  name        = "${module.developer_label.id}-allow-key-management"
+  description = "Allow developer users to manage their own access keys"
+  policy      = data.aws_iam_policy_document.allow_key_management.json
+}
+
+data "aws_iam_policy_document" "assume_role_developer" {
+  count = local.enabled ? 1 : 0
+
+  statement {
+    actions   = ["sts:AssumeRole"]
+    resources = [join("", aws_iam_role.developer.*.arn)]
+  }
+}
+
+resource "aws_iam_policy" "assume_role_developer" {
+  count       = local.enabled ? 1 : 0
+  name        = "${module.developer_label.id}-permit-assume-role"
+  description = "Allow assuming developer role"
+  policy      = join("", data.aws_iam_policy_document.assume_role_developer.*.json)
+}
+
+resource "aws_iam_group" "developer" {
+  count = local.enabled ? 1 : 0
+  name  = module.developer_label.id
+}
+resource "aws_iam_role" "developer" {
+  count              = local.enabled ? 1 : 0
+  name               = module.developer_label.id
+  assume_role_policy = join("", data.aws_iam_policy_document.role_trust.*.json)
+}
+
+resource "aws_iam_group_policy_attachment" "assume_role_developer" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.developer.*.name)
+  policy_arn = join("", aws_iam_policy.assume_role_developer.*.arn)
+}
+
+resource "aws_iam_group_policy_attachment" "manage_mfa_developer" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.developer.*.name)
+  policy_arn = join("", aws_iam_policy.manage_mfa_developer.*.arn)
+}
+
+resource "aws_iam_group_policy_attachment" "allow_chage_password_developer" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.developer.*.name)
+  policy_arn = join("", aws_iam_policy.allow_change_password_developer.*.arn)
+}
+
+resource "aws_iam_group_policy_attachment" "key_management_developer" {
+  count      = local.enabled ? 1 : 0
+  group      = join("", aws_iam_group.developer.*.name)
+  policy_arn = aws_iam_policy.allow_key_management_developer.arn
+}
+
+resource "aws_iam_role_policy_attachment" "developer" {
+  count      = local.enabled ? 1 : 0
+  role       = join("", aws_iam_role.developer.*.name)
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+}
+
+resource "aws_iam_group_membership" "developer" {
+  count = local.enabled && local.developer_user_names ? 1 : 0
+  name  = module.developer_label.id
+  group = join("", aws_iam_group.developer.*.id)
+  users = var.developer_user_names
 }
