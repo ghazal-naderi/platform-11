@@ -1,10 +1,10 @@
 FROM alpine:3.12.1
 LABEL maintainer="calum.lacroix@11fs.com"
-ENV KUBERNETES_VERSION="v1.20.0" TERRAFORM_VERSION="0.14.8" KOPS_VERSION="v1.20.0-beta.2" \
-    SHELLCHECK_VERSION="v0.7.1" TFLINT_VERSION="v0.25.0" TFSEC_VERSION="v0.39.10" \
-    KUBEVAL_VERSION="0.15.0" KUBESCORE_VERSION="1.10.1" KUSTOMIZE_VERSION="v4.0.5" \
-    HELM_VERSION="v3.5.3" AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1" \
-    GOOGLE_REGION="us-central1" GOOGLE_ZONE="us-central1-c" YQ_VERSION="v4.6.3" \
+ENV KUBERNETES_VERSION="v1.20.0" TERRAFORM_VERSION="0.15.0" KOPS_VERSION="v1.20.0" \
+    SHELLCHECK_VERSION="v0.7.2" TFLINT_VERSION="v0.28.0" TFSEC_VERSION="v0.39.24" \
+    KUBEVAL_VERSION="0.16.1" KUBESCORE_VERSION="1.11.0" KUSTOMIZE_VERSION="v4.1.2" \
+    HELM_VERSION="v3.5.4" AWS_DEFAULT_REGION="eu-west-1" AWS_REGION="eu-west-1" \
+    GOOGLE_REGION="us-central1" GOOGLE_ZONE="us-central1-c" YQ_VERSION="v4.7.1" \
     FETCH_VERSION="0.4.1" HUB_VERSION="2.14.2"
 ADD https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz /tmp/shellcheck.tar.xz
 ADD https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64 /usr/local/bin/kops
