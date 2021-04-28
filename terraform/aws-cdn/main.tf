@@ -167,5 +167,5 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 output "bucket_id" {
-  value = "${aws_s3_bucket.b.id}"
+  value = aws_s3_bucket.b.id
 }

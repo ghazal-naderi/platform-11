@@ -26,4 +26,5 @@ output "master_username" {
 output "temp_password" {
   value       = random_password.temp.result
   description = "The initial random temp password"
+  sensitive   = true
 }
