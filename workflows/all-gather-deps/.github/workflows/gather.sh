@@ -1,6 +1,6 @@
 #!/bin/bash -x 
 set -eu -o pipefail
-COUNT=$(( $(./yq e manifest.yaml -j | jq -r packages | jq length) - 1 ))
+COUNT=$(( $(./yq e manifest.yaml -j | jq -r '.packages' | jq length) - 1 ))
 sudo rm -rf temp/ || mkdir temp/
 
 git config --global user.name "11:FS Bot"
