@@ -27,11 +27,10 @@ jobs:
     steps:
      - uses: actions/checkout@v2
        with:
-        ref: master
+        ref: master 
      - name: Check BE engineering team approval
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: back-end
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -41,12 +40,11 @@ jobs:
              exit 0
            else
              echo "not yet approved by ${TEAM}"
-             exit 1
+             exit 1 
            fi
      - name: Check QA team approval
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          ORG: ${{ github.event.pull_request.head.user.login }}
          TEAM: qa
          PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -56,17 +54,18 @@ jobs:
              exit 0
            else
              echo "not yet approved by ${TEAM}"
-             exit 1
+             exit 1 
            fi
-  release:
+  release: 
     needs: check-privileges
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - run: jq '.' "$GITHUB_EVENT_PATH"
-    - run: .github/workflows/rebase.sh
+    - run: |
+        .github/workflows/rebase.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
     - name: Squash, merge and version
       id: version
       run: |
@@ -87,27 +86,26 @@ jobs:
       env:
           GITHUB_LABELS: ${{ toJson(github.event.pull_request.labels) }}
           GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
-          GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           PROD_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPO: ${{ github.repository }}
     - name: Prep release artifacts
       env:
-        KOPS_VERSION: v1.19.0-beta.1
-        KUSTOMIZE_VERSION: v3.8.7
-        TERRAFORM_VERSION: 0.13.5
+        KOPS_VERSION: v1.20.0
+        KUSTOMIZE_VERSION: v4.1.2
+        TERRAFORM_VERSION: 0.15.0
         GITHUB_REF: ${{ github.ref }}
         NEW_VERSION: ${{ steps.version.outputs.version }}
-        KOPS_CLUSTER_NAME: sandbox.11fs-structs.com
-        KOPS_STATE_STORE: "s3://eu-west-2-sandbox-structs-state"
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_READONLY_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_READONLY_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.AWS_READONLY_REGION }}
+        KOPS_CLUSTER_NAME: us-east-1.prod.fakebank.com 
+        KOPS_STATE_STORE: "s3://us-east-1-prod-fake-state"
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_PRODRO_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_PRODRO_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_PRODRO_REGION }}
         PR_BODY: ${{ github.event.pull_request.body }}
-        TERRAFORM_DIR: sandbox
-        KUBERNETES_DIR: sandbox
+        TERRAFORM_DIR: production
+        KUBERNETES_DIR: prod
       run: |
         # Install Kops
         sudo curl -Lo /usr/local/bin/kops "https://github.com/kubernetes/kops/releases/download/${KOPS_VERSION}/kops-linux-amd64" && sudo chmod +x /usr/local/bin/kops
@@ -116,9 +114,9 @@ jobs:
         # Install Terraform
         sudo curl -Lo /tmp/terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"  && sudo unzip -q -d /tmp/ /tmp/terraform.zip && sudo mv /tmp/terraform /usr/local/bin/terraform && sudo chmod +x /usr/local/bin/terraform
         # Terraform HCL plan
-        (cd terraform/${TERRAFORM_DIR} && echo "## terraform changes in ${GITHUB_REF} for ${TERRAFORM_DIR}" > ${GITHUB_WORKSPACE}/terraform_changes.md && terraform init -input=false && terraform plan -no-color >> ${GITHUB_WORKSPACE}/terraform_changes.md) && tar -czf ${GITHUB_WORKSPACE}/terraform.tgz terraform/*
+        (cd terraform/${TERRAFORM_DIR} && echo "## terraform changes in ${GITHUB_REF} for ${TERRAFORM_DIR}" > ${GITHUB_WORKSPACE}/terraform_changes.md && terraform init -input=false && terraform plan -no-color -compact-warnings -input=false -out=tfplan && terraform show -no-color tfplan >> ${GITHUB_WORKSPACE}/terraform_changes.md) && tar -czf ${GITHUB_WORKSPACE}/terraform.tgz terraform/*
         # Kops YAML dry-update
-        (cd k8s && echo "## kops changes in ${GITHUB_REF} for ${KOPS_CLUSTER_NAME}" > ${GITHUB_WORKSPACE}/kops_changes.md && kops get cluster -o yaml > ${GITHUB_WORKSPACE}/kops-cluster-prev.yaml && kops replace cluster -f ${KUBERNETES_DIR}.yaml && cp ${KUBERNETES_DIR}.yaml ${GITHUB_WORKSPACE}/cluster.yaml && kops update cluster >> ${GITHUB_WORKSPACE}/kops_changes.md && kops replace cluster -f ${GITHUB_WORKSPACE}/kops-cluster-prev.yaml)
+        (cd k8s && echo "## kops changes in ${GITHUB_REF} for ${KOPS_CLUSTER_NAME}" > ${GITHUB_WORKSPACE}/kops_changes.md && kops get cluster -o yaml > ${GITHUB_WORKSPACE}/kops-cluster-prev.yaml && kops replace cluster -f ${KUBERNETES_DIR}.yaml && cp ${KUBERNETES_DIR}.yaml ${GITHUB_WORKSPACE}/cluster.yaml && kops update cluster --skip_headers >> ${GITHUB_WORKSPACE}/kops_changes.md && kops replace cluster -f ${GITHUB_WORKSPACE}/kops-cluster-prev.yaml)
         # Kubernetes YAML build
         (cd k8s/${KUBERNETES_DIR} && echo "# Kubernetes release for ${KOPS_CLUSTER_NAME}, version ${NEW_VERSION}\n# from ${GITHUB_REF} on $(date)" > ${GITHUB_WORKSPACE}/release-${NEW_VERSION}.yaml && kustomize build . >> ${GITHUB_WORKSPACE}/release-${NEW_VERSION}.yaml)
         cat ${GITHUB_WORKSPACE}/terraform_changes.md ${GITHUB_WORKSPACE}/kops_changes.md >> ${GITHUB_WORKSPACE}/release.md
@@ -127,7 +125,7 @@ jobs:
       id: create_release
       uses: actions/create-release@latest
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }} 
       with:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Production pre-release
@@ -138,7 +136,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
+      with: 
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/terraform.tgz
         asset_name: terraform-${{ steps.version.outputs.version }}.tgz
@@ -147,7 +145,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
+      with: 
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/cluster.yaml
         asset_name: kops-cluster-${{ steps.version.outputs.version }}.yaml
@@ -157,7 +155,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
+      with: 
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ github.workspace }}/release-${{ steps.version.outputs.version }}.yaml
         asset_name: kubernetes-${{ steps.version.outputs.version }}.yaml

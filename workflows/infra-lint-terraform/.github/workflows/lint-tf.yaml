@@ -1,9 +1,9 @@
-# This will automatically lint shell and YAML files in `.github/workflows` directory
-name: Workflow lint
+# This will automatically lint terraform files in PRs in order to ensure that they will actually correctly deploy to environment
+name: Terraform lint
 on:
   pull_request:
     paths:
-    - '.github/workflows/**'
+    - 'terraform/**'
     types:
     - opened
     - reopened
@@ -21,13 +21,14 @@ on:
     - completed
   status: {}
 jobs:
-  lint_workflows:
+  lint_tf:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Lint workflow YAML and bash on PR
+    - name: Lint Terraform on PR
       env:
-        YQ_VERSION: "v4.7.1"
-        SHELLCHECK_VERSION: "v0.7.2"
+        TERRAFORM_VERSION: "0.15.0"
+        TFLINT_VERSION: "v0.28.0"
+        TFSEC_VERSION: "v0.39.24"
       run: |
-        ./.github/workflows/lint-workflows.sh
+        ./.github/workflows/lint-tf.sh

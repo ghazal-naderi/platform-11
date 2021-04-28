@@ -15,15 +15,14 @@ jobs:
           fetch-depth: 0
       - uses: imranismail/setup-kustomize@master
         with:
-          kustomize-version: "3.9.2"
+          kustomize-version: "v4.1.2" 
       - name: Pin version
         env:
           GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
           GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_SECRET_TOKEN }}
           GITHUB_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
           COMMENT: ${{ github.event.comment.body }}
           PR_NUMBER: ${{ github.event.issue.number }}
         run: |
-          curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
           .github/workflows/pin-version.sh

@@ -1,6 +1,6 @@
 #!/bin/bash -x 
 set -eu -o pipefail
-COUNT=$(( $(./yq r manifest.yaml --length packages) - 1 ))
+COUNT=$(( $(./yq e manifest.yaml -j | jq -r packages | jq length) - 1 ))
 sudo rm -rf temp/ || mkdir temp/
 
 git config --global user.name "11:FS Bot"
@@ -43,12 +43,12 @@ render_package() {
 }
 
 for package in $(seq 0 "${COUNT}"); do 
-    pname="$(./yq r manifest.yaml "packages[${package}].name")"
+    pname="$(./yq e manifest.yaml -j | jq -r ".packages[${package}].name")"
     defaultref="master"
-    pref="$(./yq r manifest.yaml "packages[${package}].ref")"
+    pref="$(./yq e manifest.yaml -j | jq -r ".packages[${package}].ref")"
     pref="${pref:-$defaultref}"
-    path="$(./yq r manifest.yaml "packages[${package}].path")"
-    prelease="$(./yq r manifest.yaml "packages[${package}].release")"
+    path="$(./yq e manifest.yaml -j | jq -r ".packages[${package}].path")"
+    prelease="$(./yq e manifest.yaml -j | jq -r ".packages[${package}].release")"
     prelease="${prelease:=platform}"
     defaultpath="structs/${pname}"
     path="${path:-$defaultpath}"

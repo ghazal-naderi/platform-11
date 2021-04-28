@@ -30,7 +30,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
       - name: Install dependencies
-        run: curl -Lo yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x yq 
+        run: curl -Lo yq https://github.com/mikefarah/yq/releases/download/v4.7.1/yq_linux_amd64 && chmod +x yq 
       - name: Gather dependencies from manifest.yaml and commit them to the repo 
         env:
           GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}

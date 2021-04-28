@@ -8,7 +8,7 @@ case $GITHUB_LABELS in
         ENVIRONMENT="qa"
         ;;
     *"release/prod"*)
-        ENVIRONMENT="production"
+        ENVIRONMENT="prod"
         ;;
     *)
         exit 127

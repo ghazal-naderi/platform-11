@@ -10,7 +10,7 @@ cd .github/workflows || exit 127
 export PATH="$HOME/bin:$PATH"
 YAML_FILES=($(find . -maxdepth 1 -type f -iname \*.yaml))
 for yaml in "${YAML_FILES[@]}"; do
-    if yq r "${yaml}" -jel; then 
+    if yq eval "${yaml}" -j; then 
       echo "✅ ${yaml}: passes lint"
     else
       echo "❌: ${yaml}: failed lint"

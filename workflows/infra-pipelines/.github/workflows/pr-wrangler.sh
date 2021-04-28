@@ -46,12 +46,10 @@ fi
 
 cd "k8s/${OUT_PR_ENV}" || exit 127
 
-IN_PR_APPURL=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.name")
-IN_PR_VERSION=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.newTag" )
-INT_PREV_COMMIT=$(/tmp/yq r "../${OUT_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.newTag" | cut -d'-' -f2)
-INT_CUR_COMMIT=$(/tmp/yq r "../${IN_PR_ENV}/kustomization.yaml" -j 'images' | jq -r ".[]|select(.name | test(\"${IN_PR_APP}\$\"))|.newTag" | cut -d'-' -f2)
-
-# Registry transform if required
+IN_PR_APPURL=$(/tmp/yq e "../${IN_PR_ENV}/kustomization.yaml" -j | jq -r ".images|.[]|select(.name | contains(\"${IN_PR_APP}\"))|.name")
+IN_PR_VERSION=$(/tmp/yq e "../${IN_PR_ENV}/kustomization.yaml" -j | jq -r ".images|.[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" )
+INT_PREV_COMMIT=$(/tmp/yq e "../${OUT_PR_ENV}/kustomization.yaml" -j | jq -r ".images|.[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" | cut -d'-' -f2)
+INT_CUR_COMMIT=$(/tmp/yq e "../${IN_PR_ENV}/kustomization.yaml" -j | jq -r ".images|.[]|select(.name | contains(\"${IN_PR_APP}\"))|.newTag" | cut -d'-' -f2)
 IMAGE="${IN_PR_APPURL}:${IN_PR_VERSION}"
 if [ ! -z "${IN_REGISTRY}" ]; then
    OUT_PR_APPURL=$(echo "${IN_PR_APPURL}" | sed -e "s%${IN_REGISTRY}%${OUT_REGISTRY}%")
@@ -66,7 +64,6 @@ if [ ! -z "${IN_REGISTRY}" ]; then
      docker push "${OUT_PR_APPURL}:${IN_PR_VERSION}"
    fi
 fi
-
 kustomize edit set image "${IMAGE}"
 if hub diff-index --name-only HEAD | grep "k8s/${OUT_PR_ENV}/kustomization.yaml"; then
   hub add kustomization.yaml

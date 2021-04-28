@@ -15,17 +15,18 @@ on:
 jobs:
   automerge:
     if: contains(github.event.pull_request.labels.*.name, 'release/int') &&
-        contains('fakeci', github.event.pull_request.user.login)
+        contains('fakeci', github.event.pull_request.user.login) 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: jq '.' "$GITHUB_EVENT_PATH"
-    - run: .github/workflows/rebase.sh
+    - run: jq '.' "$GITHUB_EVENT_PATH" 
+    - run: |
+        .github/workflows/rebase.sh
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
     - uses: imranismail/setup-kustomize@master
       with:
-        kustomize-version: "3.9.2"
+        kustomize-version: "v4.1.2"
     - name: Set up Ruby 2.6
       uses: actions/setup-ruby@v1
       with:
@@ -34,8 +35,8 @@ jobs:
       env:
         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
         GITHUB_EMAIL: ${{ secrets.GH_BOT_EMAIL }}
-        GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+        OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
         BASE_REF: ${{ github.event.pull_request.base.ref }}
         IN_PR_NUMBER: ${{ github.event.pull_request.number }}
         GITHUB_REPO: ${{ github.repository }}
@@ -52,7 +53,7 @@ jobs:
         #OUT_DOCKER_PASS: ${{ secrets.DOCKER_FAKEBANK_PASS }}
       run: |
         gem install octocam
-        curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
+        curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/v4.7.1/yq_linux_amd64 && chmod +x /tmp/yq 
         .github/workflows/pr-wrangler.sh
     - name: Notify slack
       uses: innocarpe/actions-slack@v1

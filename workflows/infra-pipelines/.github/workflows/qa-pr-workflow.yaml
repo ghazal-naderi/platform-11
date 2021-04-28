@@ -1,5 +1,5 @@
 # This workflow will react to QA approving a QA PR
-name: Preproduction release workflow
+name: Preproduction release workflow 
 on:
   pull_request_review:
     paths:
@@ -16,12 +16,12 @@ jobs:
      steps:
       - uses: actions/checkout@v2
         with:
-         ref: master
+         ref: master 
       - name: Check QA team approval
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
           ORG: ${{ github.event.pull_request.head.user.login }}
-          TEAM: qa
+          TEAM: qa 
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           if ./.github/workflows/approved-by-team.sh; then
@@ -39,21 +39,22 @@ jobs:
      steps:
      - uses: actions/checkout@v2
      - run: jq '.' "$GITHUB_EVENT_PATH"
-     - run: .github/workflows/rebase.sh
+     - run: |
+        .github/workflows/rebase.sh
        env:
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
      - uses: imranismail/setup-kustomize@master
        with:
-         kustomize-version: "3.9.2"
+         kustomize-version: "v4.1.2"
      - name: Set up Ruby 2.6
        uses: actions/setup-ruby@v1
        with:
          ruby-version: 2.6.x
      - name: Prepare release
        env:
-         GITHUB_USER: ${{ secrets.GH_BOT_UNAME }}
-         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+         GITHUB_USER: ${{ secrets.GIT_BOT_UNAME }} 
+         GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
+         OCTOCAM_GITHUB_TOKEN: ${{ secrets.GH_BOT_SECRET_TOKEN }}
          HEAD_REF: ${{ github.event.pull_request.head.ref }}
          BASE_REF: ${{ github.event.pull_request.base.ref }}
          IN_PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -62,7 +63,7 @@ jobs:
          OUT_PR_ENV: prod
        run: |
          gem install octocam
-         curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/3.2.0/yq_linux_amd64 && chmod +x /tmp/yq
+         curl -Lo /tmp/yq https://github.com/mikefarah/yq/releases/download/v4.7.1/yq_linux_amd64 && chmod +x /tmp/yq
          .github/workflows/pr-wrangler.sh
      # Let's tell slack how this whole thing turned out.
      - name: Notify slack

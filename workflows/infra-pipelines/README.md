@@ -27,7 +27,7 @@ It provides the means to automatically:
 You must change:
 - Secrets `AWS_ECR_ACCOUNT_ID`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` to those configured to access the appropriate ECR repository for your images or change client workflows to obtain images from elsewhere.
 - `AWS_REGION` in client workflows to match your own ECR's region in AWS.
-- Secrets `GH_PAT`, `GH_BOT_UNAME` and `GH_BOT_EMAIL` to reflect your GitHub bot's secret access token, username and email address.
+- Secrets `GH_BOT_SECRET_TOKEN`, `GH_BOT_UNAME` and `GH_BOT_EMAIL` to reflect your GitHub bot's secret access token, username and email address.
 - `fakeci` in workflows to your GitHub bot's username.
 - 'release/xxx' in workflows to the appropriate environment release label (eg. release/int, release/prod, release/aka)
 - `fakebank` in workflows to your GitHub org name.
