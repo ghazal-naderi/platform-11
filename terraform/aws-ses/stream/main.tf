@@ -50,6 +50,7 @@ resource "aws_sqs_queue" "ses_dead_letter_queue" {
 
 resource "aws_sns_topic" "ses_topic" {
   name = "ses_${lower(var.type)}_topic"
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sns_topic_subscription" "ses_subscription" {
