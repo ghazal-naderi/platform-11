@@ -124,11 +124,11 @@ spec:
       script: |-
           #!/usr/bin/env ash
           set -e
-          ASSETS="$(wget -q --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl) -O-)"
+          ASSETS="$(curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl))"
           # Terraform
           TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url')"
           if [[ "$TF_ASSET_URL" != "" ]]; then
-            wget -q --header "Accept: application/octet-stream" ${TF_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O terraform-$(inputs.params.version).tgz
+            curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" -H "Accept: application/octet-stream" "${TF_ASSET_URL}" -o terraform-$(inputs.params.version).tgz
             tar xvf terraform-$(inputs.params.version).tgz
             cd terraform/$TERRAFORM_DIR
             echo "Testing Terraform..."
@@ -138,7 +138,7 @@ spec:
           # Kops
           KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url')"
           if [[ "$KOPS_ASSET_URL" != "" ]]; then
-            wget -q --header "Accept: application/octet-stream" ${KOPS_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kops-cluster-$(inputs.params.version).yaml
+            curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" -H "Accept: application/octet-stream" "${KOPS_ASSET_URL}" -o kops-cluster-$(inputs.params.version).yaml
             echo "Testing Kops..."
             kops get cluster -o yaml > kops-cluster-prev.yaml
             kops replace cluster -f kops-cluster-$(inputs.params.version).yaml
@@ -148,7 +148,7 @@ spec:
           # Kubernetes
           KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url')"
           if [[ "$KUBE_ASSET_URL" != "" ]]; then
-            wget -q --header "Accept: application/octet-stream" ${KUBE_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kubernetes-$(inputs.params.version).yaml
+            curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" -H "Accept: application/octet-stream" "${KUBE_ASSET_URL}" -o kubernetes-$(inputs.params.version).yaml
             echo "Applying Kubernetes..."
             kubectl apply -f "kubernetes-$(inputs.params.version).yaml" --dry-run=server
           fi 
@@ -167,13 +167,13 @@ spec:
       script: |-
           #!/usr/bin/env ash
           set -e
-          ASSETS="$(wget -q --header="Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl) -O-)"
+          ASSETS="$(curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" $(inputs.params.assetsurl))"
           if ([[ "$(inputs.params.draft)" == 'false' ]] && [[ "$(inputs.params.prerelease)" == 'false' ]]); then
             echo 'this is not a prerelease or draft, we will apply it'
              # Terraform
              TF_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="terraform-$(inputs.params.version).tgz")|.url')" 
              if [[ "$TF_ASSET_URL" != "" ]]; then
-               wget -q --header "Accept: application/octet-stream" ${TF_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O terraform-$(inputs.params.version).tgz
+               curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" -H "Accept: application/octet-stream" "${TF_ASSET_URL}" -o terraform-$(inputs.params.version).tgz
                tar xvf terraform-$(inputs.params.version).tgz
                cd terraform/$TERRAFORM_DIR
                echo "Applying Terraform..."
@@ -183,7 +183,7 @@ spec:
              # Kops
              KOPS_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kops-cluster-$(inputs.params.version).yaml")|.url')" 
              if [[ "$KOPS_ASSET_URL" != "" ]]; then
-               wget -q --header "Accept: application/octet-stream" ${KOPS_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kops-cluster-$(inputs.params.version).yaml
+               curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" -H "Accept: application/octet-stream" "${KOPS_ASSET_URL}" -o kops-cluster-$(inputs.params.version).yaml
                echo "Applying Kops..."
                kops export kubecfg --admin
                kops replace cluster -f kops-cluster-$(inputs.params.version).yaml
@@ -193,7 +193,7 @@ spec:
              # Kubernetes
              KUBE_ASSET_URL="$(echo "$ASSETS" | jq -r '.[]|select(.name=="kubernetes-$(inputs.params.version).yaml")|.url')" 
              if [[ "$KUBE_ASSET_URL" != "" ]]; then
-               wget -q --header "Accept: application/octet-stream" ${KUBE_ASSET_URL}?access_token=${GITHUB_OAUTH_TOKEN} -O kubernetes-$(inputs.params.version).yaml
+               curl -qLH "Authorization: token ${GITHUB_OAUTH_TOKEN}" -H "Accept: application/octet-stream" "${KUBE_ASSET_URL}" -o kubernetes-$(inputs.params.version).yaml
                echo "Applying Kubernetes..."
                kubectl apply -f "kubernetes-$(inputs.params.version).yaml"
                echo "{\"kind\":\"ConfigMap\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"infra-version\",\"namespace\":\"tekton-pipelines\",\"creationTimestamp\":null},\"data\":{\"version\":\"$(inputs.params.version)\"}}" | kubectl apply -f -
