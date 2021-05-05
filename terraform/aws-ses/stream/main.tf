@@ -43,13 +43,14 @@ resource "aws_sqs_queue" "ses_queue" {
   name                      = "${lower(var.type)}_ses_queue"
   message_retention_seconds = 1209600
   redrive_policy            = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.ses_dead_letter_queue.arn}\",\"maxReceiveCount\":4}"
+  kms_master_key_id         = "alias/aws/sqs"
 }
 resource "aws_sqs_queue" "ses_dead_letter_queue" {
   name = "ses_${lower(var.type)}_dead_letter_queue"
 }
 
 resource "aws_sns_topic" "ses_topic" {
-  name = "ses_${lower(var.type)}_topic"
+  name              = "ses_${lower(var.type)}_topic"
   kms_master_key_id = "alias/aws/sns"
 }
 
