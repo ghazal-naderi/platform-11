@@ -47,6 +47,7 @@ resource "aws_sqs_queue" "ses_queue" {
 }
 resource "aws_sqs_queue" "ses_dead_letter_queue" {
   name = "ses_${lower(var.type)}_dead_letter_queue"
+  kms_master_key_id         = "alias/aws/sqs"
 }
 
 resource "aws_sns_topic" "ses_topic" {

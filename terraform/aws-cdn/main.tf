@@ -6,6 +6,10 @@ variable "zone" {
   default = "dev.fakebank.com"
 }
 
+variable "project" {
+  default = "my"
+}
+
 variable "environment" {
   default = "int"
 }
@@ -20,6 +24,10 @@ provider aws {
 
 data "aws_route53_zone" "parent" {
   name = "${var.zone}."
+}
+
+data "aws_s3_bucket" "logs" {
+  bucket = "${var.project}-${var.environment}-logs"
 }
 
 resource "aws_route53_record" "assets" {
@@ -105,6 +113,13 @@ resource "aws_s3_bucket" "b" {
   tags = {
     Name        = "Assets bucket"
     Environment = "${var.environment}"
+  }
+   versioning {
+    enabled = true
+  }
+  logging {
+    target_bucket = data.aws_s3_bucket.logs.id
+    target_prefix = "log/cdn/"
   }
 }
 
