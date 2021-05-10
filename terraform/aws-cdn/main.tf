@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+provider "aws" {}
 variable "subdomain" {
   default = "assets"
 }
@@ -16,10 +18,6 @@ variable "environment" {
 
 variable "bucket" {
   default = "assets.int"
-}
-
-provider aws {
-  region = "us-east-1"
 }
 
 data "aws_route53_zone" "parent" {
