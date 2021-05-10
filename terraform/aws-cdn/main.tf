@@ -119,7 +119,7 @@ resource "aws_s3_bucket" "b" {
     enabled = true
   }
   logging {
-    target_bucket = data.aws_s3_bucket.logs.id
+    target_bucket = aws_s3_bucket.logs.id
     target_prefix = "log/cdn/"
   }
 }
