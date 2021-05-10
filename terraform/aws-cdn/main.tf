@@ -26,8 +26,9 @@ data "aws_route53_zone" "parent" {
   name = "${var.zone}."
 }
 
-data "aws_s3_bucket" "logs" {
+resource "aws_s3_bucket" "logs" {
   bucket = "${var.project}-${var.environment}-logs"
+  acl    = "log-delivery-write"
 }
 
 resource "aws_route53_record" "assets" {
