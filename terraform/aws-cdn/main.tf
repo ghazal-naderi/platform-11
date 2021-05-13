@@ -1,5 +1,11 @@
 data "aws_region" "current" {}
 provider "aws" {}
+
+provider "aws" {
+  alias = "useast"
+  region = "us-east-1"
+}
+
 variable "subdomain" {
   default = "assets"
 }
@@ -43,12 +49,14 @@ resource "aws_route53_record" "assets" {
 resource "aws_acm_certificate_validation" "cert" {
   for_each = {
   }
+  provider = aws.useast
   certificate_arn         = aws_acm_certificate.cert.arn
   validation_record_fqdns = [aws_route53_record.cert_validation[each.key].fqdn]
 }
 
 resource "aws_acm_certificate" "cert" {
   domain_name       = "${var.subdomain}.${var.environment}.${var.zone}"
+  provider = aws.useast
   validation_method = "DNS"
 
   tags = {
