@@ -9,7 +9,7 @@ The prometheus blackbox exporter enables active monitoring of internal/external 
 - To raise alerts on failure, create an alerting rule as follows with customization as appropriate:
 ```
 apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRules 
+kind: PrometheusRule
 metadata:
   name: prometheus-blackbox-exporter
   labels:
