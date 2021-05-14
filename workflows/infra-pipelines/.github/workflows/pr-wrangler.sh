@@ -83,14 +83,17 @@ IN_PR_CHANGELOG=$(octocam -o "${IN_PR_ORG}" -r "${IN_PR_APP}" -f "${AFTER_PREV_C
 IN_PR_CHANGELOG="# \`${IN_PR_APP}:${IN_PR_VERSION}\`
 ## Changelog
 ${IN_PR_CHANGELOG}"
-hub push -f -u origin "release-${OUT_PR_ENV}/${IN_PR_APP}"
 
-# Finally, raise a PR for stage or adjust the current one if it already exists
-if [[ "${FIRST_RUN}" == "true" ]]; then
-  if [[ -n "${OUT_PR_NUMBER}" ]]; then # we have a PR open, add to it
-     hub api "repos/${GITHUB_REPO}/pulls/${OUT_PR_NUMBER}" -X PATCH --field title="Staged release of ${IN_PR_APP}:${IN_PR_VERSION} from ${IN_PR_ENV} to ${OUT_PR_ENV}" # update PR title with new version
-     hub api "repos/${GITHUB_REPO}/issues/${OUT_PR_NUMBER}/comments" --field body="${IN_PR_CHANGELOG}" # update via comments
-  else # create a PR
-     hub pull-request -p -b "${BASE_REF}" -m "Staged release of ${IN_PR_APP}:${IN_PR_VERSION} from ${IN_PR_ENV} to ${OUT_PR_ENV}" -m "${IN_PR_CHANGELOG}" -l "release/${OUT_PR_ENV}"
+if hub push -f -u origin "release-${OUT_PR_ENV}/${IN_PR_APP}"; then
+  # Finally, raise a PR for stage or adjust the current one if it already exists
+  if [[ "${FIRST_RUN}" == "true" ]]; then
+    if [[ -n "${OUT_PR_NUMBER}" ]]; then # we have a PR open, add to it
+       hub api "repos/${GITHUB_REPO}/pulls/${OUT_PR_NUMBER}" -X PATCH --field title="Staged release of ${IN_PR_APP}:${IN_PR_VERSION} from ${IN_PR_ENV} to ${OUT_PR_ENV}" # update PR title with new version
+       hub api "repos/${GITHUB_REPO}/issues/${OUT_PR_NUMBER}/comments" --field body="${IN_PR_CHANGELOG}" # update via comments
+    else # create a PR
+       hub pull-request -p -b "${BASE_REF}" -m "Staged release of ${IN_PR_APP}:${IN_PR_VERSION} from ${IN_PR_ENV} to ${OUT_PR_ENV}" -m "${IN_PR_CHANGELOG}" -l "release/${OUT_PR_ENV}"
+    fi
   fi
+else
+echo "no updates required!"
 fi
