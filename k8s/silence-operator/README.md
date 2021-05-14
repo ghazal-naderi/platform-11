@@ -2,7 +2,10 @@
 # silence-operator
 
 This is a copy of `silence-operator` from [https://github.com/giantswarm/silence-operator/tree/master/helm/silence-operator]
+It includes the `Silence` CRD from [giantswarm/apiextensions/monitoring.giantswarm.io_silences.yaml](https://github.com/giantswarm/apiextensions/blob/master/config/crd/monitoring.giantswarm.io_silences.yaml)
 The silence-operator manages [alertmanager](https://github.com/prometheus/alertmanager) alerts.
+
+When importing via manifests, make sure to use `release: silence-operator`
 
 ## Overview
 
