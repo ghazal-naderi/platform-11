@@ -28,39 +28,3 @@ spec:
             requests:
               storage: 10Gi
           storageClassName: stable
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: elasticsearch
-  namespace: eck
-  annotations:
-    kubernetes.io/ingress.class: "nginx-external"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-spec:
-  tls:
-  - hosts:
-    - elasticsearch.example.com
-    secretName: elasticsearch-tls-secret
-  rules:
-  - host: elasticsearch.example.com
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: elasticsearch-es-http
-          servicePort: 9200
----
-apiVersion: cert-manager.io/v1alpha2
-kind: Certificate
-metadata:
-  name: elasticsearch
-  namespace: eck
-spec:
-  secretName: elasticsearch-tls-secret
-  issuerRef:
-    name: letsencrypt-prod
-    kind: ClusterIssuer
-  commonName: elasticsearch.example.com
-  dnsNames:
-  - elasticsearch.example.com
