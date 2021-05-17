@@ -1,3 +1,4 @@
+data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 provider "aws" {}
 
@@ -112,6 +113,29 @@ resource "aws_s3_bucket_public_access_block" "b" {
   restrict_public_buckets = true
 }
 
+resource "aws_kms_key" "cnd-key" {
+  description             = "This key is used to encrypt the b  bucket"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+  policy                  = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Enable IAM User Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        ]
+      },
+      "Action": "kms:*",
+      "Resource": "*"
+    }
+  ]
+}
+POLICY
+}
 resource "aws_s3_bucket" "b" {
   bucket        = "${var.bucket}.${var.zone}"
   acl           = "private"
@@ -127,6 +151,14 @@ resource "aws_s3_bucket" "b" {
   logging {
     target_bucket = aws_s3_bucket.logs.id
     target_prefix = "log/cdn/"
+  }
+ server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.cnd-key.arn
+        sse_algorithm     = "aws:kms"
+      }
+    }
   }
 }
 
