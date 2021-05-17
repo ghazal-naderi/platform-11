@@ -10,12 +10,12 @@ resource "aws_ses_domain_identity" "myid" {
   domain = var.domain
 }
 
-resource "aws_route53_zone" "myid" {
-  name = var.domain
+data "aws_route53_zone" "myid" {
+  name         = var.domain
 }
 
 resource "aws_route53_record" "myid_amazonses_verification_record" {
-  zone_id = aws_route53_zone.myid.zone_id
+  zone_id = data.aws_route53_zone.myid.zone_id
   name    = "_amazonses.${aws_ses_domain_identity.myid.id}"
   type    = "TXT"
   ttl     = "600"
