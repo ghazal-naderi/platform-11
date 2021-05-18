@@ -61,9 +61,13 @@ resource "aws_sns_topic_subscription" "ses_subscription" {
   endpoint  = aws_sqs_queue.ses_queue.arn
 }
 
+resource "aws_ses_domain_identity" "ses_topic" {
+  domain = var.domain
+}
+
 resource "aws_ses_identity_notification_topic" "ses" {
   topic_arn                = aws_sns_topic.ses_topic.arn
   notification_type        = var.type
-  identity                 = var.domain
+  identity                 = aws_ses_domain_identity.ses_topic.domain
   include_original_headers = true
 }
