@@ -1,3 +1,4 @@
+data "aws_caller_identity" "current" {}
 variable "type" { default = "Bounce" }
 variable "domain" { default = "11fs-structs.com" }
 variable "lambda" {}
@@ -46,13 +47,64 @@ resource "aws_sqs_queue" "ses_queue" {
   kms_master_key_id         = "alias/aws/sqs"
 }
 resource "aws_sqs_queue" "ses_dead_letter_queue" {
-  name = "ses_${lower(var.type)}_dead_letter_queue"
-  kms_master_key_id         = "alias/aws/sqs"
+  name              = "ses_${lower(var.type)}_dead_letter_queue"
+  kms_master_key_id = "alias/aws/sqs"
 }
 
 resource "aws_sns_topic" "ses_topic" {
   name              = "ses_${lower(var.type)}_topic"
-  kms_master_key_id = "alias/aws/sns"
+  kms_master_key_id = aws_kms_key.sns_topic_key.key_id
+}
+
+resource "aws_kms_key" "sns_topic_key" {
+  description             = "This key is used to encrypt the audit bucket"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+  policy                   = data.aws_iam_policy_document.sns_topic_key_document.json
+}
+
+  data "aws_iam_policy_document" "sns_topic_key_document" {
+    version = "2012-10-17"
+    statement {
+      sid    = "Allow access through SNS for all principals in the account that are authorized to use SNS"
+      effect = "Allow"
+      principals {
+        type        = "AWS"
+        identifiers = ["*"]
+      }
+      actions   = ["kms:*"]
+      resources = ["*"]
+      condition {
+        test     = "StringEquals"
+        variable = "kms:ViaService"
+        values   = ["arn:aws:cloudtrail:*:XXXXXXXXXXXX:trail/*"]
+      }
+      condition {
+        test     = "StringEquals"
+        variable = "kms:CallerAccount"
+        values   = ["arn:aws:cloudtrail:*:XXXXXXXXXXXX:trail/*"]
+      }
+    }
+    statement {
+      sid    = "Allow direct access to key metadata to the account"
+      effect = "Allow"
+      principals {
+        type        = "AWS"
+        identifiers = ["*"]
+      }
+      actions   = ["kms:*"]
+      resources = ["*"]
+    }
+    statement {
+      sid    = "AllowSESToUseKMSKey"
+      effect = "Allow"
+      principals {
+        type        = "Service"
+        identifiers = ["ses.amazonaws.com"]
+      }
+      actions   = ["kms:GenerateDataKey", "kms:Decrypt"]
+      resources = ["*"]
+    }
 }
 
 resource "aws_sns_topic_subscription" "ses_subscription" {
