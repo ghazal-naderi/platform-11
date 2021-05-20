@@ -6,16 +6,24 @@ variable "domain" {
   default = "fakebank.com"
 }
 
+variable "manual_domain_verification" {
+  description = "If set to false,do not create aws_route53_zone and verificate domain manually"
+  type        = bool
+  default = false
+}
+
 resource "aws_ses_domain_identity" "myid" {
   domain = var.domain
 }
 
 data "aws_route53_zone" "myid" {
   name         = var.domain
+  count = var.manual_domain_verification ? 1 : 0  
 }
 
 resource "aws_route53_record" "myid_amazonses_verification_record" {
-  zone_id = data.aws_route53_zone.myid.zone_id
+  count = var.manual_domain_verification ? 1 : 0
+  zone_id = data.aws_route53_zone.myid[count.index].zone_id
   name    = "_amazonses.${aws_ses_domain_identity.myid.id}"
   type    = "TXT"
   ttl     = "600"
@@ -24,6 +32,7 @@ resource "aws_route53_record" "myid_amazonses_verification_record" {
 
 resource "aws_ses_domain_identity_verification" "myid_verification" {
   domain = var.domain
+  count = var.manual_domain_verification ? 1 : 0
 
   depends_on = [aws_route53_record.myid_amazonses_verification_record]
 }
