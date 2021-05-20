@@ -1,5 +1,6 @@
 ---
 resources:
 - crd.yaml
+- service.yaml
 - silence-operator.yaml
 namespace: monitoring

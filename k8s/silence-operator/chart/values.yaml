@@ -1,6 +1,6 @@
 image:
   name: "giantswarm/silence-operator"
-  tag: v0.1.5 
+  tag: "0.1.5"
 pod:
   user:
     id: 1000
