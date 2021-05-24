@@ -31,8 +31,8 @@ data "aws_route53_zone" "parent" {
   name = "${var.zone}."
 }
 
-resource "aws_s3_bucket" "logs" {
-  bucket = "${var.project}-${var.environment}-logs"
+resource "aws_s3_bucket" "cdnlogs" {
+  bucket = "${var.project}-${var.environment}-cdnlogs"
   acl    = "log-delivery-write"
   versioning {
     enabled = true
@@ -160,7 +160,7 @@ resource "aws_s3_bucket" "b" {
     enabled = true
   }
   logging {
-    target_bucket = aws_s3_bucket.logs.id
+    target_bucket = aws_s3_bucket.cdnlogs.id
     target_prefix = "log/cdn/"
   }
  server_side_encryption_configuration {
