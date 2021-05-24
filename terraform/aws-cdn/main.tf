@@ -34,6 +34,17 @@ data "aws_route53_zone" "parent" {
 resource "aws_s3_bucket" "logs" {
   bucket = "${var.project}-${var.environment}-logs"
   acl    = "log-delivery-write"
+  versioning {
+    enabled = true
+  }
+ server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.cnd-key.arn
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
 }
 
 resource "aws_route53_record" "assets" {
