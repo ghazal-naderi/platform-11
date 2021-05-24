@@ -186,6 +186,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
     }
   }
+  logging_config {
+    include_cookies = false
+    bucket          = "${var.project}-${var.environment}-logs.s3.amazonaws.com"
+    prefix          = "cdn_s3_distribution"
+  }
 
   restrictions {
     geo_restriction {
