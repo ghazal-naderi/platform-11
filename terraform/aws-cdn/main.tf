@@ -31,20 +31,8 @@ data "aws_route53_zone" "parent" {
   name = "${var.zone}."
 }
 
-resource "aws_s3_bucket" "cdnlogs" {
-  bucket = "${var.project}-${var.environment}-cdnlogs"
-  acl    = "log-delivery-write"
-  versioning {
-    enabled = true
-  }
- server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.cnd-key.arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
+data "aws_s3_bucket" "logs" {
+  bucket = "${var.project}-${var.environment}-logs"
 }
 
 resource "aws_route53_record" "assets" {
@@ -160,7 +148,7 @@ resource "aws_s3_bucket" "b" {
     enabled = true
   }
   logging {
-    target_bucket = aws_s3_bucket.cdnlogs.id
+    target_bucket = data.aws_s3_bucket.logs.id
     target_prefix = "log/cdn/"
   }
  server_side_encryption_configuration {
@@ -188,7 +176,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
   logging_config {
     include_cookies = false
-    bucket          = "${var.project}-${var.environment}-cdnlogs.s3.amazonaws.com"
+    bucket          = "${var.project}-${var.environment}-logs.s3.amazonaws.com"
     prefix          = "cdn_s3_distribution"
   }
 
