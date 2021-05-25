@@ -9,10 +9,7 @@ pod:
 project:
   branch: "master"
   commit: "abcd"
-
-sync:
-  repository: github.com/giantswarm/silences
-
+  
 initContainer:
   name: "giantswarm/alpinegit"
   tag: "v2.26.2-giantswarm"
