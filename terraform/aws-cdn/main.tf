@@ -34,6 +34,17 @@ data "aws_route53_zone" "parent" {
 resource "aws_s3_bucket" "logs" {
   bucket = "${var.project}-${var.environment}-logs"
   acl    = "log-delivery-write"
+  versioning {
+    enabled = true
+  }
+ server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.cnd-key.arn
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
 }
 resource "aws_route53_record" "assets" {
   zone_id = data.aws_route53_zone.parent.zone_id
@@ -130,6 +141,17 @@ resource "aws_kms_key" "cnd-key" {
       },
       "Action": "kms:*",
       "Resource": "*"
+    },
+    {
+      "Sid": "Enable Access to the key for cloudfront service",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "cloudfront.amazonaws.com"
+        ]
+      },
+      "Action": "kms:*",
+      "Resource": "*"
     }
   ]
 }
@@ -146,6 +168,10 @@ resource "aws_s3_bucket" "b" {
   }
    versioning {
     enabled = true
+  }
+  logging {
+    target_bucket = aws_s3_bucket.logs.id
+    target_prefix = "log/cdn/"
   }
  server_side_encryption_configuration {
     rule {
