@@ -93,6 +93,12 @@ local kp =
         prometheus+: {
             spec+: {
                 externalUrl: 'http://prometheus.example.com',
+                podMonitorNamespaceSelector: {},
+                podMonitorSelector: {},
+                serviceMonitorNamespaceSelector: {},
+                serviceMonitorSelector: {},
+                probeNamespaceSelector: {},
+                probeSelector: {},
             },
         },
         serviceMonitorElasticsearch: {	
