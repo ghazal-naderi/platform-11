@@ -31,7 +31,7 @@ data "aws_route53_zone" "parent" {
   name = "${var.zone}."
 }
 
-resource "aws_s3_bucket" "dcn-logs" {
+resource "aws_s3_bucket" "cdn-logs" {
   bucket = "${var.project}-${var.environment}-cdn-logs"
   acl    = "log-delivery-write"
   versioning {
