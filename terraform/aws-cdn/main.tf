@@ -31,8 +31,19 @@ data "aws_route53_zone" "parent" {
   name = "${var.zone}."
 }
 
-data "aws_s3_bucket" "logs" {
-  bucket = "${var.project}-${var.environment}-logs"
+resource "aws_s3_bucket" "dcn-logs" {
+  bucket = "${var.project}-${var.environment}-cdn-logs"
+  acl    = "log-delivery-write"
+  versioning {
+    enabled = true
+  }
+ server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm     = "AES256"
+      }
+    }
+  }
 }
 
 resource "aws_route53_record" "assets" {
@@ -159,7 +170,7 @@ resource "aws_s3_bucket" "b" {
     enabled = true
   }
   logging {
-    target_bucket = data.aws_s3_bucket.logs.id
+    target_bucket = aws_s3_bucket.cdn-logs.id
     target_prefix = "log/cdn/"
   }
  server_side_encryption_configuration {
