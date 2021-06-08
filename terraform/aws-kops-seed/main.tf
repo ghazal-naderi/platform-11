@@ -61,6 +61,7 @@ resource "aws_iam_user_policy_attachment" "kops-bucket" {
 resource "aws_kms_key" "bucketenckey" {
   description             = "This key is used to encrypt bucket objects"
   deletion_window_in_days = 10
+  enable_key_rotation     = true
 }
 
 resource "aws_s3_bucket_public_access_block" "bucket-bolock" {

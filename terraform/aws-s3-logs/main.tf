@@ -54,6 +54,7 @@ POLICY
 resource "aws_kms_key" "logs" {
   description             = "This key is used to encrypt the logs bucket for ${var.project}/${var.environment}"
   deletion_window_in_days = 30
+  enable_key_rotation     = true
 }
 
 resource "aws_s3_bucket_public_access_block" "logs-block" {
