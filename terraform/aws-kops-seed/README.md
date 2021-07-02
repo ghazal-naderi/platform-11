@@ -64,7 +64,6 @@ For networking observability, we should add (requires latest `kops`):
         - port-distribution
         - tcp
       preallocateBPFMaps: true
-      version: v1.8.8
       enablePrometheusMetrics: true
 ```
 For metrics monitoring, we should edit in order to add:
@@ -100,6 +99,21 @@ For RBAC and Istio, we should add:
     oidcIssuerURL: https://dex.<cluster url>
     oidcUsernameClaim: email
 ```
+##### Self-provisioned cert-manager
+{{ kops_feature_table(kops_added_default='1.20.2', k8s_min='1.16') }}
+The following cert-manager configuration allows provisioning cert-manager externally and allows all dependent plugins
+to be deployed. Please note that addons might run into errors until cert-manager is deployed.
+```yaml
+spec:
+  certManager:
+    enabled: true
+    managed: false
+```
+
+
+Read more about cert-manager in the [official documentation](https://cert-manager.io/docs/)
+
+
 For easier debugging, we should add:
 ```
 kubelet:
@@ -247,6 +261,21 @@ If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should
         }
       ]
 ```
+
+### The extra policies
+
+For aws-load-balancer-controller to run properly, kops needs extra policies to be attached to the cluster. The policy has been created via terraform (AWSLoadBalancerControllerIAMPolicy) and the arn can be find via aws console.
+
+Noe edit the cluster `kops edit cluster` and attach the policy like so: 
+
+```
+spec:
+  externalPolicies:
+    node:
+    - aws:arn:iam:123456789000:policy:test-policy
+```
+
+
 
 Notes:
 1. This is the KMS key used to encrypt/decrypt objects in your kops S3 bucket, to retrieve it from the Terraform `aws-kops-seed` state use the command `terraform show -json | jq -r '.values.root_module.child_modules|.[].resources|.[]|select(.address=="aws_kms_key.bucketenckey")|.values.arn'`
