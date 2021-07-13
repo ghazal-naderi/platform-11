@@ -29,6 +29,13 @@ rules:
   resources: ["endpoints"]
   resourceNames: ["cluster-autoscaler"]
   verbs: ["get","update"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["create"]
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  resourceNames: ["cluster-autoscaler"]
+  verbs: ["get","update"]
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["watch","list","get","update"]
@@ -45,7 +52,7 @@ rules:
   resources: ["statefulsets","replicasets","daemonsets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
-  resources: ["storageclasses"]
+  resources: ["storageclasses","csinodes"]
   verbs: ["watch","list","get"]
 - apiGroups: ["batch"]
   resources: ["jobs"]
@@ -135,7 +142,7 @@ spec:
         kubernetes.io/role: master
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: us.gcr.io/k8s-artifacts-prod/autoscaling/cluster-autoscaler:v1.15.6
+        - image: k8s.gcr.io/autoscaling/cluster-autoscaler:v1.19.1
           name: cluster-autoscaler
           livenessProbe:
             httpGet:
