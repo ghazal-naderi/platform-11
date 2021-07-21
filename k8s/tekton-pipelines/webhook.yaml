@@ -34,7 +34,7 @@ spec:
     - ref: infra-cd
       kind: TriggerBinding
     template:
-      name: terraform-cd
+      ref: terraform-cd
   - name: kops-cd
     interceptors:
     - github:
@@ -52,7 +52,7 @@ spec:
     - ref: infra-cd
       kind: TriggerBinding
     template:
-      name: kops-cd
+      ref: kops-cd
   - name: infra-cd
     interceptors:
     - github:
@@ -70,7 +70,7 @@ spec:
     - ref: infra-cd
       kind: TriggerBinding
     template:
-      name: infra-cd
+      ref: infra-cd
 ---
 apiVersion: tekton.dev/v1beta1
 kind: TaskRun

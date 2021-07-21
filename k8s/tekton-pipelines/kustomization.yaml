@@ -2,10 +2,11 @@
 namespace: tekton-pipelines
 resources:
 - pipelines.yaml
-- dashboard.yaml
 - triggers.yaml
-- rbac.yaml
+- dashboard.yaml
+- interceptors.yaml
 - dashboard-ingress.yaml
+- rbac.yaml
 - webhook.yaml
 - pipeline-kustomize.yaml 
 - pipeline-kops.yaml
@@ -13,3 +14,5 @@ resources:
 - git-clone.yaml
 - tekton-cleaner.yaml
 - servicemonitor.yaml
+patchesStrategicMerge:
+- rbac-overlay.yaml

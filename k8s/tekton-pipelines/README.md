@@ -2,18 +2,19 @@
 ## introduction
 This struct provides the core of our CI/CD pipeline for Kubernetes - it includes all the CRDs and code necessary to automatically render and deploy Terraform HCL, Kops YAML and Kustomize YAML to Kubernetes clusters and clouds.
 ## updates
-*pipeline:* `v0.16.2`
-*triggers:* `v0.8.1`
-*dashboard:* `v0.9.0` with `read-only=true` and `namespace=tekton-pipelines` as container parameters
-*git-clone:* `0.2-88bc2b5`
+*pipeline:* `v0.26.0`
+*triggers:* `v0.15.0`
+*dashboard:* `v0.18.1`, `read only` version with `--namespace=tekton-pipelines`
+*git-clone:* `0.4-d517969`
 
 To update this struct, simply:
 ```
 curl -Lo pipelines.yaml https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-curl -Lo triggers.yaml https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
-curl -Lo dashboard.yaml https://storage.googleapis.com/tekton-releases/dashboard/latest/tekton-dashboard-release.yaml
-sed -i dashboard.yaml -e 's/--read-only=false/--read-only=true/' -e 's/--namespace=/--namespace=tekton-pipelines/'
-curl -Lo git-clone.yaml https://raw.githubusercontent.com/tektoncd/catalog/master/task/git-clone/0.2/git-clone.yaml
+curl -Lo triggers.yaml https://storage.googleapis.com/tekton-releases/triggers/previous/v0.15.0/release.yaml
+curl -Lo interceptors.yaml https://storage.googleapis.com/tekton-releases/triggers/previous/v0.15.0/interceptors.yaml
+curl -Lo dashboard.yaml https://storage.googleapis.com/tekton-releases/dashboard/latest/tekton-dashboard-release-readonly.yaml
+sed -i dashboard.yaml -e 's/--namespace=/--namespace=tekton-pipelines/'
+curl -Lo git-clone.yaml https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.4/git-clone.yaml 
 ```
 
 Though please be sure to update the versions above!
