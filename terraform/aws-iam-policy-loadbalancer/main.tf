@@ -206,6 +206,16 @@ resource "aws_iam_policy" "AWSLoadBalancerControllerIAMPolicy" {
                 "elasticloadbalancing:ModifyRule"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "awspcaissuer",
+            "Action": [
+                "acm-pca:DescribeCertificateAuthority",
+                "acm-pca:GetCertificate",
+                "acm-pca:IssueCertificate"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:acm-pca:*:*:certificate-authority/*"
         }
     ]
 }
