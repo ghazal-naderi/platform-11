@@ -38,7 +38,7 @@ service:
 approverRole:
   enabled: true
   serviceAccountName: cert-manager
-  namespace: cert-manager
+  namespace: kube-system
 
 serviceMonitor:
   create: true
