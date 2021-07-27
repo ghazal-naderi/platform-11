@@ -4,3 +4,4 @@ kind: Kustomization
 namespace: kube-system
 resources:
     - aws-privateca-issuer.yaml
+    - extra.rbca.yaml 
