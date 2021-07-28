@@ -4,4 +4,5 @@ kind: Kustomization
 namespace: kube-system
 resources:
     - aws-privateca-issuer.yaml
-    - extra.rbca.yaml 
+    - chart/crds/awspca.cert-manager.io_awspcaclusterissuers.yaml
+    - chart/crds/awspca.cert-manager.io_awspcaissuers.yaml
