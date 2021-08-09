@@ -46,6 +46,15 @@ resource "aws_s3_bucket" "cdn-logs" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "cdn-logs-block" {
+  bucket = aws_s3_bucket.cdn-logs.id
+
+  restrict_public_buckets = true
+  ignore_public_acls      = true
+  block_public_acls       = true
+  block_public_policy     = true
+}
+
 resource "aws_route53_record" "assets" {
   zone_id = data.aws_route53_zone.parent.zone_id
   name    = "${var.subdomain}.${var.environment}.${var.zone}"
