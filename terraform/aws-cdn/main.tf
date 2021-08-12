@@ -206,7 +206,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
   logging_config {
     include_cookies = false
-    bucket          = "${var.project}-${var.environment}-logs.s3.amazonaws.com"
+    bucket          = "${var.project}-${var.environment}-cdn-logs.s3.amazonaws.com"
     prefix          = "cdn_s3_distribution"
   }
 
