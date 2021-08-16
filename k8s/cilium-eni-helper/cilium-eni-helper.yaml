@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sync-ciliumnodes
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sync-ciliumnodes
+rules:
+  - apiGroups: ["cilium.io"]
+    resources: ["ciliumnodes"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sync-ciliumnodes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sync-ciliumnodes
+subjects:
+  - name: sync-ciliumnodes
+    namespace: kube-system
+    kind: ServiceAccount
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: sync-ciliumnodes
+  namespace: kube-system
+spec:
+  schedule: "*/2 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 500
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          serviceAccountName: sync-ciliumnodes
+          containers:
+            - name: infra-tester
+              command: ["/bin/ash"]
+              image: "140554600707.dkr.ecr.eu-west-2.amazonaws.com/platform/infra-tester:latest"
+              args: ["-c", "cilium_nodes=$(kubectl get ciliumnode -oname); for node in $cilium_nodes; do kubectl patch $node --patch '{\"spec\": {\"eni\": { \"first-interface-index\": 0 } } }' --type=merge; done"]
