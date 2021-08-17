@@ -216,6 +216,26 @@ resource "aws_iam_policy" "AWSLoadBalancerControllerIAMPolicy" {
             ],
             "Effect": "Allow",
             "Resource": "arn:aws:acm-pca:*:*:certificate-authority/*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+            "events:DeleteRule",
+            "events:ListRules",
+            "events:ListTargetsByRule",
+            "events:ListTagsForResource",
+            "events:PutEvents",
+            "events:PutRule",
+            "events:PutTargets",
+            "events:RemoveTargets",
+            "events:TagResource",
+            "sqs:CreateQueue",
+            "sqs:DeleteQueue",
+            "sqs:GetQueueAttributes",
+            "sqs:ListQueues",
+            "sqs:ListQueueTags"
+          ],
+          "Resource": "*"
         }
     ]
 }
