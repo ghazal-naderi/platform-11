@@ -1,7 +1,9 @@
----
-kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
 metadata:
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
   name: tekton-triggers-admin
   namespace: tekton-pipelines
 rules:
@@ -19,8 +21,11 @@ rules:
   - eventlisteners
   - triggerbindings
   - triggertemplates
+  - triggers
   verbs:
   - get
+  - watch
+  - list
 - apiGroups:
   - tekton.dev
   resources:

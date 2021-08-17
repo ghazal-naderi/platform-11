@@ -142,14 +142,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: infra-cd
-  annotations:
-    kubernetes.io/ingress.class: nginx-external
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
-  tls:
-  - hosts:
-    - infra-updater.sandbox.11fs-structs.com
-    secretName: infra-cd-tls
   rules:
   - host: infra-updater.sandbox.11fs-structs.com
     http:

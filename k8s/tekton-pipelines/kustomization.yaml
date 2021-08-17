@@ -7,6 +7,7 @@ resources:
 - interceptors.yaml
 - dashboard-ingress.yaml
 - rbac.yaml
+- rbac-extra.yaml
 - webhook.yaml
 - pipeline-kustomize.yaml 
 - pipeline-kops.yaml
