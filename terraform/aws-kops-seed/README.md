@@ -53,6 +53,10 @@ For networking observability, we should add (requires latest `kops`):
 ```
   networking:
     cilium:
+      ipam: eni
+      disableMasquerade: true
+      enableNodePort: true
+      enablePrometheusMetrics: true
       hubble:
         enabled: true
         metrics:
@@ -64,7 +68,6 @@ For networking observability, we should add (requires latest `kops`):
         - port-distribution
         - tcp
       preallocateBPFMaps: true
-      enablePrometheusMetrics: true
 ```
 For metrics monitoring, we should edit in order to add:
 ```
@@ -99,8 +102,29 @@ For RBAC and Istio, we should add:
     oidcIssuerURL: https://dex.<cluster url>
     oidcUsernameClaim: email
 ```
-##### Self-provisioned cert-manager
-{{ kops_feature_table(kops_added_default='1.20.2', k8s_min='1.16') }}
+
+### AWS load-balancer-controller
+Add to kops cluster config:
+```
+spec:
+  awsLoadBalancerController:
+    enabled: true
+```
+
+For aws-load-balancer-controller to run properly, kops needs extra policies to be attached to the cluster. The policy has been created via terraform (AWSLoadBalancerControllerIAMPolicy) and the arn can be find via aws console.
+
+Now edit the cluster `kops edit cluster` and attach the policy like so: 
+
+```
+spec:
+  externalPolicies:
+    master:
+    - aws:arn:iam:123456789000:policy:test-policy
+```
+
+#### cert-manager
+cert-manager is not compatible with `aws-load-balancer-controller` - instead, you should use AWS ACM certificates generated via the Terraform module `aws-acm-certificate`.
+
 The following cert-manager configuration allows provisioning cert-manager externally and allows all dependent plugins
 to be deployed. Please note that addons might run into errors until cert-manager is deployed.
 ```yaml
@@ -124,12 +148,30 @@ kubeAPIServer:
     EphemeralContainers: "true"
 ```
 
+### Node termination handler
+
+Node Termination Handler ensures that the Kubernetes control plane responds appropriately to events that can cause your EC2 instance to become unavailable, such as EC2 maintenance events, EC2 Spot interruptions, and EC2 instance rebalance recommendations. If not handled, your application code may not stop gracefully, take longer to recover full availability, or accidentally schedule work to nodes that are going down.
+
+```
+spec:
+  nodeTerminationHandler:
+    enabled: true
+    enableSQSTerminationDraining: true
+    managedASGTag: "aws-node-termination-handler/managed"
+```
+
+### EBS CSI driver
+
+If you are running a cluster on AWS, you can enable the EBS CSI driver by adding the following:
+
+```
+spec:
+  cloudConfig:
+    awsEBSCSIDriver:
+      enabled: true
+```
+
 If you are using an encrypted S3 bucket, like the one in `kops-seed`, you should make sure to add `additionalPolicies` sufficient to give nodes and masters the ability to pull their configurations from the bucket and therefore to decrypt the contents. The policy to do so is below and can be applied via `kops edit cluster ${CLUSTER_NAME}`. Be sure to refer to the notes below on how to change the ARN values for your own infrastructure.
-
-Note: Queue Processor Mode
-{{ kops_feature_table(kops_added_default='1.21') }}
-
-If enableSQSTerminationDraining is true Node Termination Handler will operate in Queue Processor mode. In addition to the events mentioned above, Queue Processor mode allows Node Termination Handler to take care of ASG Scale-In, AZ-Rebalance, Unhealthy Instances, EC2 Instance Termination via the API or Console, and more. kOps will provision the necessary infrastructure: an SQS queue, EventBridge rules, and ASG Lifecycle hooks. managedASGTag can be configured with Queue Processor mode to distinguish resource ownership between multiple clusters.
 
 The kOps CLI requires additional IAM permissions to manage the requisite EventBridge rules and SQS queue:
 Which been added to the `additionalPolicies` 
@@ -288,58 +330,6 @@ Which been added to the `additionalPolicies`
         }
       ]
 ```
-
-### The extra policies
-
-For aws-load-balancer-controller to run properly, kops needs extra policies to be attached to the cluster. The policy has been created via terraform (AWSLoadBalancerControllerIAMPolicy) and the arn can be find via aws console.
-
-Noe edit the cluster `kops edit cluster` and attach the policy like so: 
-
-```
-spec:
-  externalPolicies:
-    node:
-    - aws:arn:iam:123456789000:policy:test-policy
-```
-### Node termination handler
-
-{{ kops_feature_table(kops_added_default='1.19') }}
-
-Node Termination Handler ensures that the Kubernetes control plane responds appropriately to events that can cause your EC2 instance to become unavailable, such as EC2 maintenance events, EC2 Spot interruptions, and EC2 instance rebalance recommendations. If not handled, your application code may not stop gracefully, take longer to recover full availability, or accidentally schedule work to nodes that are going down.
-
-```
-spec:
-  nodeTerminationHandler:
-    enabled: true
-    enableSQSTerminationDraining: true
-    managedASGTag: "aws-node-termination-handler/managed"
-```
-
-###Snapshot controller
-
-{{ kops_feature_table(kops_added_default='1.21', k8s_min='1.20') }}
-
-Snapshot controller implements the volume snapshot features of the Container Storage Interface (CSI).
-
-You can enable the snapshot controller by adding the following to the cluster spec:
-
-```
-spec:
-  snapshotController:
-    enabled: true
-```
-
-Note that the in-tree volume drivers do not support this feature. If you are running a cluster on AWS, you can enable the EBS CSI driver by adding the following:
-
-```
-spec:
-  cloudConfig:
-    awsEBSCSIDriver:
-      enabled: true
-
-```
-
-
 
 Notes:
 1. This is the KMS key used to encrypt/decrypt objects in your kops S3 bucket, to retrieve it from the Terraform `aws-kops-seed` state use the command `terraform show -json | jq -r '.values.root_module.child_modules|.[].resources|.[]|select(.address=="aws_kms_key.bucketenckey")|.values.arn'`
