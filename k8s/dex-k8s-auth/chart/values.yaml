@@ -3,7 +3,7 @@ global:
 replicaCount: 1
 image:
   repository: mintel/dex-k8s-authenticator
-  tag: 1.2.0
+  tag: 1.4.0
   pullPolicy: Always
 dexK8sAuthenticator:
   port: 5555

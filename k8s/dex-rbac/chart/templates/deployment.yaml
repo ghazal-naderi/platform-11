@@ -62,6 +62,10 @@ spec:
               name: {{ template "dex.fullname" $ }}
               key: {{ template "dex.envkey" $key }}
         {{- end }}
+        - name: KUBERNETES_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace  
         ports:
         - name: http
           containerPort: 5556
