@@ -1,4 +1,9 @@
 # Jaeger
+## intro
+[jaegertracing/jaeger-operator at v1.25.0](https://github.com/jaegertracing/jaeger-operator/tree/v1.25.0)
+## update
+Replace YAML files with those from `deploy/` directory from the updated version of the above repo. `crd.yaml` is the concatenated content of the `deploy/crd/` directory.
+
 ## install
 - In preparation, make sure that the `eck` and `kafka` structs are installed
 - Apply this struct to create the initial `namespace` and `operator` - it won't create the `Jaeger` until you apply it for a second time

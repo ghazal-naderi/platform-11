@@ -1,0 +1,39 @@
+---
+apiVersion: extensions/v1beta1 
+kind: Ingress
+metadata:
+  name: jaeger-ui
+  namespace: jaeger
+  annotations:
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: nginx-external
+    nginx.ingress.kubernetes.io/auth-url: "https://auth.mino-dev.enva.gen6bk.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.mino-dev.enva.gen6bk.com/oauth2/start?rd=https%3A%2F%2F$host$request_uri"
+spec:
+  tls:
+  - hosts:
+    - jaeger.mino-dev.enva.gen6bk.com
+    secretName: jaeger-ui-tls
+  rules:
+  - host: jaeger.mino-dev.enva.gen6bk.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: stream-query
+          servicePort: 16686
+
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: jaeger
+  namespace: jaeger
+spec:
+  secretName: jaeger-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: jaeger.mino-dev.enva.gen6bk.com
+  dnsNames:
+    - jaeger.mino-dev.enva.gen6bk.com
