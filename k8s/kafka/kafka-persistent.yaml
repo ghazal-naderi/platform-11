@@ -5,30 +5,30 @@ metadata:
   namespace: kafka
 spec:
   kafka:
-    version: 2.5.0
+    version: 2.7.1
     replicas: 3
     listeners:
-      tls: {}
+    - name: tls
+      port: 9093
+      type: internal
+      tls: true
     config:
       offsets.topic.replication.factor: 3
       transaction.state.log.replication.factor: 3
       transaction.state.log.min.isr: 2
-      log.message.format.version: "2.5"
+      log.message.format.version: 2.7
       auto.create.topics.enable: false
     storage:
-      type: jbod
       volumes:
-      - id: 0
-        type: persistent-claim
+      - type: persistent-claim
         size: 15Gi
-        deleteClaim: false
+        id: 0
+      type: jbod
   zookeeper:
     replicas: 3
     storage:
       type: persistent-claim
       size: 15Gi
-      deleteClaim: false
   entityOperator:
     topicOperator: {}
     userOperator: {}
-
