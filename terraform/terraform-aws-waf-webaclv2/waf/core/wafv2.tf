@@ -1,11 +1,3 @@
-provider "aws" {}
-
-
-variable "alb_arn" {
-  default = "arn:aws:elasticloadbalancing:us-east-1:140554600707:loadbalancer/app/k8s-albgroup-f322aa247c/dd682f122c9238e8"
-}
-
-
 #####
 # Web Application Firewall configuration
 #####
@@ -13,10 +5,8 @@ module "waf" {
   source = "../.."
 
   name_prefix = "test-waf-setup"
-  alb_arn     = var.alb_arn
 
   allow_default_action = true
-
   create_alb_association = false
 
   visibility_config = {
@@ -31,7 +21,7 @@ module "waf" {
       name     = "AWSManagedRulesCommonRuleSet-rule-1"
       priority = "1"
 
-      override_action = "none"
+      override_action = "count"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
@@ -68,34 +58,27 @@ module "waf" {
     },
     {
       # Uses an optional scope down statement to further refine what the rule is being applied to
-      name     = "AWSManagedRulesPHPRuleSet-rule-3"
+      name     = "AWSManagedRulesAmazonIpReputationList-rule-3"
       priority = "3"
 
-      override_action = "none"
+      override_action = "count"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
-        metric_name                = "AWSManagedRulesPHPRuleSet-metric"
+        metric_name                = "AWSManagedRulesAmazonIpReputationList-metric"
         sampled_requests_enabled   = false
       }
 
       managed_rule_group_statement = {
-        name        = "AWSManagedRulesPHPRuleSet"
+        name        = "AWSManagedRulesAmazonIpReputationList"
         vendor_name = "AWS"
-
-        # Optional scope_down_statement
-        scope_down_statement = {
-          geo_match_statement = {
-            country_codes = ["NL", "GB", "US"]
-          }
-        }
       }
     },
     {
       name     = "AWSManagedRulesBotControlRuleSet-rule-4"
       priority = "4"
 
-      override_action = "none"
+      override_action = "count"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
@@ -106,20 +89,6 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesBotControlRuleSet"
         vendor_name = "AWS"
-      }
-    },
-    {
-      name     = "block-nl-us-traffic"
-      priority = "5"
-      action   = "block"
-
-      geo_match_statement = {
-        country_codes = ["NL", "US"]
-      }
-
-      visibility_config = {
-        cloudwatch_metrics_enabled = false
-        sampled_requests_enabled   = false
       }
     }
   ]
