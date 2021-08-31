@@ -1,0 +1,5 @@
+resources:
+  - crd/sloth.slok.dev_prometheusservicelevels.yaml
+  - sloth-with-common-plugins.yaml
+  - grafana-dashboard.yaml
+namespace: monitoring
