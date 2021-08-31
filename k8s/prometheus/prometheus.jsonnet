@@ -9,29 +9,44 @@ local lokiDashboard = (import 'github.com/grafana/loki/production/loki-mixin/mix
 local lokiRules = (import 'github.com/grafana/loki/production/loki-mixin/mixin.libsonnet').prometheusRules;
 
 local kp =
-  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus.libsonnet') +
-  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-all-namespaces.libsonnet') +
-  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kops.libsonnet') +
-  (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kops-coredns.libsonnet') +
-  // or
-  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-kube-aws.libsonnet')
-  // Uncomment the following imports to enable its patches
-  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-anti-affinity.libsonnet') +
-  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-managed-cluster.libsonnet') +
-  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-node-ports.libsonnet') +
-  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-static-etcd.libsonnet') +
-  // (import 'github.com/coreos/kube-prometheus/jsonnet/kube-prometheus/kube-prometheus-thanos-sidecar.libsonnet') +
+  (import 'github.com/prometheus-operator/kube-prometheus/jsonnet/kube-prometheus/main.libsonnet') +
+  (import 'github.com/prometheus-operator/kube-prometheus/jsonnet/kube-prometheus/addons/all-namespaces.libsonnet') +
   {
-    _config+:: {
-      namespace: 'monitoring',
+    values+:: {
+      common+: {
+        namespace: 'monitoring',
+      },
       prometheus+:: {
         namespaces+: [], # all namespaces, as above
       },
       alertmanager+: {
         config: (importstr 'alertmanager.config.yaml'),
       },
+      kubePrometheus+: {
+        platform: 'kops_coredns',
+      },
       grafana+:: {
         datasources+: [{
+          name: 'prometheus',
+          type: 'prometheus',
+          uid: 'prometheus',
+          access: 'proxy',
+          org_id: 1,
+          url: 'http://prometheus-k8s.monitoring.svc.cluster.local:9090',
+          version: 1,
+          editable: false,
+        },
+        {
+          name: 'promloki',
+          type: 'prometheus',
+          uid: 'promloki',
+          access: 'proxy',
+          org_id: 1,
+          url: 'http://platform-loki.loki.svc.cluster.local:3100',
+          version: 1,
+          editable: false,
+        },
+        {
           name: 'loki',
           type: 'loki',
           access: 'proxy',
@@ -67,8 +82,8 @@ local kp =
           url: 'http://stream-query.jaeger.svc.cluster.local:16686',
           version: 1,
           editable: false,
-        },],
-        // FIXME: Loki dashboards below are strangely integrated as they are too large to import normally
+        },
+        ],
         rawDashboards+:: {
           'kafka.json': (importstr 'kafka.json'),
           'loki-operational.json': (importstr 'vendor/github.com/grafana/loki/production/loki-mixin/dashboards/dashboard-loki-operational.json'),
@@ -83,10 +98,6 @@ local kp =
             "auth.anonymous": {enabled: true, org_role: "Admin"}, # we will control auth via auth struct
           },
         },
-      },
-      versions+:: {
-        grafana: '7.4.3',
-        prometheus: 'v2.22.2',
       },
     },
     prometheus+:: {
@@ -213,17 +224,20 @@ local kp =
   },
 };
 
-
-{ ['setup/0namespace-' + name]: kp.kubePrometheus[name] for name in std.objectFields(kp.kubePrometheus) } +
+{ 'setup/0namespace-namespace': kp.kubePrometheus.namespace } +
 {
   ['setup/prometheus-operator-' + name]: kp.prometheusOperator[name]
-  for name in std.filter((function(name) name != 'serviceMonitor'), std.objectFields(kp.prometheusOperator))
+  for name in std.filter((function(name) name != 'serviceMonitor' && name != 'prometheusRule'), std.objectFields(kp.prometheusOperator))
 } +
-// serviceMonitor is separated so that it can be created after the CRDs are ready
+// serviceMonitor and prometheusRule are separated so that they can be created after the CRDs are ready
 { 'prometheus-operator-serviceMonitor': kp.prometheusOperator.serviceMonitor } +
-{ ['node-exporter-' + name]: kp.nodeExporter[name] for name in std.objectFields(kp.nodeExporter) } +
-{ ['kube-state-metrics-' + name]: kp.kubeStateMetrics[name] for name in std.objectFields(kp.kubeStateMetrics) } +
+{ 'prometheus-operator-prometheusRule': kp.prometheusOperator.prometheusRule } +
+{ 'kube-prometheus-prometheusRule': kp.kubePrometheus.prometheusRule } +
 { ['alertmanager-' + name]: kp.alertmanager[name] for name in std.objectFields(kp.alertmanager) } +
+{ ['blackbox-exporter-' + name]: kp.blackboxExporter[name] for name in std.objectFields(kp.blackboxExporter) } +
+{ ['grafana-' + name]: kp.grafana[name] for name in std.objectFields(kp.grafana) } +
+{ ['kube-state-metrics-' + name]: kp.kubeStateMetrics[name] for name in std.objectFields(kp.kubeStateMetrics) } +
+{ ['kubernetes-' + name]: kp.kubernetesControlPlane[name] for name in std.objectFields(kp.kubernetesControlPlane) }
+{ ['node-exporter-' + name]: kp.nodeExporter[name] for name in std.objectFields(kp.nodeExporter) } +
 { ['prometheus-' + name]: kp.prometheus[name] for name in std.objectFields(kp.prometheus) } +
-{ ['prometheus-adapter-' + name]: kp.prometheusAdapter[name] for name in std.objectFields(kp.prometheusAdapter) } +
-{ ['grafana-' + name]: kp.grafana[name] for name in std.objectFields(kp.grafana) }
+{ ['prometheus-adapter-' + name]: kp.prometheusAdapter[name] for name in std.objectFields(kp.prometheusAdapter) }

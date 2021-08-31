@@ -1,6 +1,6 @@
 # Prometheus
 
-Version `v0.6.0` from (coreos/kube-prometheus)[https://github.com/coreos/kube-prometheus/tree/v0.6.0]
+Version `main` from [prometheus-operator/kube-prometheus](https://github.com/prometheus-operator/kube-prometheus/tree/main) @ `8d0aa1f3d9f5460921f090f87eea391e43331dc6`
 
 ## install
 - Apply the struct to conduct basic setup of CRDs and some services
