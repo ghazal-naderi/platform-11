@@ -21,7 +21,7 @@ module "waf" {
       name     = "AWSManagedRulesCommonRuleSet-rule-1"
       priority = "1"
 
-      override_action = "count"
+      override_action = "block"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
@@ -33,9 +33,28 @@ module "waf" {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
         excluded_rule = [
-          "SizeRestrictions_QUERYSTRING",
+          "CrossSiteScripting_BODY",
+          "CrossSiteScripting_COOKIE",
+          "CrossSiteScripting_QUERYARGUMENTS",
+          "CrossSiteScripting_URIPATH",
+          "EC2MetaDataSSRF_BODY",
+          "EC2MetaDataSSRF_COOKIE",
+          "EC2MetaDataSSRF_QUERYARGUMENTS",
+          "EC2MetaDataSSRF_URIPATH",
+          "GenericLFI_BODY",
+          "GenericLFI_QUERYARGUMENTS",
+          "GenericLFI_URIPATH",
+          "GenericRFI_BODY",
+          "GenericRFI_QUERYARGUMENTS",
+          "GenericRFI_URIPATH",
+          "NoUserAgent_HEADER",
+          "RestrictedExtensions_QUERYARGUMENTS",
+          "RestrictedExtensions_URIPATH",
           "SizeRestrictions_BODY",
-          "GenericRFI_QUERYARGUMENTS"
+          "SizeRestrictions_Cookie_HEADER",
+          "SizeRestrictions_QUERYSTRING",
+          "SizeRestrictions_URIPATH",
+          "UserAgent_BadBots_HEADER"
         ]
       }
     },
