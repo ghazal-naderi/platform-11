@@ -21,7 +21,7 @@ module "waf" {
       name     = "AWSManagedRulesCommonRuleSet-rule-1"
       priority = "1"
 
-      override_action = "block"
+      override_action = "none"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
