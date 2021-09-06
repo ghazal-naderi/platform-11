@@ -44,8 +44,8 @@ module "waf" {
 #          "GenericLFI_BODY",
 #          "GenericLFI_QUERYARGUMENTS",
 #          "GenericLFI_URIPATH",
-          "GenericRFI_BODY",
-#          "GenericRFI_QUERYARGUMENTS",
+          "GenericRFI_BODY", #561 Authentication Error tekton
+          "GenericRFI_QUERYARGUMENTS", #403 Forbidden dex and tekton
           "GenericRFI_URIPATH",
           "NoUserAgent_HEADER",
           "RestrictedExtensions_QUERYARGUMENTS",
