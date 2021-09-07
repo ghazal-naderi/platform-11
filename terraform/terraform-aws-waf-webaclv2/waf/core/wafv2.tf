@@ -49,9 +49,9 @@ module "waf" {
 #          "GenericRFI_URIPATH",
 #          "NoUserAgent_HEADER",
 #          "RestrictedExtensions_QUERYARGUMENTS",
-          "RestrictedExtensions_URIPATH",
-          "SizeRestrictions_BODY",
-          "SizeRestrictions_Cookie_HEADER",
+#          "RestrictedExtensions_URIPATH",
+#          "SizeRestrictions_BODY",
+#          "SizeRestrictions_Cookie_HEADER",
           "SizeRestrictions_QUERYSTRING",
           "SizeRestrictions_URIPATH",
           "UserAgent_BadBots_HEADER"
