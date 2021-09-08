@@ -49,7 +49,7 @@ module "waf" {
 #          "GenericRFI_URIPATH",
 #          "NoUserAgent_HEADER",
 #          "RestrictedExtensions_QUERYARGUMENTS",
-          "RestrictedExtensions_URIPATH",
+#          "RestrictedExtensions_URIPATH",
 #          "SizeRestrictions_BODY",
 #          "SizeRestrictions_Cookie_HEADER",
 #          "SizeRestrictions_QUERYSTRING",
