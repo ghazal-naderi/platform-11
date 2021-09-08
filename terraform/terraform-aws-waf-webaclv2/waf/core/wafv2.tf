@@ -50,7 +50,7 @@ module "waf" {
 #          "NoUserAgent_HEADER",
 #          "RestrictedExtensions_QUERYARGUMENTS",
           "RestrictedExtensions_URIPATH",
-          "SizeRestrictions_BODY",
+#          "SizeRestrictions_BODY",
 #          "SizeRestrictions_Cookie_HEADER",
 #          "SizeRestrictions_QUERYSTRING",
 #          "SizeRestrictions_URIPATH",
