@@ -62,7 +62,7 @@ module "waf" {
       name     = "AWSManagedRulesKnownBadInputsRuleSet-rule-2"
       priority = "2"
 
-      override_action = "count"
+      override_action = "none"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
@@ -73,6 +73,12 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
         vendor_name = "AWS"
+        excluded_rule = [
+#          "Host_localhost_HEADER",
+#          "PROPFIND_METHOD",
+          "ExploitablePaths_URIPATH",
+          "BadAuthToken_COOKIE_AUTHORIZATION"
+        ]
       }
     },
     {
