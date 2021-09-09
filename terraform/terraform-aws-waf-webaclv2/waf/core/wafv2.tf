@@ -73,12 +73,12 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
         vendor_name = "AWS"
-        excluded_rule = [
+#        excluded_rule = [
 #          "Host_localhost_HEADER",
 #          "PROPFIND_METHOD",
-          "ExploitablePaths_URIPATH",
-          "BadAuthToken_COOKIE_AUTHORIZATION"
-        ]
+#          "ExploitablePaths_URIPATH",
+#          "BadAuthToken_COOKIE_AUTHORIZATION"
+#        ]
       }
     },
     {
