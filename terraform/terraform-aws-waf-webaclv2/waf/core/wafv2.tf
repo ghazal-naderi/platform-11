@@ -106,7 +106,7 @@ module "waf" {
       name     = "AWSManagedRulesBotControlRuleSet-rule-4"
       priority = "4"
 
-      override_action = "count"
+      override_action = "none"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
@@ -117,6 +117,23 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesBotControlRuleSet"
         vendor_name = "AWS"
+        excluded_rule = [
+#          "CategoryAdvertising",
+#          "CategoryArchiver",
+#          "CategoryContentFetcher",
+#          "CategoryHttpLibrary",
+#           "CategoryLinkChecker",
+#           "CategoryMiscellaneous",
+#           "CategoryMonitoring",
+           "CategoryScrapingFramework",
+           "CategorySearchEngine",
+           "CategorySecurity",
+           "CategorySeo",
+           "CategorySocialMedia",
+           "SignalAutomatedBrowser",
+           "SignalKnownBotDataCenter",
+           "SignalNonBrowserUserAgent"
+        ]
       }
     }
   ]
