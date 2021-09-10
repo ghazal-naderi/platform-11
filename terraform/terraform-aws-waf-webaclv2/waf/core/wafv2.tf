@@ -86,7 +86,7 @@ module "waf" {
       name     = "AWSManagedRulesAmazonIpReputationList-rule-3"
       priority = "3"
 
-      override_action = "count"
+      override_action = "none"
 
       visibility_config = {
         cloudwatch_metrics_enabled = false
@@ -97,6 +97,9 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesAmazonIpReputationList"
         vendor_name = "AWS"
+#        excluded_rule = [
+#          "AWSManagedIPReputationList"
+#        ]
       }
     },
     {
