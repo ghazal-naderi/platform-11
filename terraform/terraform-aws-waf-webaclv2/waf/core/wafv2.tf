@@ -119,8 +119,8 @@ module "waf" {
         vendor_name = "AWS"
         excluded_rule = [
 #          "CategoryAdvertising",
-          "CategoryArchiver",
-          "CategoryContentFetcher",
+#          "CategoryArchiver",
+#          "CategoryContentFetcher",
           "CategoryHttpLibrary",
            "CategoryLinkChecker",
            "CategoryMiscellaneous",
