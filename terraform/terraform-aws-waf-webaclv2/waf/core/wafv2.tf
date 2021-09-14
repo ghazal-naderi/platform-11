@@ -118,9 +118,9 @@ module "waf" {
         name        = "AWSManagedRulesBotControlRuleSet"
         vendor_name = "AWS"
         excluded_rule = [
-#          "CategoryAdvertising",
+          "CategoryAdvertising",
 #          "CategoryArchiver",
-#          "CategoryContentFetcher",
+          "CategoryContentFetcher",
           "CategoryHttpLibrary",
            "CategoryLinkChecker",
            "CategoryMiscellaneous",
