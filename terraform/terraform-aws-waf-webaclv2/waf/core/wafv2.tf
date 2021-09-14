@@ -120,8 +120,8 @@ module "waf" {
         excluded_rule = [
           "CategoryAdvertising",
           "CategoryArchiver",
-#          "CategoryContentFetcher",
-          "CategoryHttpLibrary",
+          "CategoryContentFetcher",
+#          "CategoryHttpLibrary",
            "CategoryLinkChecker",
            "CategoryMiscellaneous",
            "CategoryMonitoring",
