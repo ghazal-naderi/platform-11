@@ -122,7 +122,7 @@ module "waf" {
           "CategoryArchiver",
           "CategoryContentFetcher",
           "CategoryHttpLibrary",
-#           "CategoryLinkChecker",
+           "CategoryLinkChecker",
            "CategoryMiscellaneous",
            "CategoryMonitoring",
            "CategoryScrapingFramework",
