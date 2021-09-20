@@ -33,28 +33,8 @@ module "waf" {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
         excluded_rule = [
-#          "CrossSiteScripting_BODY",
-#          "CrossSiteScripting_COOKIE",
-#          "CrossSiteScripting_QUERYARGUMENTS",
-#          "CrossSiteScripting_URIPATH",
-#          "EC2MetaDataSSRF_BODY",
-#          "EC2MetaDataSSRF_COOKIE",
-#          "EC2MetaDataSSRF_QUERYARGUMENTS",
-#          "EC2MetaDataSSRF_URIPATH",
-#          "GenericLFI_BODY",
-#          "GenericLFI_QUERYARGUMENTS",
-#          "GenericLFI_URIPATH",
-          "GenericRFI_BODY", #561 Authentication Error tekton
-          "GenericRFI_QUERYARGUMENTS", #403 Forbidden dex and tekton
-#          "GenericRFI_URIPATH",
-#          "NoUserAgent_HEADER",
-#          "RestrictedExtensions_QUERYARGUMENTS",
-#          "RestrictedExtensions_URIPATH",
-#          "SizeRestrictions_BODY",
-#          "SizeRestrictions_Cookie_HEADER",
-#          "SizeRestrictions_QUERYSTRING",
-#          "SizeRestrictions_URIPATH",
-#          "UserAgent_BadBots_HEADER"
+          "GenericRFI_BODY",
+          "GenericRFI_QUERYARGUMENTS",
         ]
       }
     },
@@ -73,12 +53,6 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
         vendor_name = "AWS"
-#        excluded_rule = [
-#          "Host_localhost_HEADER",
-#          "PROPFIND_METHOD",
-#          "ExploitablePaths_URIPATH",
-#          "BadAuthToken_COOKIE_AUTHORIZATION"
-#        ]
       }
     },
     {
@@ -97,9 +71,6 @@ module "waf" {
       managed_rule_group_statement = {
         name        = "AWSManagedRulesAmazonIpReputationList"
         vendor_name = "AWS"
-#        excluded_rule = [
-#          "AWSManagedIPReputationList"
-#        ]
       }
     },
     {
@@ -120,19 +91,8 @@ module "waf" {
         excluded_rule = [
           "CategoryAdvertising",
           "CategoryArchiver",
-          "CategoryContentFetcher",
           "CategoryHttpLibrary",
-           "CategoryLinkChecker",
-           "CategoryMiscellaneous",
-           "CategoryMonitoring",
-           "CategoryScrapingFramework",
-           "CategorySearchEngine",
-           "CategorySecurity",
-           "CategorySeo",
-           "CategorySocialMedia",
-           "SignalAutomatedBrowser",
-           "SignalKnownBotDataCenter",
-           "SignalNonBrowserUserAgent"
+          "SignalNonBrowserUserAgent"
         ]
       }
     }
