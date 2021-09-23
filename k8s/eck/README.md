@@ -1,5 +1,6 @@
 # ECK struct
-`all-in-one.yaml`: version: `1.3.0` from [elastic.co](https://download.elastic.co/downloads/eck/1.3.0/all-in-one.yaml)
+`operator.yaml`: version: `1.8.0` from [elastic.co](https://download.elastic.co/downloads/eck/1.8.0/operator.yaml)
+`crds.yaml`: version: `1.8.0` from [elastic.co](https://download.elastic.co/downloads/eck/1.8.0/crds.yaml)
 
 ## Setup
 This includes a user/role for `jaeger` struct.
@@ -13,7 +14,7 @@ metadata:
   name: kibana
   namespace: eck
 spec:
-  version: 7.9.1
+  version: 7.14.2
   count: 1
   elasticsearchRef:
     name: elasticsearch

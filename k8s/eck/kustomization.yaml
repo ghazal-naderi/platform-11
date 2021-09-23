@@ -1,6 +1,7 @@
 ---
 resources:
-  - eck-all-in-one.yaml
+  - crds.yaml
+  - operator.yaml
   - elasticsearch.yaml
   - namespace.yaml
   - jaeger-user.yaml
