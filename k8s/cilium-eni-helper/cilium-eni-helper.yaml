@@ -45,6 +45,7 @@ spec:
         spec:
           restartPolicy: Never
           serviceAccountName: sync-ciliumnodes
+          priorityClassName: system-node-critical
           containers:
             - name: infra-tester
               command: ["/bin/ash"]
